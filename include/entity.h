@@ -1,3 +1,4 @@
+/*
 #pragma once
 #include <thirdparty\entt\single_include\entt\entt.hpp>
 #include <iostream>
@@ -47,8 +48,6 @@ enum class event_enum : uint32_t
     // Future events can use bits 23 and higher
 };
 
-
-
 // Basic event type
 struct Event
 {
@@ -57,32 +56,6 @@ struct Event
 	void* details;
 };
 
-
-
 template <typename return_t, typename... arg_t>
 using func_ptr_t = return_t(*)(arg_t...);
-
-using tick_function = func_ptr_t<void, void>;
-using on_event_function = func_ptr_t<void, Event>;
-using to_string_function = func_ptr_t<std::string, void>;
-
-void on_tick_default() {}
-void on_event_default(Event e) {
-    std::cout << "on_event called on entity: " << entt::to_integral(e.target);
-}
-
-
-std::string to_string_default() { return ""; }
-
-
-// A wrapper for entt::entity. It is exactly the same as an entt::entity, with some extra functionality
-entt::entity entity()
-{
-	entt::entity ent = scene.create();
-	scene.emplace<tick_function>(ent, &on_tick_default);
-	scene.emplace<on_event_function>(ent, &on_event_default);
-	return ent;
-}
-
-
-
+*/
