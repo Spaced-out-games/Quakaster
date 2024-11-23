@@ -40,9 +40,29 @@ Window::Window(int width, int height) {
 
     // Create the framebuffer
     createFramebuffer();
+
+    // Initialize ImGui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Optional: Enable keyboard controls
+    ImGui::StyleColorsDark();
+
+    // Initialize ImGui backends
+    if (!ImGui_ImplSDL2_InitForOpenGL(window, context)) {
+        std::cerr << "Failed to initialize ImGui SDL backend" << std::endl;
+        exit(5);
+    }
+    if (!ImGui_ImplOpenGL3_Init("#version 330")) {
+        std::cerr << "Failed to initialize ImGui OpenGL backend" << std::endl;
+        exit(6);
+    }
 }
 
 Window::~Window() {
+    // Cleanup ImGui
+    cleanupImGui();
+
     // Cleanup OpenGL objects
     glDeleteTextures(1, &renderTexture);
     glDeleteRenderbuffers(1, &rbo);
@@ -94,9 +114,26 @@ void Window::createFramebuffer() {
     // Check framebuffer completeness
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "Framebuffer is not complete!" << std::endl;
-        exit(5);
+        exit(7);
     }
 
     // Unbind the framebuffer to return to default
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Window::beginImGuiFrame() {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+}
+
+void Window::renderImGui() {
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void Window::cleanupImGui() {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 }
