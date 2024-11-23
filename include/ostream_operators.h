@@ -1,8 +1,11 @@
 //#ifndef STREAM_OPERATORS_HPP
 //#define STREAM_OPERATORS_HPP
+
+
 #pragma once
 #include <iostream>
-#include <glm.hpp>
+#include <glm/glm.hpp>
+
 
 // Overload for glm::vec2
 inline std::ostream& operator<<(std::ostream& os, const glm::vec2& vec) {
