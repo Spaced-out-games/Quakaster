@@ -2,10 +2,12 @@
 #include <SDL.h>
 #include <GL/glew.h>
 #include <glm/glm.hpp>
-#include "imgui.h"
-#include "backends/imgui_impl_sdl2.h"
-#include "backends/imgui_impl_opengl3.h"
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_opengl3.h>
 #include <iostream>
+#include <include/FrameBuffer.h>
+#include <include/CameraComponent.h>
 
 class Window {
 public:
@@ -20,8 +22,11 @@ public:
     SDL_GLContext getContext() const { return context; }
 
     void beginImGuiFrame();
+    void endImGuiFrame();
     void renderImGui();
     void cleanupImGui();
+    void renderToTexture();
+    GLuint renderTexture = 0;
 
 private:
     void createFramebuffer();
@@ -29,9 +34,9 @@ private:
     SDL_Window* window = nullptr;
     SDL_GLContext context = nullptr;
     glm::ivec2 dimensions;
+    ImGuiContext* ImGUIContext = nullptr;
+    ImGuiIO* ImGUI_IO = nullptr;
     bool running = true;
-
-    GLuint fbo = 0;
-    GLuint renderTexture = 0;
-    GLuint rbo = 0;
+    CameraComponent* activeCamera;
+    FrameBuffer viewport;
 };

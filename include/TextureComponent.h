@@ -2,11 +2,11 @@
 #include <string>
 #include <unordered_map>
 #include <GL/glew.h> // Ensure you're using the correct OpenGL headers
-#include <stb_image.h>
+
 #include <iostream> // For error logging
 
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include <include/stb_image.h>
 
 
 class TexturePool
@@ -80,6 +80,10 @@ struct TextureComponent
     GLuint ID;
 
     TextureComponent() : ID(0) {}
+    TextureComponent(const std::string& path, TexturePool& pool)
+    {
+        load(path, pool);
+    }
 
     void load(const std::string& path, TexturePool& pool) // Pass TexturePool by reference
     {

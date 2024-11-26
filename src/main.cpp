@@ -1,82 +1,87 @@
-// third-party
 #include <SDL.h>
 #include <GL/glew.h>
 #include <GL/gl.h>
-#include <entt/entt.hpp>
+#include <include/entt.hpp>
 #include <iostream>
-#include <include/window.h>
-#include <include/TextureComponent.h>
+#include "include/window.h"
+#include "include/Console.h"
+#include "include/TextureComponent.h"
+#include "include/MeshComponent.h"
+#include "include/ShaderComponent.h"
+#include "include/entity.h"
 
 
-
-
-
-
-
-
-
-bool initializeOpenGL(SDL_Window*& window, SDL_GLContext& context) {
-    // Initialize OpenGL context
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        std::cerr << "SDL_Init Error: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    // Create an SDL window with OpenGL context
-    window = SDL_CreateWindow("OpenGL + SDL2 Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_OPENGL);
-    if (!window) {
-        std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    // Create OpenGL context
-    context = SDL_GL_CreateContext(window);
-    if (!context) {
-        std::cerr << "SDL_GL_CreateContext Error: " << SDL_GetError() << std::endl;
-        return false;
-    }
-
-    // Initialize GLEW
-    glewInit();
-
-    // Set the OpenGL viewport
-    glViewport(0, 0, 800, 600);
-
-    return true;
-}
-struct color
-{
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
-};
 
 uint64_t num_ticks = 0;
 
-
-
 int main() {
-
-    entt::entity t;
-    entt::registry reg;
-    Window window = {300, 300};
-
+    Scene scene;
+    Window window(1920, 1080);
     SDL_Event event;
+
+    Console c;
+    c.AttachToScene(scene);
+
+
+    ShaderPool shader_pool;
+    ShaderComponent shader ("C:/Users/devin/Source/Repos/Quakaster/resources/shaders/default.vert", "C:/Users/devin/Source/Repos/Quakaster/resources/shaders/default.frag" , shader_pool );
+    shader.use();
+
+    Console console;
+
+
+
+    float quadVertices[] = {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
+
+    GLuint quadVAO, quadVBO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glBindVertexArray(0);
+    
+
+    glClearColor(255, 0, 0, 0);
     while (window.is_running()) {
         while (SDL_PollEvent(&event)) {
+            ImGui_ImplSDL2_ProcessEvent(&event); // Process events for ImGui
             if (event.type == SDL_QUIT) {
                 window.quit();
             }
         }
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        
 
-        // Swap buffers to display the rendered content
-        glBindFramebuffer(GL_FRAMEBUFFER, window.getFramebuffer());
+        glUseProgram(shader.programID);
+        glBindVertexArray(quadVAO);
+        glBindTexture(GL_TEXTURE_2D, window.renderTexture); // Bind the texture rendered to
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        window.beginImGuiFrame();
+        console.draw();
+        window.endImGuiFrame();
+
         //window.swapBuffers();
-        num_ticks++;
     }
     
 
 
     return 0;
 }
+

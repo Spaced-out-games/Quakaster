@@ -77,9 +77,14 @@ public:
 
 
 struct ShaderComponent {
-    GLuint programID;
+    GLuint programID = 0;
 
     ShaderComponent() : programID(0) {}
+    //ShaderComponent(GLuint programID) : programID(programID) {}
+    ShaderComponent(const std::string& vertexPath, const std::string& fragmentPath, ShaderPool& pool)
+    {
+        load(vertexPath, fragmentPath, pool);
+    }
 
     void load(const std::string& vertexPath, const std::string& fragmentPath, ShaderPool& pool) {
         programID = pool.loadShader(vertexPath, fragmentPath);

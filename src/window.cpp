@@ -43,9 +43,9 @@ Window::Window(int width, int height) {
 
     // Initialize ImGui
     IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Optional: Enable keyboard controls
+    ImGUIContext = ImGui::CreateContext();
+    ImGUI_IO = &(ImGui::GetIO());
+    ImGUI_IO->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Optional: Enable keyboard controls
     ImGui::StyleColorsDark();
 
     // Initialize ImGui backends
@@ -57,6 +57,7 @@ Window::Window(int width, int height) {
         std::cerr << "Failed to initialize ImGui OpenGL backend" << std::endl;
         exit(6);
     }
+    viewport.bind();
 }
 
 Window::~Window() {
@@ -64,9 +65,8 @@ Window::~Window() {
     cleanupImGui();
 
     // Cleanup OpenGL objects
-    glDeleteTextures(1, &renderTexture);
-    glDeleteRenderbuffers(1, &rbo);
-    glDeleteFramebuffers(1, &fbo);
+    
+    viewport.~FrameBuffer();
 
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
@@ -87,44 +87,19 @@ void Window::resize(int new_width, int new_height) {
 
 void Window::createFramebuffer() {
     // Clean up any existing FBO
-    if (fbo) {
-        glDeleteTextures(1, &renderTexture);
-        glDeleteRenderbuffers(1, &rbo);
-        glDeleteFramebuffers(1, &fbo);
-    }
-
-    // Generate and bind the framebuffer
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-    // Create a texture to render to
-    glGenTextures(1, &renderTexture);
-    glBindTexture(GL_TEXTURE_2D, renderTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dimensions.x, dimensions.y, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, renderTexture, 0);
-
-    // Create a renderbuffer for depth and stencil
-    glGenRenderbuffers(1, &rbo);
-    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, dimensions.x, dimensions.y);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-    // Check framebuffer completeness
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cerr << "Framebuffer is not complete!" << std::endl;
-        exit(7);
-    }
-
-    // Unbind the framebuffer to return to default
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    viewport.setup((unsigned int)dimensions.x, (unsigned int)dimensions.y);
 }
 
 void Window::beginImGuiFrame() {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
+}
+void Window::endImGuiFrame() {
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    swapBuffers();
+    
 }
 
 void Window::renderImGui() {
@@ -136,4 +111,12 @@ void Window::cleanupImGui() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
+}
+
+void Window::renderToTexture() {
+    if (activeCamera) {
+        viewport.bind();  // Bind the framebuffer for rendering
+        activeCamera->renderScene();  // Render the scene to the framebuffer
+        viewport.unbind();  // Unbind the framebuffer after rendering
+    }
 }

@@ -10,7 +10,7 @@ class MeshPool {
         GLuint EBO;
         GLsizei indexCount;
 
-        Mesh(GLuint vao, GLuint vbo, GLuint ebo, GLsizei count)
+        Mesh(GLuint vao = 0, GLuint vbo = 0, GLuint ebo = 0, GLsizei count = 0)
             : VAO(vao), VBO(vbo), EBO(ebo), indexCount(count) {}
     };
 
