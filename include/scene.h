@@ -14,6 +14,7 @@ class Entity;
 class Scene : public entt::registry
 {
 public:
+	entt::dispatcher dispatcher;
 
 	// Functions to be called every tick iteration (not necessarily every frame
 	std::vector<thinkScript> scripts;

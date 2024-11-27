@@ -10,7 +10,7 @@ class thinkScript
 {
 public:
     // Constructor
-    thinkScript(func_ptr_t<void, Scene&> func, int ticks_per_second = 60)
+    thinkScript(func_ptr_t<void, Scene&> func, int ticks_per_second = 600)
         : function(func),
         tick_interval(std::chrono::milliseconds(1000 / ticks_per_second)),
         next_tick(std::chrono::high_resolution_clock::now() + tick_interval)

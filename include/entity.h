@@ -2,7 +2,12 @@
 #include <include/entt.hpp>
 #include "scene.h" // Include Scene header
 
+#define ADD_EVENT_LISTENER(dispatcher, event_type, listener) \
+    dispatcher.sink<event_type>().connect<&listener>();  // Connect the listener to the dispatcher
 
+
+#define EVENT_FIRE(dispatcher, event_type, event_inst) \
+    dispatcher.trigger<event_type>(std::move(event_inst));  // Forward event instance directly
 
 /// <summary>
 /// Basic Entity. Inherit from this to construct your own types that add components in their constructor.
@@ -45,6 +50,18 @@ public:
     // Remove a component from the entity
     template <typename T>
     void remove_component();
+
+    // Add an event listener for this entity
+    template <typename Event, typename Listener>
+    void addEventListener(Listener&& listener);
+
+    // Fire an event from this entity
+    template <typename Event, typename... Args>
+    void fireEvent(Args&&... args);
+
+    // Get a component from the entity
+    template <typename T>
+    T& getComponent();
 };
 
 Scene* Entity::default_scene = nullptr;
@@ -79,4 +96,32 @@ void Entity::remove_component()
     if (my_scene) {
         my_scene->remove<T>(ID);  // Remove the component from the entity
     }
+}
+
+// Add an event listener for this entity
+template <typename Event, typename Listener>
+void Entity::addEventListener(Listener&& listener) {
+    if (my_scene) {
+        auto sink = my_scene->dispatcher.sink<Event>();
+        // Use std::forward to forward the listener correctly
+        sink.connect(std::forward<Listener>(listener));  // Connect the listener
+    }
+}
+
+
+// Fire an event from this entity
+template <typename Event, typename... Args>
+void Entity::fireEvent(Args&&... args) {
+    if (my_scene) {
+        my_scene->dispatcher.trigger<Event>(std::forward<Args>(args)...);
+    }
+}
+
+// Get a component from the entity
+template <typename T>
+T& Entity::getComponent() {
+    if (my_scene) {
+        return my_scene->get<T>(ID);  // Retrieve the component from the scene
+    }
+    throw std::runtime_error("Entity does not have the requested component.");
 }
