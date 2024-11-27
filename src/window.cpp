@@ -1,5 +1,11 @@
 #include "include/window.h"
 
+
+#define WINDOW_WIDTH 1920
+#define WINDOW_HEIGHT 1080
+
+Window::Window(): Window (WINDOW_WIDTH, WINDOW_HEIGHT) {}
+
 Window::Window(int width, int height) {
     dimensions = { width, height };
 

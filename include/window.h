@@ -7,8 +7,11 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <iostream>
 
+
+// Standalone window class. Holds a lot of the important stuff...for..well..windows. 
 class Window {
 public:
+    Window();
     Window(int width, int height);
     ~Window();
 
