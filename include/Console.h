@@ -1,8 +1,4 @@
 #pragma once
-//#include <../imgui/imgui.h>
-//#include <include/entt.hpp>
-#include "include/scene.h"
-#include <include/utility_types.h>
 #include <vector>
 #include <string>
 #include <cstring>  // For `strcmp`
@@ -51,7 +47,6 @@ class Console
 	std::unordered_map<std::string, console_command> commands;
 
 	public:
-        void AttachToScene(Scene& scene) {}
 		bool open = true;
         Console();
 		void log(const char* fmt, ...);

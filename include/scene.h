@@ -1,30 +1,30 @@
 #pragma once
-#include "entt.hpp"
+#include <include/entt.hpp>
+#include <include/think.h>
 
 class Entity;
 
-class Scene: public entt::registry {
-	//entt::registry registry;
-	Entity create_entity();
+class Scene : public entt::registry
+{
 public:
-	Scene();
-};
+	std::vector<thinkScript> scripts;
+	void tick()
+	{
+		for (thinkScript& script : scripts)
+		{
+			bool attempt_tick = script.shouldTick();
+			if (attempt_tick)
+			{
+				script(*this);
+				script.advanceTick();
+			}
+		}
+	}
+	void addThink(thinkScript& script) {
+		scripts.push_back(std::move(script));
+	}
 
+};
 
 #include "entity.h"
 
-Entity Scene::create_entity()
-{
-	Entity ent(create());
-	return ent;
-	
-}
-
-Scene::Scene()
-{
-	Entity::scene = this;
-}
-
-
-
-//using Scene = entt::registry;

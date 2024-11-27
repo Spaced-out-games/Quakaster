@@ -1,50 +1,61 @@
 #pragma once
-#include <iostream>
-#include <include/utility_types.h>
-#include "entt.hpp"
+#include <include/entt.hpp>
+#include "scene.h" // Include Scene header
 
-
-// For now, define a Scene as a registry. 
-
-
-class Entity {
-private:
-    entt::entity ent_ID; // ID of the entity
-protected:
-    friend Scene;
-    static Scene* scene; // Static pointer to the Scene
+class Entity
+{
 public:
+    friend Scene;
+    entt::entity ID = (entt::entity)99999; // Default ID, ideally this should be set via the constructor
+    Scene* my_scene = nullptr;
+    static Scene* default_scene;
+
+    Entity(Scene& scene);
+    Entity() : Entity(*default_scene) {}
+    ~Entity();
+
+    static void setCurrentScene(Scene& scene) { default_scene = &scene; }
+
+
+    // Add a component to the entity
+    template <typename T, typename ...Args>
+    void add_component(Args&&... args);
+
+    // Remove a component from the entity
     template <typename T>
-    bool has() {
-        return scene->any_of<T>(ent_ID);
-    }
-
-    template <typename T, typename... Args>
-    void add_component(Args&&... args) {
-        scene->emplace<T>(ent_ID, std::forward<Args>(args)...);
-    }
-
-    template <typename T>
-    void remove_component() {
-        scene->remove<T>(ent_ID);
-    }
-
-    Entity(entt::entity ID) : ent_ID(ID) {}
-    ~Entity(); // Default destructor
+    void remove_component();
 };
 
+Scene* Entity::default_scene = nullptr;
 
-#include "include/scene.h"
-
-
-Entity::~Entity()
+// Constructor
+Entity::Entity(Scene& scene): my_scene(&scene)
 {
-    scene->destroy(ent_ID);
+    ID = my_scene->create();
 }
 
-Scene* Entity::scene = nullptr;
+// Destructor
+Entity::~Entity()
+{
+    if (my_scene) {
+        my_scene->destroy(ID);  // Destroy the entity from the scene when the entity goes out of scope
+    }
+}
 
+// Add a component to the entity
+template <typename T, typename ...Args>
+void Entity::add_component(Args&&... args)
+{
+    if (my_scene) {
+        my_scene->emplace<T>(ID, args...);  // Add the component to the entity
+    }
+}
 
-
-
-//Scene* Entity::scene = nullptr;
+// Remove a component from the entity
+template <typename T>
+void Entity::remove_component()
+{
+    if (my_scene) {
+        my_scene->remove<T>(ID);  // Remove the component from the entity
+    }
+}

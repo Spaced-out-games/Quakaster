@@ -57,7 +57,7 @@ Window::Window(int width, int height) {
         std::cerr << "Failed to initialize ImGui OpenGL backend" << std::endl;
         exit(6);
     }
-    viewport.bind();
+    //viewport.bind();
 }
 
 Window::~Window() {
@@ -66,7 +66,7 @@ Window::~Window() {
 
     // Cleanup OpenGL objects
     
-    viewport.~FrameBuffer();
+    //viewport.~FrameBuffer();
 
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
@@ -87,7 +87,7 @@ void Window::resize(int new_width, int new_height) {
 
 void Window::createFramebuffer() {
     // Clean up any existing FBO
-    viewport.setup((unsigned int)dimensions.x, (unsigned int)dimensions.y);
+    //viewport.setup((unsigned int)dimensions.x, (unsigned int)dimensions.y);
 }
 
 void Window::beginImGuiFrame() {
@@ -114,9 +114,5 @@ void Window::cleanupImGui() {
 }
 
 void Window::renderToTexture() {
-    if (activeCamera) {
-        viewport.bind();  // Bind the framebuffer for rendering
-        activeCamera->renderScene();  // Render the scene to the framebuffer
-        viewport.unbind();  // Unbind the framebuffer after rendering
-    }
+
 }

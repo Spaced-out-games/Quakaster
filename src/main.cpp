@@ -5,10 +5,9 @@
 #include <iostream>
 #include "include/window.h"
 #include "include/Console.h"
-#include "include/TextureComponent.h"
-#include "include/MeshComponent.h"
-#include "include/ShaderComponent.h"
+#include "include/scene.h"
 #include "include/entity.h"
+#include "include/textComponent.h"
 
 
 
@@ -16,16 +15,18 @@ uint64_t num_ticks = 0;
 
 int main() {
     Scene scene;
+    std::cout << "actually print dammit";
+    Entity::setCurrentScene(scene);
+    Entity textEntity;
+    
+    //textComponent tc("test");
+    textEntity.add_component<textComponent>("Test");
+    scene.addThink(thinkScript(textComponent::think));
+
     Window window(1920, 1080);
     SDL_Event event;
 
-    Console c;
-    c.AttachToScene(scene);
 
-
-    ShaderPool shader_pool;
-    ShaderComponent shader ("C:/Users/devin/Source/Repos/Quakaster/resources/shaders/default.vert", "C:/Users/devin/Source/Repos/Quakaster/resources/shaders/default.frag" , shader_pool );
-    shader.use();
 
     Console console;
 
@@ -42,19 +43,6 @@ int main() {
          1.0f,  1.0f,  1.0f, 1.0f
     };
 
-    GLuint quadVAO, quadVBO;
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-    glBindVertexArray(0);
-    
 
     glClearColor(255, 0, 0, 0);
     while (window.is_running()) {
@@ -68,16 +56,13 @@ int main() {
 
         
 
-        glUseProgram(shader.programID);
-        glBindVertexArray(quadVAO);
-        glBindTexture(GL_TEXTURE_2D, window.renderTexture); // Bind the texture rendered to
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+
 
         window.beginImGuiFrame();
         console.draw();
+        scene.tick();
         window.endImGuiFrame();
 
-        //window.swapBuffers();
     }
     
 

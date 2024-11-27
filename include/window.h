@@ -6,8 +6,6 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <iostream>
-#include <include/FrameBuffer.h>
-#include <include/CameraComponent.h>
 
 class Window {
 public:
@@ -37,6 +35,4 @@ private:
     ImGuiContext* ImGUIContext = nullptr;
     ImGuiIO* ImGUI_IO = nullptr;
     bool running = true;
-    CameraComponent* activeCamera;
-    FrameBuffer viewport;
 };

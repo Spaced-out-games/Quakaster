@@ -44,7 +44,7 @@ file(GLOB IMGUI_SOURCES
 list(APPEND SOURCES ${IMGUI_SOURCES})
 
 # Define executable target
-add_executable(MyProject ${SOURCES} "include/FrameBuffer.h" "src/FrameBuffer.cpp" "include/CameraComponent.h")
+add_executable(MyProject ${SOURCES}  "include/entity.h" "include/scene.h" "include/think.h" "include/utility_types.h" "include/textComponent.h")
 
 # Link libraries
 target_link_libraries(MyProject
