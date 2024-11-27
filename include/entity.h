@@ -2,18 +2,33 @@
 #include <include/entt.hpp>
 #include "scene.h" // Include Scene header
 
+
+// Basic Entity. Inherit from this to construct your own types that add components in their constructor
 class Entity
 {
 public:
+    // Scenes can access Entities
     friend Scene;
-    entt::entity ID = (entt::entity)99999; // Default ID, ideally this should be set via the constructor
+    entt::entity ID = entt::null; // Default ID, ideally this should be set via the constructor
+
+    // Pointer to the scene this entity lives in
     Scene* my_scene = nullptr;
+
+    // Utility pointer in case you only need one scene (or are lazy)
     static Scene* default_scene;
 
+
+    // Constructs, given a scene
     Entity(Scene& scene);
+
+    // Constructs, using the default scene. YOU MUST CALL setCurrentScene() BEFORE USING THIS
     Entity() : Entity(*default_scene) {}
+
+    // Cleans up the entity, destroying components
     ~Entity();
 
+
+    // Sets a default scene for following Entities that are constructed to use
     static void setCurrentScene(Scene& scene) { default_scene = &scene; }
 
 
