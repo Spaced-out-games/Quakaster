@@ -1,3 +1,5 @@
+
+
 #pragma once
 #include <vector>
 #include <string>
@@ -10,61 +12,80 @@
 #include <array>
 #include <cmath>
 #include <regex>
-#include <regex>
 
+// Which character is used to accent user input within the integrated console
 #define CONSOLE_ACCENT_CHAR '~'
 
+// A function that takes in a string (from the console) and does something with it. 
 using console_function = std::function<void(std::string&)>;
 
+
+// A wrapper for console_function to also include descriptions and example uses
 struct console_command
 {
-	std::string description = "";
-	std::string example = "";
-	console_function command= default_command;
-	console_command(std::string description, std::string example, console_function command):
-		description(std::move(description)),
-		example(std::move(example)),
-		command(std::move(command))
-	{}
-	console_command() {}
+    // What the command does
+    std::string description = "";
 
-	void execute(std::string& arguments)
-	{
-		command(arguments);
-	}
-	static void default_command(std::string& input) {}
+    // An example of using the command
+    std::string example = "";
+
+    // command to be run. Initializes to a command that does nothing
+    console_function command = default_command;
+
+    // constructor
+    console_command(std::string description, std::string example, console_function command) :
+        description(std::move(description)),
+        example(std::move(example)),
+        command(std::move(command))
+    {}
+    console_command() {}
+
+    // Calls this command, passing the arguments
+    void execute(std::string& arguments)
+    {
+        command(arguments);
+    }
+private:
+    // no-op
+    static void default_command(std::string& input) {}
 };
 
 
+
+/*
+* ImGui in-Engine integrated console. Has a few commands like default that are no-brainers (eg, `echo`, `exit`, `clear`).
+* Inherit from this and add more commands as needed
+
+*/
 class Console
 {
     //static Scene* scene;
-	const char* title = "test";
-	char input_buffer[256]{};
-	int history_pos = -1;
-	bool scrollToBottom = false;
-	std::vector <std::string> history;
-	std::unordered_map<std::string, console_command> commands;
+    const char* title = "test";
+    char input_buffer[256]{};
+    int history_pos = -1;
+    bool scrollToBottom = false;
+    std::vector <std::string> history;
+    std::unordered_map<std::string, console_command> commands;
 
-	public:
-		bool open = true;
-        Console();
-		void log(const char* fmt, ...);
-		void clear();
-		virtual void draw();
-		virtual bool execute(const std::string& command);
-		void register_command(
-			console_function func = [](std::string&) {},
-			const std::string& name = "Unknown command",
-			const std::string& description = "No description available",
-			const std::string& example = ""
-			
-		)
-		{
-			commands[name] = console_command(description, example, func);
-		}
-		void append_log(const std::string& content, int index);
-		void add_log(const std::string& content);
+public:
+    bool open = true;
+    Console();
+    void log(const char* fmt, ...);
+    void clear();
+    virtual void draw();
+    virtual bool execute(const std::string& command);
+    void register_command(
+        console_function func = [](std::string&) {},
+        const std::string& name = "Unknown command",
+        const std::string& description = "No description available",
+        const std::string& example = ""
+
+    )
+    {
+        commands[name] = console_command(description, example, func);
+    }
+    void append_log(const std::string& content, int index);
+    void add_log(const std::string& content);
 };
 
 
@@ -140,7 +161,7 @@ void Console::draw()
 
     ImGui::PopItemWidth();
     ImGui::End();
-    
+
 }
 
 bool Console::execute(const std::string& commandLine) {

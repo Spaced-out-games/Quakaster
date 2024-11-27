@@ -44,7 +44,7 @@ public:
 Scene* Entity::default_scene = nullptr;
 
 // Constructor
-Entity::Entity(Scene& scene): my_scene(&scene)
+Entity::Entity(Scene& scene) : my_scene(&scene)
 {
     ID = my_scene->create();
 }
