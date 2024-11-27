@@ -3,12 +3,18 @@
 #include "scene.h" // Include Scene header
 
 
-// Basic Entity. Inherit from this to construct your own types that add components in their constructor
+
+/// <summary>
+/// Basic Entity. Inherit from this to construct your own types that add components in their constructor.
+/// INHERITED TYPES MUST NOT HAVE ADDITIONAL DATA ENTRIES. THIS ALLOWS STRAIGHTFORWARD AND SAFE DOWNCASTING
+/// </summary
 class Entity
 {
 public:
     // Scenes can access Entities
     friend Scene;
+
+
     entt::entity ID = entt::null; // Default ID, ideally this should be set via the constructor
 
     // Pointer to the scene this entity lives in
