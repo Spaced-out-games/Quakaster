@@ -4,52 +4,34 @@
 #include <include/entt.hpp>
 #include <iostream>
 #include "include/window.h"
-#include "include/Console.h"
-#include "include/scene.h"
+
 #include "include/entity.h"
 #include "include/textComponent.h"
 
-
+#include "include/application.h"
 
 uint64_t num_ticks = 0;
 
 int main() {
-    Scene scene;
-    std::cout << "actually print dammit";
-    Entity::setCurrentScene(scene);
-    Entity textEntity;
-    
-    //textComponent tc("test");
-    textEntity.add_component<textComponent>("Test");
-    scene.addThink(thinkScript(textComponent::think));
+    Application app;
 
-    Window window(1920, 1080);
+    Entity::setCurrentScene(app.scene);
+
+
+    Entity textEntity;
+    textEntity.add_component<textComponent>("Test");
+    app.scene.addThink(thinkScript(textComponent::think));
+
     SDL_Event event;
 
 
 
-    Console console;
-
-
-
-    float quadVertices[] = {
-        // positions   // texCoords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-
-        -1.0f,  1.0f,  0.0f, 1.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f, 1.0f
-    };
-
-
     glClearColor(255, 0, 0, 0);
-    while (window.is_running()) {
+    while (app.window.is_running()) {
         while (SDL_PollEvent(&event)) {
             ImGui_ImplSDL2_ProcessEvent(&event); // Process events for ImGui
             if (event.type == SDL_QUIT) {
-                window.quit();
+                app.window.quit();
             }
         }
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -58,15 +40,13 @@ int main() {
 
 
 
-        window.beginImGuiFrame();
-        console.draw();
-        scene.tick();
-        window.endImGuiFrame();
+        app.window.beginImGuiFrame();
+        app.console.draw();
+        app.scene.tick();
+        app.window.endImGuiFrame();
 
     }
     
-
-
     return 0;
 }
 
