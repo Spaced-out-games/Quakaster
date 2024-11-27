@@ -4,6 +4,8 @@
 
 class Scene;
 
+
+// Script to be executed on a set interval in terms of a Scene. 
 class thinkScript
 {
 public:
@@ -15,8 +17,10 @@ public:
     {
     }
 
-    // Tick interval and next tick
+    // Tick interval in milliseconds
     std::chrono::milliseconds tick_interval;
+
+    // time of the next tick
     std::chrono::time_point<std::chrono::high_resolution_clock> next_tick;
 
     // Function to execute
@@ -38,5 +42,16 @@ public:
     void advanceTick()
     {
         next_tick += tick_interval;
+    }
+
+    // Set the tick interval
+    void setTickInterval(int ms)
+    {
+        tick_interval = std::chrono::milliseconds(ms);
+    }
+    // Manually set the next tick time. This is great if you want to set a unique interval for a single interval then have it revert
+    void advanceTickManual(int ms)
+    {
+        next_tick += std::chrono::milliseconds(ms);
     }
 };
