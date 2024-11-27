@@ -12,6 +12,12 @@
 #include <array>
 #include <cmath>
 #include <regex>
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_opengl3.h>
+
+// Size of a single console command
+#define CONSOLE_BUFFER_SIZE 256
 
 // Which character is used to accent user input within the integrated console
 #define CONSOLE_ACCENT_CHAR '~'
@@ -20,7 +26,9 @@
 using console_function = std::function<void(std::string&)>;
 
 
-// A wrapper for console_function to also include descriptions and example uses
+/// <summary>
+/// A wrapper for console_function to also include descriptions and example uses
+/// </summary>
 struct console_command
 {
     // What the command does
@@ -38,6 +46,8 @@ struct console_command
         example(std::move(example)),
         command(std::move(command))
     {}
+
+    // constructor
     console_command() {}
 
     // Calls this command, passing the arguments
@@ -46,34 +56,80 @@ struct console_command
         command(arguments);
     }
 private:
-    // no-op
+    // no-op default function
     static void default_command(std::string& input) {}
 };
 
 
 
-/*
-* ImGui in-Engine integrated console. Has a few commands like default that are no-brainers (eg, `echo`, `exit`, `clear`).
-* Inherit from this and add more commands as needed
+class Scene;
+class Application;
 
-*/
+
+
+
+
+/// <summary>
+/// ImGui in-Engine integrated console. Has a few commands like default that are no-brainers (eg, `echo`, `exit`, `clear`).
+/// Inherit from thisand add more commands as needed.
+/// 
+/// TODO: Migrate commands to a server / level side interpreter, and have Console solely act as a means of getting a command from the CLI
+/// </summary>
 class Console
 {
-    //static Scene* scene;
-    const char* title = "test";
-    char input_buffer[256]{};
+    friend Application;
+
+    
+
+
+    // Title of the console. 
+    const char* title = "Integrated Console";
+    // You can input up to 256 bytes into the console. 
+    char input_buffer[CONSOLE_BUFFER_SIZE]{};
+
+    // TODO: UNDERSTAND WHAT THIS DOES
     int history_pos = -1;
+
+    // TODO: UNDERSTAND WHAT THIS DOES
     bool scrollToBottom = false;
+
+    // Each logged command
     std::vector <std::string> history;
+
+    // commands. Needs deprecated
     std::unordered_map<std::string, console_command> commands;
 
+    protected:
+        // leaves the pointer nullptr
+        Console()
+        {
+            clear();
+            log("Console initialized");
+        }
+        // A pointer to the scene that this Console can control
+        Scene* my_scene = nullptr;
+
 public:
+
+    // Whether the Console is open or not
     bool open = true;
-    Console();
+
+    // Making a console requires you define a scene for it to control. NOTE: might be a good idea to create a GameContext structure that keeps track of some more universal information, and pass a pointer to it in the constructor
+    Console(Scene& scene);
+
+    // Adds a line to the integrated console
     void log(const char* fmt, ...);
+
+    // clears the integrated console
     void clear();
+
+    // draws the console
     virtual void draw();
+
+    // executes a command from the console
     virtual bool execute(const std::string& command);
+
+    // Registers a command into the console. Might be better to eventually build something far more scalable, perhaps a tokenizer and interpreter
     void register_command(
         console_function func = [](std::string&) {},
         const std::string& name = "Unknown command",
@@ -84,13 +140,19 @@ public:
     {
         commands[name] = console_command(description, example, func);
     }
+
+    // Adds content to a pre-existing (or last) log entry
     void append_log(const std::string& content, int index);
+
+    // Creates a new log
     void add_log(const std::string& content);
 };
 
+#include "scene.h"
 
 
-Console::Console() : history_pos(-1), scrollToBottom(false) {
+Console::Console(Scene& scene) : history_pos(-1), scrollToBottom(false) {
+    my_scene = &scene;
     clear();
     log("Console initialized");
 }
@@ -196,5 +258,3 @@ void Console::add_log(const std::string& content)
     history.emplace_back(content + "\n");
     scrollToBottom = true;
 }
-
-//Scene* Console::scene = nullptr;
