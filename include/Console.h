@@ -12,6 +12,7 @@
 #include <array>
 #include <cmath>
 #include <regex>
+#include <sstream>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -79,7 +80,11 @@ class Console
 {
     friend Application;
 
-    
+    ImColor pallete[16] = {
+        0xffffffff, // white
+        0xff0000ff  // red
+
+    };
 
 
     // Title of the console. 
@@ -101,11 +106,8 @@ class Console
 
     protected:
         // leaves the pointer nullptr
-        Console()
-        {
-            clear();
-            log("Console initialized");
-        }
+        Console();
+
         // A pointer to the scene that this Console can control
         Scene* my_scene = nullptr;
 
@@ -129,14 +131,11 @@ public:
     // executes a command from the console
     virtual bool execute(const std::string& command);
 
-    // Registers a command into the console. Might be better to eventually build something far more scalable, perhaps a tokenizer and interpreter
-    void register_command(
-        console_function func = [](std::string&) {},
-        const std::string& name = "Unknown command",
-        const std::string& description = "No description available",
-        const std::string& example = ""
+    virtual void init_commands() {};
+    void register_default_commands();
 
-    )
+    // Registers a command into the console. Might be better to eventually build something far more scalable, perhaps a tokenizer and interpreter
+    void register_command( const std::string& name, const std::string& description, const std::string& example, console_function func = [](std::string&) {} )
     {
         commands[name] = console_command(description, example, func);
     }
@@ -154,7 +153,15 @@ public:
 Console::Console(Scene& scene) : history_pos(-1), scrollToBottom(false) {
     my_scene = &scene;
     clear();
-    log("Console initialized");
+    register_default_commands();
+    init_commands();
+}
+
+Console::Console()
+{
+    clear();
+    register_default_commands();
+    init_commands();
 }
 
 void Console::log(const char* fmt, ...)
@@ -253,8 +260,83 @@ void Console::append_log(const std::string& content, int index)
     }
     history[index] += content;
 }
+
 void Console::add_log(const std::string& content)
 {
     history.emplace_back(content + "\n");
     scrollToBottom = true;
 }
+
+void Console::register_default_commands()
+{
+    register_command("exit", "Exits the application", "exit", [&](std::string& input) {
+        exit(0);
+    });
+
+    register_command("help", "don't yell at me!", "exit", [&](std::string& input) {
+        std::stringstream ss(input);
+        std::string target_command;
+        ss >> target_command;
+
+        if (target_command.empty())
+        {
+            add_log("Use help <command name> to learn more!");
+            return;
+        }
+
+        auto it = commands.find(target_command);
+
+        if (it != commands.end()) {
+            add_log(it->second.description);
+
+        }
+        else {
+            std::string message = "ERROR: Command '" + target_command + "' not found";
+            add_log(message.c_str());
+
+        }
+
+
+        
+    });
+
+    register_command("clear", "Exits the application", "exit", [&](std::string& input) {
+        exit(0);
+    });
+
+    register_command("debug", "Exits the application", "exit", [&](std::string& input) {
+        exit(0);
+    });
+}
+
+
+
+
+
+#include "application.h"
+
+
+struct console_log_request {
+    // Might be good to add some settings later
+    //ImColor color;
+    std::string message;
+    Console* target = nullptr;
+    console_log_request(std::string msg, Console& console) : message(msg), target(&console) {}
+    static void print(console_log_request& event) {
+        event.target->log(event.message.c_str());
+    }
+};
+
+void console_log(std::string message)
+{
+
+    console_log_request console_message(message, Application::current_application->console);
+    EVENT_FIRE(Application::current_application->scene.dispatcher, console_log_request, console_message);
+}
+void console_log(std::string& message)
+{
+
+    console_log_request console_message(message, Application::current_application->console);
+    EVENT_FIRE(Application::current_application->scene.dispatcher, console_log_request, console_message);
+}
+
