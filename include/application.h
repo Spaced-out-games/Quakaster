@@ -1,29 +1,50 @@
 #pragma once
+
 #include "Console.h"
 #include "scene.h"
 #include <SDL.h>
 #include "window.h"
 
-
-
-
 // Creates an application with a window, scene, and console. Lets the console know who's its daddy. 
+
 struct Application
 {
+    bool isRunning = true;
 
-	// game window
-	Window window;
+    // In case you are only using one application (which you probably are) and want to do whatever from anywhere. 
+    static Application* current_application;
 
-	// game scene
-	Scene scene;
+    // game window
+    Window window;
 
-	// integrated console
-	Console console;
+    // game scene
+    Scene scene;
+
+    // integrated console
+    Console console;
+
+    // Creates an application and lets the console know about the scene it controls. Also calls the bootstrap function
+    // and begins the running of the application
+    Application()
+    {
+        console.my_scene = &scene;
+        scene.owner = this;
+        current_application = this;
+    }
+
+    // Correctly declare pure virtual functions
+    func_ptr_t<void, Application&> bootstrap = nullptr;
+    func_ptr_t<void, Application&> tick = nullptr;
 
 
-	// Creates an application and lets the console know about the scene it controls
-	Application()
-	{
-		console.my_scene = &scene;
-	}
+    void run()
+    {
+        bootstrap(*this);
+        while (isRunning)
+        {
+            tick(*this);
+
+        }
+    }
 };
+Application* Application::current_application = nullptr;
