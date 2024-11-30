@@ -27,6 +27,8 @@ struct Position
     Position(float x, float y, float z) : position(x, y, z) {}
 };
 
+
+
 void handleMyEvent(MyEvent& event) {
     glm::vec3& ent_position = event.target->getComponent<Position>().position;
     ent_position += event.velocity;
@@ -40,7 +42,9 @@ int main() {
 
     // Create an entity and add a Position component
     Entity textEntity;
+    app.scene.addThink(consoleComponent::think, 1);
     textEntity.add_component<Position>(0.0, 0.0, 0.0);
+    textEntity.add_component<consoleComponent>("test", app.console);
 
     // Register the event listener for MyEvent
     ADD_EVENT_LISTENER(app.scene.dispatcher, MyEvent, handleMyEvent);
@@ -62,7 +66,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Fire the event (passed by reference)
-        EVENT_FIRE(app.scene.dispatcher, MyEvent, velocityEvent);  // Correctly fire the event
+        //EVENT_FIRE(app.scene.dispatcher, MyEvent, velocityEvent);  // Correctly fire the event
 
         app.window.beginImGuiFrame();
         app.console.draw();
