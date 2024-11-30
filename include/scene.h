@@ -6,6 +6,7 @@
 
 
 class Entity;
+class Application;
 
 /// <summary>
 /// Scene containing all the objects in the game world. Might be a good idea to allow the Scene to have access to the GameContext (NOT IMPLEMENTED)
@@ -15,6 +16,7 @@ class Scene : public entt::registry
 {
 public:
 	entt::dispatcher dispatcher;
+	Application* owner;
 
 	// Functions to be called every tick iteration (not necessarily every frame
 	std::vector<thinkScript> scripts;
@@ -34,8 +36,8 @@ public:
 	}
 
 	// Adds a think script to the game world
-	void addThink(thinkScript& script) {
-		scripts.push_back(std::move(script));
+	void addThink(func_ptr_t<void, Scene&> func, int tps = 60) {
+		scripts.emplace_back(func, tps);
 	}
 
 };
