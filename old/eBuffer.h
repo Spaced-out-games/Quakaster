@@ -22,7 +22,6 @@ public:
 
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(GLuint), indices, DrawingType);
 
-
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     }

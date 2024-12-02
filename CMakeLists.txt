@@ -3,6 +3,7 @@ project(MyProject VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_PREFIX_PATH "")
 
 # Define paths for dependencies
 set(SDL_ROOT "D:/C++ Libraries/SDL2")
@@ -19,6 +20,15 @@ include_directories(
     ${IMGUI_ROOT}
     ${IMGUI_ROOT}/backends
 )
+
+
+#find_package(assimp CONFIG REQUIRED)
+#target_link_libraries(main PRIVATE assimp::assimp)
+# check here:
+# C:/Users/devin/vcpkg/packages/assimp_x86-windows/share/assimp/copyright
+# -DCMAKE_TOOLCHAIN_FILE=C:/Users/devin/vcpkg/scripts/buildsystems/vcpkg.cmake
+#set(CMAKE_TOOLCHAIN_FILE "C:/Users/devin/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+
 
 # Link Directories
 link_directories(

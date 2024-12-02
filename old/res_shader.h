@@ -118,26 +118,6 @@ void res_shader::use(GLuint program_ID)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 GLuint res_shader::load_program(const std::string& file_base)
 {
     // load the sources
