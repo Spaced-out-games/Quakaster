@@ -15,7 +15,10 @@ public:
     shader_handle& operator=(const T& value) {
         GLint location = glGetUniformLocation(programID, uniformName.c_str());
         if (location == -1) {
-            throw std::runtime_error("Uniform " + uniformName + " not found in shader.");
+            console_log("Uniform " + uniformName + " not found in shader.", console_colors::DEFAULT_ERROR_CRITICAL);
+            __debugbreak();
+
+            //throw std::runtime_error("Uniform " + uniformName + " not found in shader.");
         }
         setUniformValue(location, value);
         return *this;
@@ -64,18 +67,25 @@ public:
         GLint success;
         glGetProgramiv(programID, GL_LINK_STATUS, &success);
         if (!success) {
-            GLchar infoLog[512];
+            GLchar infoLog[512]; 
             glGetProgramInfoLog(programID, 512, nullptr, infoLog);
-
+            #ifdef _DEBUG
             console_log(std::string("Error linking shader program: " + std::string(infoLog)), console_colors::DEFAULT_WARNING_SEVERE);
+            __debugbreak();
+
+            #endif
             // Debug-only runtime warning, basically. 
-            //__debugbreak();
 
 
         }
     }
 
     ~res_shader() {
+        #ifdef _DEBUG
+        console_log(std::string("Deleted shader with ID: ") + std::to_string((int)programID), console_colors::DEFAULT_WARNING);
+
+        #endif
+        
         glDeleteProgram(programID);
     }
 
