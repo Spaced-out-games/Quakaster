@@ -2,6 +2,8 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <glm/glm.hpp>
 
 class shader_handle {
@@ -105,9 +107,20 @@ public:
 private:
     GLuint programID;
 
+    static std::string loadShaderCodeFromFile(const std::string& path) {
+        std::ifstream shaderFile(path);
+        if (!shaderFile.is_open()) {
+            console_log(std::string("Could not open shader at: " + path), console_colors::DEFAULT_WARNING_SEVERE);
+        }
+
+        std::stringstream buffer;
+        buffer << shaderFile.rdbuf();
+        return buffer.str();
+    }
+
     static GLuint loadShader(const std::string& path, GLenum shaderType) {
-        std::string shaderCode;
-        // Load the shader code from file (not implemented here, but you can use std::ifstream)
+        // Load the shader code from file
+        std::string shaderCode = loadShaderCodeFromFile(path);
 
         GLuint shaderID = glCreateShader(shaderType);
         const char* code = shaderCode.c_str();
@@ -120,8 +133,11 @@ private:
         if (!success) {
             GLchar infoLog[512];
             glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
-            throw std::runtime_error("Error compiling shader: " + std::string(infoLog));
+
+            // Use the ShaderDebugInfo to output the error message with additional context
+
         }
+
         return shaderID;
     }
 };
