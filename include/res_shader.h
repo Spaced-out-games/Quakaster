@@ -1,254 +1,117 @@
-#pragma once
-#include <string>
 #include <GL/glew.h>
+#include <string>
+#include <stdexcept>
 #include <iostream>
-#include <fstream>
-#include "res_mesh.h"
+#include <glm/glm.hpp>
 
-struct res_shader
-{
-    GLuint ShaderProgram = 0; // The ID of the shader program.
+class shader_handle {
+public:
+    // Constructor is private, accessible only to res_shader
+    shader_handle(GLuint programID, const std::string& uniformName)
+        : programID(programID), uniformName(uniformName) {}
 
-
-
-    // Get's the name of the resource type
-    const char* get_name() const { return "res_shader"; }
-
-
-    // Default the shader to slot 0
-    res_shader() = default;
-
-
-    // load a file
-    res_shader(const std::string& file_path);
-
-    res_shader(const std::string& vertex_path, const std::string& fragment_path);
-
-    // compile both shaders
-    GLuint compile_all(const char* vertex_source, const char* fragment_source);
-
-    GLuint compile(GLenum shader_t, const char* shader_source);
-
-    // Use the shader
-    void use();
-
-    static void use(GLuint program_ID);
-
-
-    static GLuint link(GLuint vertex_shader, GLuint fragment_shader);
-
-
-    // set a uniform value
-    template <typename T>
-    void set_uniform(const std::string& name, const T& value);
-
-    template <typename T>
-    static void set_uniform(GLuint target_program, const std::string& name, const T& value);
-
-    // Per the naming convention, both files must end in .frag and .vtx, respectively, with the same base name, and in the same directory. 
-    void load(const std::string& path);
-
-
-    // NEEDS IMPLEMENTED...
-    void load(const std::string& vertex_path, const std::string& fragment_path) {};
-
-
-    GLuint load_program(const std::string& file_base);
+    // Overload the assignment operator to set uniforms
+    template<typename T>
+    shader_handle& operator=(const T& value) {
+        GLint location = glGetUniformLocation(programID, uniformName.c_str());
+        if (location == -1) {
+            throw std::runtime_error("Uniform " + uniformName + " not found in shader.");
+        }
+        setUniformValue(location, value);
+        return *this;
+    }
 
 private:
-    std::string load_source(const std::string& file_name);
+    GLuint programID;
+    std::string uniformName;
 
-};
-
-
-
-void res_shader::load(const std::string& path)
-{
-    ShaderProgram = load_program(path);
-}
-
-res_shader::res_shader(const std::string& file_path)
-{
-    load(file_path);
-}
-
-res_shader::res_shader(const std::string& vertex_path, const std::string& fragment_path)
-{
-
-    // load the sources
-    std::string vertex_source = load_source(vertex_path);
-    std::string fragment_source = load_source(fragment_path);
-
-    // create the shader program
-
-    ShaderProgram = compile_all(vertex_source.c_str(), fragment_source.c_str());
-
-}
-
-void res_shader::use()
-{
-    #ifdef _DEBUG
-    // MIght move this to the in-engine console eventually
-    std::cout << "shader " << ShaderProgram << "used.\n";
-    #endif
-    glUseProgram(ShaderProgram);
-}
-
-void res_shader::use(GLuint program_ID)
-{
-    #ifdef _DEBUG
-    // MIght move this to the in-engine console eventually
-    std::cout << "shader " << program_ID << "used.\n";
-    #endif
-    glUseProgram(program_ID);
-}
-
-
-
-GLuint res_shader::load_program(const std::string& file_base)
-{
-    // load the sources
-    std::string vertex_source = load_source(file_base + ".vtx");
-    std::string fragment_source = load_source(file_base + ".frag");
-
-    // compile them
-    GLuint program = compile_all(vertex_source.c_str(), fragment_source.c_str());
-
-    return program;
-
-}
-
-
-
-GLuint res_shader::compile(GLenum shader_t, const char* shader_source)
-{
-    // compilation
-    GLuint shader = glCreateShader(shader_t);
-    glShaderSource(shader, 1, &shader_source, nullptr);
-    glCompileShader(shader);
-
-    // error checking...only important in development builds
-    #ifdef _DEBUG
-
-    GLint success;
-    GLchar info_log[512];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success)
-    {
-        glGetShaderInfoLog(shader, 512, nullptr, info_log);
-        std::cerr << "<SHADER COMPILATION FAILURE>\n" << info_log << "\n";
-    }
-    #endif
-    return shader;
-}
-
-GLuint res_shader::compile_all(const char* vertex_source, const char* fragment_source)
-{
-    // compile the sources
-    GLuint vertex_shader = compile(GL_VERTEX_SHADER, vertex_source);
-    GLuint fragment_shader = compile(GL_FRAGMENT_SHADER, fragment_source);
-
-    // link them
-    GLuint program = link(vertex_shader, fragment_shader);
-
-    // return the program
-    return program;
-}
-
-
-/**
-     * @brief Links two shaders
-     *
-     * @param vertex_shader the compiled vertex shader
-     * @param fragment_shader the compiled fragment shader
-     * @return the program code from linking the two programs
-     */
-GLuint res_shader::link(GLuint vertex_shader, GLuint fragment_shader)
-{
-    // make a new OpenGL program and link it
-    GLuint program = glCreateProgram();
-    glAttachShader(program, vertex_shader);
-    glAttachShader(program, fragment_shader);
-    glLinkProgram(program);
-    glDeleteShader(vertex_shader);
-    glDeleteShader(fragment_shader);
-
-    // some debugging functionality
-
-    #ifdef _DEBUG
-    GLint success;
-    GLchar info_log[512];
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success)
-    {
-        glGetProgramInfoLog(program, 512, nullptr, info_log);
-        std::cerr << "<LINKER ERROR>\n----------------------------------------------------------------------------------------" << info_log << "\n----------------------------------------------------------------------------------------\n";
-    }
-    #endif
-
-    return program;
-}
-
-
-
-
-template <typename T>
-static void res_shader::set_uniform(GLuint target_program, const std::string& name, const T& value) {
-    GLint location = glGetUniformLocation(target_program, name.c_str());
-
-    // Use std::enable_if to handle different types
-    if constexpr (std::is_same<T, float>::value) {
-        glUniform1f(location, value);
-    }
-    else if constexpr (std::is_same<T, int>::value) {
+    // Helper methods to set the uniform values based on type
+    void setUniformValue(GLint location, int value) {
         glUniform1i(location, value);
     }
-    else if constexpr (std::is_same<T, glm::vec2>::value) {
-        glUniform2fv(location, 1, glm::value_ptr(value));
-    }
-    else if constexpr (std::is_same<T, glm::vec3>::value) {
-        glUniform3fv(location, 1, glm::value_ptr(value));
-    }
-    else if constexpr (std::is_same<T, glm::vec4>::value) {
-        glUniform4fv(location, 1, glm::value_ptr(value));
-    }
-    else if constexpr (std::is_same<T, glm::mat2>::value) {
-        glUniformMatrix2fv(location, 1, GL_FALSE, glm::value_ptr(value));
-    }
-    else if constexpr (std::is_same<T, glm::mat3>::value) {
-        glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
-    }
-    else if constexpr (std::is_same<T, glm::mat4>::value) {
-        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
-    }
-    else {
-        static_assert(!std::is_same<T, T>::value, "Unsupported uniform type");
-    }
-}
 
-template <typename T>
-void res_shader::set_uniform(const std::string& name, const T& value)
-{
-    set_uniform<T>(ShaderProgram, name, value);
-}
-
-
-/**
-     * @brief Loads shader source code from a file.
-     *
-     * @param filename The path to the shader file.
-     * @return The source code read from the file.
-     */
-std::string res_shader::load_source(const std::string& file_name)
-{
-    std::ifstream file(file_name);
-    if (!file.is_open())
-
-    {
-        std::cerr << "File '" << file_name << "' could not be found\n";
-        return "";
+    void setUniformValue(GLint location, float value) {
+        glUniform1f(location, value);
     }
-    std::stringstream stream;
-    stream << file.rdbuf();
-    return stream.str();
-}
+
+    void setUniformValue(GLint location, const glm::vec3& value) {
+        glUniform3fv(location, 1, &value[0]);
+    }
+
+    void setUniformValue(GLint location, const glm::mat4& value) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
+    }
+};
+
+class res_shader {
+public:
+    res_shader(const std::string& vertexPath, const std::string& fragmentPath) {
+        // Load and compile the shaders
+        GLuint vertexShader = loadShader(vertexPath, GL_VERTEX_SHADER);
+        GLuint fragmentShader = loadShader(fragmentPath, GL_FRAGMENT_SHADER);
+
+        // Link the program
+        programID = glCreateProgram();
+        glAttachShader(programID, vertexShader);
+        glAttachShader(programID, fragmentShader);
+        glLinkProgram(programID);
+
+        // Clean up shaders
+        glDeleteShader(vertexShader);
+        glDeleteShader(fragmentShader);
+
+        // Check for linking errors
+        GLint success;
+        glGetProgramiv(programID, GL_LINK_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetProgramInfoLog(programID, 512, nullptr, infoLog);
+
+            console_log(std::string("Error linking shader program: " + std::string(infoLog)), console_colors::DEFAULT_WARNING_SEVERE);
+            // Debug-only runtime warning, basically. 
+            //__debugbreak();
+
+
+        }
+    }
+
+    ~res_shader() {
+        glDeleteProgram(programID);
+    }
+
+    // Overload [] operator to return a shader_handle for uniform access
+    shader_handle operator[](const std::string& uniformName) {
+        return shader_handle(programID, uniformName); // Return a shader_handle tied to this shader
+    }
+
+    void use() const {
+        glUseProgram(programID);
+    }
+
+    static void unbind() {
+        glUseProgram(0);
+    }
+
+private:
+    GLuint programID;
+
+    static GLuint loadShader(const std::string& path, GLenum shaderType) {
+        std::string shaderCode;
+        // Load the shader code from file (not implemented here, but you can use std::ifstream)
+
+        GLuint shaderID = glCreateShader(shaderType);
+        const char* code = shaderCode.c_str();
+        glShaderSource(shaderID, 1, &code, nullptr);
+        glCompileShader(shaderID);
+
+        // Check for compilation errors
+        GLint success;
+        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            GLchar infoLog[512];
+            glGetShaderInfoLog(shaderID, 512, nullptr, infoLog);
+            throw std::runtime_error("Error compiling shader: " + std::string(infoLog));
+        }
+        return shaderID;
+    }
+};
