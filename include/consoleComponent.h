@@ -21,7 +21,7 @@ struct consoleComponent
 		{
 			consoleComponent& console_component = view.get<consoleComponent>(entity);
 			std::string& content = console_component.content;
-			console_component.mConsole->add_log(content);
+			console_component.mConsole->add_log({ console_colors::DEFAULT_TEXT, content });
 			if (console_component.pending_destruction)
 			{
 				scene.remove<consoleComponent>(entity);

@@ -26,6 +26,8 @@
 // A function that takes in a string (from the console) and does something with it. 
 using console_function = std::function<void(std::string&)>;
 
+#define DEFAULT_CONSOLE_COLOR 0
+
 
 /// <summary>
 /// A wrapper for console_function to also include descriptions and example uses
@@ -62,6 +64,39 @@ private:
 };
 
 
+enum class console_colors : uint8_t
+{
+    WHITE = 0,
+    DEFAULT_TEXT = WHITE,
+    RED = 1,
+    DEFAULT_ERROR_CRITICAL = RED,
+    GREEN = 2,
+    DEFAULT_OKAY = GREEN,
+    YELLOW = 3,
+    DEFAULT_WARNING = YELLOW,
+    ORANGE = 4,
+    DEFAULT_WARNING_SEVERE = ORANGE
+
+};
+
+
+
+
+
+struct console_message {
+    console_colors colorIndex;  // Changed from uint8_t to console_colors
+    std::string message;
+
+    console_message(console_colors color = console_colors::DEFAULT_TEXT, const std::string& msg = "")
+        : colorIndex(color), message(msg) {}
+
+    // Overloading the += operator
+    console_message& operator+=(const std::string& additionalMsg) {
+        message += additionalMsg; // Append additional message
+        return *this;
+    }
+};
+
 
 class Scene;
 class Application;
@@ -78,13 +113,24 @@ class Application;
 /// </summary>
 class Console
 {
-    friend Application;
-
-    ImColor pallete[16] = {
-        0xffffffff, // white
-        0xff0000ff  // red
+    enum class colors : uint8_t
+    {
+        WHITE = 0,
+        DEFAULT_TEXT = WHITE,
+        RED = 1,
+        DEFAULT_ERROR_CRITICAL = RED,
+        GREEN = 2,
+        DEFAULT_OKAY = GREEN,
+        YELLOW = 3,
+        DEFAULT_WARNING = YELLOW,
+        ORANGE = 4,
+        DEFAULT_WARNING_SEVERE = ORANGE
 
     };
+
+    friend Application;
+
+    ImU32 pallete[16]{};
 
 
     // Title of the console. 
@@ -99,10 +145,12 @@ class Console
     bool scrollToBottom = false;
 
     // Each logged command
-    std::vector <std::string> history;
+    std::vector<console_message> history;
 
     // commands. Needs deprecated
     std::unordered_map<std::string, console_command> commands;
+
+    ImU32 colorPalette[256];
 
     protected:
         // leaves the pointer nullptr
@@ -120,7 +168,7 @@ public:
     Console(Scene& scene);
 
     // Adds a line to the integrated console
-    void log(const char* fmt, ...);
+    void log(console_colors colorIndex, const char* fmt, ...);
 
     // clears the integrated console
     void clear();
@@ -144,7 +192,7 @@ public:
     void append_log(const std::string& content, int index);
 
     // Creates a new log
-    void add_log(const std::string& content);
+    void add_log(const console_message& msg);
 };
 
 #include "scene.h"
@@ -162,13 +210,27 @@ Console::Console()
     clear();
     register_default_commands();
     init_commands();
+
+    colorPalette[static_cast<uint8_t>(Console::colors::WHITE)] = IM_COL32(255, 255, 255, 255);    // White(White)
+    colorPalette[static_cast<uint8_t>(Console::colors::RED)] = IM_COL32(255, 0, 0, 255);            // Red
+
+    colorPalette[static_cast<uint8_t>(Console::colors::GREEN)] = IM_COL32(0, 150, 0, 255);          // Green(Green)
+
+    colorPalette[static_cast<uint8_t>(Console::colors::YELLOW)] = IM_COL32(255, 255, 0, 255);       // Yellow
+
+    colorPalette[static_cast<uint8_t>(Console::colors::ORANGE)] = IM_COL32(255, 165, 0, 255);
 }
 
-void Console::log(const char* fmt, ...)
-{
+void Console::log(console_colors colorIndex, const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
-    history.emplace_back(fmt);  // Consider formatting here
+
+    char buffer[CONSOLE_BUFFER_SIZE];
+    vsnprintf(buffer, sizeof(buffer), fmt, args);
+
+    // Add the message to history with the specified color
+    add_log(console_message(colorIndex, buffer));
+
     va_end(args);
 }
 
@@ -180,10 +242,11 @@ void Console::clear()
 void Console::draw()
 {
     if (!open) { return; }
-    //std::cout << "console::draw\n";
-    ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
-    ImVec2 buttonSize = { 120, 20 };
 
+    // Set window size and begin drawing the window
+    ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
+
+    ImVec2 buttonSize = { 120, 20 };
     if (!ImGui::Begin(title, &open)) {
         ImGui::End();
         return;
@@ -207,8 +270,11 @@ void Console::draw()
     if (copyToClipboard)
         ImGui::LogToClipboard();
 
-    for (const auto& message : history)
-        ImGui::TextUnformatted(message.c_str());
+    for (const auto& msg : history) {
+        ImGui::PushStyleColor(ImGuiCol_Text, colorPalette[(uint8_t)msg.colorIndex]);
+        ImGui::TextUnformatted(msg.message.c_str());
+        ImGui::PopStyleColor();
+    }
 
     if (scrollToBottom)
         ImGui::SetScrollHereY(1.0f);
@@ -218,20 +284,37 @@ void Console::draw()
     ImGui::Separator();
 
     ImGui::PushItemWidth(-1);
-    if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
-        std::string inputStr(input_buffer);
-        execute(inputStr);
-        memset(input_buffer, 0, sizeof(input_buffer));
+
+    // Focus the input text box when the window is appearing
+    if (ImGui::IsWindowAppearing()) {
+        ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
     }
 
-    if (ImGui::IsItemHovered() || ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
-        ImGui::SetKeyboardFocusHere(1);
+    // Input text for commands
+    if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
+        std::string inputStr(input_buffer);
+        auto spaceIndex = inputStr.find(' ');
+        std::string command = inputStr.substr(0, spaceIndex);
+
+        // Check if the command exists
+        auto it = commands.find(command);
+        if (it != commands.end()) {
+            log(console_colors::DEFAULT_OKAY, inputStr.c_str()); // Print the command
+            it->second.execute(inputStr.substr(spaceIndex + 1)); // Execute with arguments
+        }
+        else {
+            std::string errorMessage = "ERROR: Command '" + command + "' not found";
+            log(console_colors::DEFAULT_WARNING, errorMessage.c_str()); // Print error message
+        }
+
+        memset(input_buffer, 0, sizeof(input_buffer));
+        ImGui::SetKeyboardFocusHere(-1);
     }
 
     ImGui::PopItemWidth();
     ImGui::End();
-
 }
+
 
 bool Console::execute(const std::string& commandLine) {
     auto spaceIndex = commandLine.find(' ');
@@ -240,13 +323,13 @@ bool Console::execute(const std::string& commandLine) {
 
     auto it = commands.find(command);
     if (it != commands.end()) {
-        log(commandLine.c_str());
+        log(console_colors::DEFAULT_TEXT,commandLine.c_str());
         it->second.execute(args);
         return true;
     }
     else {
         std::string message = "ERROR: Command '" + command + "' not found";
-        log(message.c_str());
+        log(console_colors::DEFAULT_WARNING,message.c_str());
         return false;
     }
 }
@@ -261,10 +344,9 @@ void Console::append_log(const std::string& content, int index)
     history[index] += content;
 }
 
-void Console::add_log(const std::string& content)
-{
-    history.emplace_back(content + "\n");
-    scrollToBottom = true;
+void Console::add_log(const console_message& msg) {
+    history.push_back(msg);
+    scrollToBottom = true; // Ensure the console scrolls to the bottom
 }
 
 void Console::register_default_commands()
@@ -280,19 +362,19 @@ void Console::register_default_commands()
 
         if (target_command.empty())
         {
-            add_log("Use help <command name> to learn more!");
+            add_log({ console_colors::DEFAULT_TEXT,"Use help <command name> to learn more!" });
             return;
         }
 
         auto it = commands.find(target_command);
 
         if (it != commands.end()) {
-            add_log(it->second.description);
+            add_log({ console_colors::DEFAULT_TEXT, it->second.description });
 
         }
         else {
             std::string message = "ERROR: Command '" + target_command + "' not found";
-            add_log(message.c_str());
+            add_log({ console_colors::DEFAULT_TEXT, message.c_str() });
 
         }
 
@@ -318,25 +400,26 @@ void Console::register_default_commands()
 
 struct console_log_request {
     // Might be good to add some settings later
-    //ImColor color;
+    //ImU32 color;
     std::string message;
+    console_colors color_ID = console_colors::DEFAULT_TEXT;
     Console* target = nullptr;
-    console_log_request(std::string msg, Console& console) : message(msg), target(&console) {}
+    console_log_request(std::string msg, Console& console, console_colors color_ID = console_colors::DEFAULT_TEXT) : message(msg), target(&console), color_ID(color_ID) {}
     static void print(console_log_request& event) {
-        event.target->log(event.message.c_str());
+        event.target->log(event.color_ID, event.message.c_str());
     }
 };
 
-void console_log(std::string message)
+void console_log(std::string message, console_colors color_ID = console_colors::DEFAULT_TEXT)
 {
 
-    console_log_request console_message(message, Application::current_application->console);
+    console_log_request console_message(message, Application::current_application->console, color_ID);
     EVENT_FIRE(Application::current_application->scene.dispatcher, console_log_request, console_message);
 }
-void console_log(std::string& message)
+void console_log(std::string& message, console_colors color_ID = console_colors::DEFAULT_TEXT)
 {
 
-    console_log_request console_message(message, Application::current_application->console);
+    console_log_request console_message(message, Application::current_application->console, color_ID);
     EVENT_FIRE(Application::current_application->scene.dispatcher, console_log_request, console_message);
 }
 
