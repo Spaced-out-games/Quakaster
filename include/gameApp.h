@@ -1,5 +1,6 @@
 #pragma once
 #include "application.h"
+#include "controller.h"
 
 
 
@@ -43,11 +44,7 @@ void gameApp::bootstrap_impl(Application& app)
 	// Sets the background color to black
 	glClearColor(0, 0, 0, 0);
 
-	res_shader shader("C:/Users/devin/Source/Repos/Quakaster/resources/shaders/brush_vertex.glsl", "C:/Users/devin/Source/Repos/Quakaster/resources/shaders/brush_frag.glsl");
-
-
-
-	//shader["cause_failure"] = 0.54f;
+	//static Controller inputController(app.scene.dispatcher);
 
 	#ifdef _DEBUG
 		console_log("Game bootstrapped. Ticking...", console_colors::DEFAULT_TEXT);
