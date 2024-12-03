@@ -113,23 +113,10 @@ class Application;
 /// </summary>
 class Console
 {
-    enum class colors : uint8_t
-    {
-        WHITE = 0,
-        DEFAULT_TEXT = WHITE,
-        RED = 1,
-        DEFAULT_ERROR_CRITICAL = RED,
-        GREEN = 2,
-        DEFAULT_OKAY = GREEN,
-        YELLOW = 3,
-        DEFAULT_WARNING = YELLOW,
-        ORANGE = 4,
-        DEFAULT_WARNING_SEVERE = ORANGE
-
-    };
+    
 
     friend Application;
-
+    bool isFocused = false;
     ImU32 pallete[16]{};
 
 
@@ -211,14 +198,14 @@ Console::Console()
     register_default_commands();
     init_commands();
 
-    colorPalette[static_cast<uint8_t>(Console::colors::WHITE)] = IM_COL32(255, 255, 255, 255);    // White(White)
-    colorPalette[static_cast<uint8_t>(Console::colors::RED)] = IM_COL32(255, 0, 0, 255);            // Red
+    colorPalette[static_cast<uint8_t>(console_colors::WHITE)] = IM_COL32(255, 255, 255, 255);    // White(White)
+    colorPalette[static_cast<uint8_t>(console_colors::RED)] = IM_COL32(255, 0, 0, 255);            // Red
 
-    colorPalette[static_cast<uint8_t>(Console::colors::GREEN)] = IM_COL32(0, 150, 0, 255);          // Green(Green)
+    colorPalette[static_cast<uint8_t>(console_colors::GREEN)] = IM_COL32(0, 150, 0, 255);          // Green(Green)
 
-    colorPalette[static_cast<uint8_t>(Console::colors::YELLOW)] = IM_COL32(255, 255, 0, 255);       // Yellow
+    colorPalette[static_cast<uint8_t>(console_colors::YELLOW)] = IM_COL32(255, 255, 0, 255);       // Yellow
 
-    colorPalette[static_cast<uint8_t>(Console::colors::ORANGE)] = IM_COL32(255, 165, 0, 255);
+    colorPalette[static_cast<uint8_t>(console_colors::ORANGE)] = IM_COL32(255, 165, 0, 255);
 }
 
 void Console::log(console_colors colorIndex, const char* fmt, ...) {
@@ -242,7 +229,7 @@ void Console::clear()
 void Console::draw()
 {
     if (!open) { return; }
-
+    isFocused = false;
     // Set window size and begin drawing the window
     ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
 
