@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.17)
-project(MyProject VERSION 1.0 LANGUAGES CXX)
+project(Engine_Demo VERSION 1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -10,7 +10,7 @@ set(SDL_ROOT "D:/C++ Libraries/SDL2")
 set(GLEW_ROOT "D:/C++ Libraries/glew-2.2.0")
 set(GLM_ROOT "D:/C++ Libraries/glm")
 set(IMGUI_ROOT "D:/C++ Libraries/imgui")
-
+set(SDL2_DLL ${SDL_ROOT}/lib/x64/SDL2.dll)
 # Include Directories
 include_directories(
     ${CMAKE_SOURCE_DIR}
@@ -54,13 +54,20 @@ file(GLOB IMGUI_SOURCES
 list(APPEND SOURCES ${IMGUI_SOURCES})
 
 # Define executable target
-add_executable(MyProject ${SOURCES}  "include/entity.h" "include/scene.h" "include/think.h" "include/utility_types.h" "include/textComponent.h" "include/consoleComponent.h" )
+add_executable(Engine_Demo ${SOURCES}  "include/entity.h" "include/scene.h" "include/think.h" "include/utility_types.h" "include/textComponent.h" "include/consoleComponent.h" )
 
 # Link libraries
-target_link_libraries(MyProject
+target_link_libraries(Engine_Demo
     PRIVATE
     ${SDL_ROOT}/lib/x64/SDL2.lib
     ${SDL_ROOT}/lib/x64/SDL2main.lib
     ${OPENGL_gl_LIBRARY}
     ${GLEW_ROOT}/lib/Release/x64/glew32s.lib
+)
+
+# Post-build command to copy SDL2.dll
+add_custom_command(TARGET Engine_Demo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${SDL2_DLL}
+    $<TARGET_FILE_DIR:Engine_Demo>
 )
