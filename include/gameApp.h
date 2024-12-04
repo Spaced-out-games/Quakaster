@@ -1,7 +1,9 @@
 #pragma once
 #include "application.h"
 #include "controller.h"
-#include "UIWidget.h"
+#include "ImGuiButton.h"
+#include "ImGuiLabel.h"
+
 
 
 
@@ -10,6 +12,8 @@
 // Game application. Inherits from Application
 struct gameApp : public Application
 {
+	IWidgetComponent* button = nullptr;
+	IWidgetComponent* label = nullptr;
 	// Bootstrap function implementation as a static function
 	static void bootstrap_impl(Application& app);
 
@@ -22,8 +26,8 @@ struct gameApp : public Application
 		tick = tick_impl;
 		bootstrap = bootstrap_impl;
 	}
-	IWidget test;
 };
+
 
 
 // Bootstrap implementation
@@ -37,18 +41,24 @@ void gameApp::bootstrap_impl(Application& app)
 	textEntity.add_component<consoleComponent>("test", app.console);
 
 	// Adds a think script
-	app.scene.addThink(consoleComponent::think, 1);
+	app.scene.addThink(consoleComponent::think, 5);
 
 	// Adds an event listener
 	ADD_EVENT_LISTENER(app.scene.dispatcher, console_log_request, console_log_request::print);
 
 	// Sets the background color to black
 	glClearColor(0, 0, 0, 0);
+	app.cast<gameApp>().button = new ImGuiButton(app.scene.dispatcher, "Button");
+	app.cast<gameApp>().label  = new ImGuiLabel(app.scene.dispatcher, "Label");
+
+	ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:/Windows/Fonts/Arial.ttf", 24.0f);
 
 
 	#ifdef _DEBUG
 		console_log("Game bootstrapped. Ticking...", console_colors::DEFAULT_TEXT);
 	#endif
+
+	
 }
 
 void gameApp::tick_impl(Application& app)
@@ -83,7 +93,8 @@ void gameApp::tick_impl(Application& app)
 	// Draw imGui console
 	app.window.beginImGuiFrame();
 	app.console.draw();
-	((gameApp*)&app)->test.draw();
+	app.cast<gameApp>().button->draw();
+    app.cast<gameApp>().label->draw();
 	app.window.endImGuiFrame();
 
 	// Tick the scene
