@@ -46,5 +46,12 @@ struct Application
 
         }
     }
+    template<typename T>
+    T& cast()
+    {
+        static_assert(std::is_base_of<Application, T>::value, "Attempted to cast to a type not derivative of Application");
+        return *(T*)(this);
+
+    }
 };
 Application* Application::current_application = nullptr;
