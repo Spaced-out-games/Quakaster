@@ -13,11 +13,13 @@
 
 namespace UI
 {
-
+    // Base widget component class
     struct IWidgetComponent
     {
+        // Pointer to the draw function
         const func_ptr_t<void, IWidgetComponent*> draw_function;
 
+        // Pass the draw function
         IWidgetComponent(func_ptr_t<void, IWidgetComponent*> draw_function = nullptr)
             : draw_function(draw_function)
         {
@@ -27,6 +29,7 @@ namespace UI
             }
         }
 
+        // Basic wrapper for the draw function, with no overhead
         inline void draw()
         {
             draw_function(this);
@@ -34,7 +37,7 @@ namespace UI
     };
 
     
-
+    // An ImGui widget. Contains a list of components to draw
     struct UIWidget
     {
         bool is_open = true;
@@ -43,6 +46,7 @@ namespace UI
         std::vector<std::unique_ptr<IWidgetComponent>> components;
         //std::unordered_map<uint8_t, std::type_index> index_to_type;
 
+        // Draws the widget. You don't need to call Imgui::Begin/end; that's done for you.
         void draw()
         {
             if (!is_open) return;
@@ -61,6 +65,8 @@ namespace UI
             ImGui::End();
         }
 
+
+        // Adds a component to the widget. Make sure you are adding instances of objects that derive from IWidgetComponent
         template <typename T, typename... Args>
         uint8_t add_component(Args&&... args)
         {
@@ -74,12 +80,12 @@ namespace UI
             return index;
         }
 
-
+        // Gets a component reference. 
         template <typename T>
-        T* get_component(uint8_t index) const
+        T& get_component(uint8_t index) const
         {
 
-            return static_cast<T*>(components[index].get());
+            return *(static_cast<T*>(components[index].get()));
         
             //return nullptr;
         }
@@ -88,38 +94,64 @@ namespace UI
 
     };
 
-    struct UIChildWidget : public IWidgetComponent
+    struct EmbeddedWidget
     {
-        UIWidget embedded_widget; // The embedded UIWidget
-        ImVec2 size = { 0, 0 };   // Dimensions for the child widget
-        bool border = false;      // Border option for the child widget
+        bool is_open = true;
+        bool is_focused = false;
+        const char* title = "UI Widget"; // Example title
+        std::vector<std::unique_ptr<IWidgetComponent>> components;
+        //std::unordered_map<uint8_t, std::type_index> index_to_type;
 
-        // Constructor to initialize the child widget
-        UIChildWidget(const ImVec2& size = { 0, 0 }, bool border = false)
-            : IWidgetComponent(&UIChildWidget::draw),
-            size(size),
-            border(border)
-        {}
-
-    private:
-        static void draw(IWidgetComponent* base)
+        // Draws the widget. You don't need to call Imgui::Begin/end; that's done for you.
+        void draw()
         {
-            auto* self = static_cast<UIChildWidget*>(base);
+            if (!is_open) return;
 
-            // Begin the child widget
-            if (!ImGui::BeginChild(self->embedded_widget.title, self->size, self->border))
+            if (!true)//ImGui::BeginChild(title, &is_open))
             {
-                ImGui::EndChild();
+                ImGui::End();
                 return;
             }
 
-            // Draw the embedded widget's components
-            self->embedded_widget.draw();
+            for (const auto& component : components)
+            {
+                component->draw();
+            }
 
-            // End the child widget
-            ImGui::EndChild();
+            //ImGui::End();
         }
+
+
+        // Adds a component to the widget. Make sure you are adding instances of objects that derive from IWidgetComponent
+        template <typename T, typename... Args>
+        uint8_t add_component(Args&&... args)
+        {
+            static_assert(std::is_base_of<IWidgetComponent, T>::value, "T must derive from IWidgetComponent");
+
+            auto component = std::make_unique<T>(std::forward<Args>(args)...);
+            uint8_t index = static_cast<uint8_t>(components.size());
+            //index_to_type[index] = std::type_index(typeid(T)); // Initialize type_index properly
+            components.push_back(std::move(component));
+
+            return index;
+        }
+
+        // Gets a component reference. 
+        template <typename T>
+        T& get_component(uint8_t index) const
+        {
+
+            return *(static_cast<T*>(components[index].get()));
+
+            //return nullptr;
+        }
+
+
+
     };
+
+    // An embedded widget. 
+    
 
     // Updated Button
     struct Button : public IWidgetComponent
@@ -254,5 +286,39 @@ namespace UI
         }
     };
 
+    // A scrolling text region for displaying console messages
+    struct ScrollingTextComponent : public IWidgetComponent
+    {
+        std::vector<std::pair<std::string, ImVec4>> messages; // Log messages with colors
+        bool scroll_to_bottom = false;
 
+        ScrollingTextComponent()
+            : IWidgetComponent(&ScrollingTextComponent::draw) {}
+
+        void add_message(const std::string& message, const ImVec4& color)
+        {
+            messages.emplace_back(message, color);
+            scroll_to_bottom = true;
+        }
+
+    private:
+        static void draw(IWidgetComponent* base)
+        {
+            auto* self = static_cast<ScrollingTextComponent*>(base);
+            ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetTextLineHeightWithSpacing() * 2), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+            for (const auto& [msg, color] : self->messages)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Text, color);
+                ImGui::TextUnformatted(msg.c_str());
+                ImGui::PopStyleColor();
+            }
+
+            if (self->scroll_to_bottom)
+                ImGui::SetScrollHereY(1.0f);
+
+            self->scroll_to_bottom = false;
+            ImGui::EndChild();
+        }
+    };
 }
