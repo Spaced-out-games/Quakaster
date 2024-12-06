@@ -1,8 +1,10 @@
 #include "include/window.h"
 
-
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
+
+// #define WINDOW_WIDTH 1366
+// #define WINDOW_HEIGHT 768
 
 Window::Window(): Window (WINDOW_WIDTH, WINDOW_HEIGHT) {}
 
