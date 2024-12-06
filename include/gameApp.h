@@ -1,9 +1,7 @@
 #pragma once
 #include "application.h"
 #include "controller.h"
-#include "ImGuiButton.h"
-#include "ImGuiLabel.h"
-
+#include "UICore.h"
 
 
 
@@ -12,8 +10,8 @@
 // Game application. Inherits from Application
 struct gameApp : public Application
 {
-	IWidgetComponent* button = nullptr;
-	IWidgetComponent* label = nullptr;
+	UI::IWidgetComponent* button = nullptr;
+	UI::IWidgetComponent* label = nullptr;
 	// Bootstrap function implementation as a static function
 	static void bootstrap_impl(Application& app);
 
@@ -28,7 +26,7 @@ struct gameApp : public Application
 	}
 };
 
-
+static UI::UIWidget widget;
 
 // Bootstrap implementation
 void gameApp::bootstrap_impl(Application& app)
@@ -38,7 +36,7 @@ void gameApp::bootstrap_impl(Application& app)
 
 	// Creates an entity, add a consoleComponent so it can log to the screen
 	static Entity textEntity;
-	textEntity.add_component<consoleComponent>("test", app.console);
+	textEntity.add_component<consoleComponent>("consoleComponent tick", app.console);
 
 	// Adds a think script
 	app.scene.addThink(consoleComponent::think, 5);
@@ -48,11 +46,13 @@ void gameApp::bootstrap_impl(Application& app)
 
 	// Sets the background color to black
 	glClearColor(0, 0, 0, 0);
-	app.cast<gameApp>().button = new ImGuiButton(app.scene.dispatcher, "Button");
-	app.cast<gameApp>().label  = new ImGuiLabel(app.scene.dispatcher, "Label");
+	//app.cast<gameApp>().button = new ImGuiButton(app.scene.dispatcher, "Button");
+	//app.cast<gameApp>().label  = new ImGuiLabel(app.scene.dispatcher, "Label");
 
 	ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:/Windows/Fonts/Arial.ttf", 24.0f);
 
+	widget.add_component<UI::Button>(app.scene.dispatcher, "Button test");
+	widget.add_component<UI::Checkbox>("Test", false);
 
 	#ifdef _DEBUG
 		console_log("Game bootstrapped. Ticking...", console_colors::DEFAULT_TEXT);
@@ -60,6 +60,8 @@ void gameApp::bootstrap_impl(Application& app)
 
 	
 }
+
+
 
 void gameApp::tick_impl(Application& app)
 {
@@ -93,8 +95,9 @@ void gameApp::tick_impl(Application& app)
 	// Draw imGui console
 	app.window.beginImGuiFrame();
 	app.console.draw();
-	app.cast<gameApp>().button->draw();
-    app.cast<gameApp>().label->draw();
+	widget.draw();
+	//app.cast<gameApp>().button->draw();
+    //app.cast<gameApp>().label->draw();
 	app.window.endImGuiFrame();
 
 	// Tick the scene
