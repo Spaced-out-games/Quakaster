@@ -90,12 +90,13 @@ void gameApp::tick_impl(Application& app)
 
 	// Fire the event (passed by reference)
 	//EVENT_FIRE(app.scene.dispatcher, console_log_request, request);
-	
+	static bool b;
 
 	// Draw imGui console
 	app.window.beginImGuiFrame();
 	app.console.draw();
 	widget.draw();
+	ImGui::ShowDemoWindow(&b);
 	//app.cast<gameApp>().button->draw();
     //app.cast<gameApp>().label->draw();
 	app.window.endImGuiFrame();
