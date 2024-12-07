@@ -94,12 +94,17 @@ namespace UI
 
     };
 
+    // An embedded widget. 
     struct EmbeddedWidget
     {
         bool is_open = true;
         bool is_focused = false;
-        const char* title = "UI Widget"; // Example title
+        const char* title = "UI Child"; // Example title
         std::vector<std::unique_ptr<IWidgetComponent>> components;
+        ImVec2 size;
+        ImGuiChildFlags  child_flags;
+        ImGuiWindowFlags window_flags;
+
         //std::unordered_map<uint8_t, std::type_index> index_to_type;
 
         // Draws the widget. You don't need to call Imgui::Begin/end; that's done for you.
@@ -107,9 +112,9 @@ namespace UI
         {
             if (!is_open) return;
 
-            if (!true)//ImGui::BeginChild(title, &is_open))
+            if (ImGui::BeginChild(title, size, child_flags, window_flags))
             {
-                ImGui::End();
+                ImGui::EndChild();
                 return;
             }
 
@@ -118,7 +123,7 @@ namespace UI
                 component->draw();
             }
 
-            //ImGui::End();
+            ImGui::EndChild();
         }
 
 
@@ -149,9 +154,6 @@ namespace UI
 
 
     };
-
-    // An embedded widget. 
-    
 
     // Updated Button
     struct Button : public IWidgetComponent
