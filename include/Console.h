@@ -101,7 +101,20 @@ struct console_message {
 class Scene;
 class Application;
 
+class Console;
 
+// Event fired when the `enter` key was 
+struct ConsoleCommandLineEvent
+{
+    ConsoleCommandLineEvent(Console& target, std::string& command) : target(&target), command(&command) {}
+    Console* target;
+    std::string* command;
+
+    static void default_eventListener(ConsoleCommandLineEvent& event)
+    {
+        std::cout << (*event.command);
+    }
+};
 
 
 
@@ -116,7 +129,7 @@ class Console
     
 
     friend Application;
-    bool isFocused = false;
+    
     ImU32 pallete[16]{};
 
 
@@ -147,6 +160,8 @@ class Console
         Scene* my_scene = nullptr;
 
 public:
+
+    bool focused = false;
 
     // Whether the Console is open or not
     bool open = true;
@@ -180,9 +195,13 @@ public:
 
     // Creates a new log
     void add_log(const console_message& msg);
+
+
+    
 };
 
 #include "scene.h"
+
 
 
 Console::Console(Scene& scene) : history_pos(-1), scrollToBottom(false) {
@@ -229,7 +248,8 @@ void Console::clear()
 void Console::draw()
 {
     if (!open) { return; }
-    isFocused = false;
+    focused = false; // Reset focus status
+
     // Set window size and begin drawing the window
     ImGui::SetNextWindowSize(ImVec2(720, 720), ImGuiCond_FirstUseEver);
 
@@ -237,6 +257,11 @@ void Console::draw()
     if (!ImGui::Begin(title, &open)) {
         ImGui::End();
         return;
+    }
+
+    // Update focus status
+    if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+        focused = true;
     }
 
     if (ImGui::Button("Clear"))
@@ -280,6 +305,9 @@ void Console::draw()
     // Input text for commands
     if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
         std::string inputStr(input_buffer);
+
+        my_scene->dispatcher.trigger<ConsoleCommandLineEvent>({ *this, inputStr });
+
         auto spaceIndex = inputStr.find(' ');
         std::string command = inputStr.substr(0, spaceIndex);
 
@@ -392,7 +420,7 @@ struct console_log_request {
     console_colors color_ID = console_colors::DEFAULT_TEXT;
     Console* target = nullptr;
     console_log_request(std::string msg, Console& console, console_colors color_ID = console_colors::DEFAULT_TEXT) : message(msg), target(&console), color_ID(color_ID) {}
-    static void print(console_log_request& event) {
+    static void defaultEventListener(console_log_request& event) {
         event.target->log(event.color_ID, event.message.c_str());
     }
 };
