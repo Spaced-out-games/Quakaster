@@ -2,6 +2,7 @@
 #include "application.h"
 #include "controller.h"
 #include "UICore.h"
+#include "KeyBindBase.h"
 
 
 
