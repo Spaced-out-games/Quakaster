@@ -429,6 +429,6 @@ void console_log(std::string message, console_colors color_ID = console_colors::
 {
 
     console_log_request console_message(message, Application::current_application->console, color_ID);
-    EVENT_FIRE(Application::current_application->scene.dispatcher, console_log_request, console_message);
+    fire_event(Application::current_application->scene.dispatcher, console_message);
 }
 
