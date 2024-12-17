@@ -51,26 +51,41 @@ struct Application
         scene.owner = this;
         current_application = this;
 
+
+
         //ADD_EVENT_LISTENER(scene.dispatcher, appOpenEvent, appOpenEvent::on_app_open);
         //ADD_EVENT_LISTENER(scene.dispatcher, appCloseEvent, appCloseEvent::on_app_close);
 
     }
 
     // Correctly declare pure virtual functions
-    func_ptr_t<void, Application&> bootstrap = nullptr;
-    func_ptr_t<void, Application&> tick = nullptr;
+    func_ptr_t<void, Application&> bootstrap_fn = nullptr;
+    func_ptr_t<void, Application&> tick_fn = nullptr;
+    func_ptr_t<void, Application&> draw_fn = nullptr;
 
 
-    void run()
+
+    inline void run()
     {
         //EVENT_FIRE(scene.dispatcher, appCloseEvent, *this);
-        bootstrap(*this);
+        bootstrap_fn(*this);
         while (isRunning)
         {
-            tick(*this);
+            tick_fn(*this);
 
         }
     }
+    inline void tick()
+    {
+        tick_fn(*this);
+    }
+
+    inline void draw()
+    {
+        draw_fn(*this);
+    }
+
+
     template<typename T>
     T& cast()
     {
