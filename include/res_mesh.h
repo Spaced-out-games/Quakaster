@@ -63,7 +63,6 @@ struct res_mesh{
         glDrawElements(PrimitiveType, static_cast<GLsizei>(index_count), GL_UNSIGNED_INT, 0);
         unbind();
     }
-    /*
     void addVec2(GLuint index, std::size_t offset) {
         glVertexAttribPointer(index, 2, GL_FLOAT, GL_FALSE, sizeof(vertex_t), (GLvoid*)offset);
         glEnableVertexAttribArray(index);
@@ -161,7 +160,7 @@ struct res_mesh{
         glVertexAttribLPointer(index, 4, GL_DOUBLE, sizeof(vertex_t), (GLvoid*)offset);
         glEnableVertexAttribArray(index);
     }
-    */
+
 
 };
 

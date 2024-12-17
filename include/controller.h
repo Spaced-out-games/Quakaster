@@ -1,144 +1,113 @@
+#pragma once
 #include <SDL.h>
 #include <functional>
 #include "scene.h"
+#include "entity.h"
 
-class SDLKeyConverter {
+#define ADD_CONTROLLER_LISTENERS \
+void add_event_listeners() \
+    { \
+        ADD_EVENT_LISTENER(app.scene.dispatcher, KeyPressEvent, on_KeyPress); \
+        ADD_EVENT_LISTENER(app.scene.dispatcher, KeyHoldEvent, on_KeyHeld); \
+        ADD_EVENT_LISTENER(app.scene.dispatcher, KeyReleaseEvent, on_KeyRelease); \
+        ADD_EVENT_LISTENER(app.scene.dispatcher, MouseClickEvent, on_MouseClick); \
+        ADD_EVENT_LISTENER(app.scene.dispatcher, MouseHoldEvent, on_MouseClickHold); \
+        ADD_EVENT_LISTENER(app.scene.dispatcher, MouseReleaseEvent, on_MouseClickRelease); \
+        ADD_EVENT_LISTENER(app.scene.dispatcher, MouseButtonClickEvent, on_MouseButtonClick); \
+    } \
+
+// Converts a key code to its representation
+class SDL_Utils {
 public:
-    // Convert SDL_Keycode to a representative string
-    static std::string to_string(SDL_Keycode keycode) {
-        // Handle alphanumeric and special keys
-        switch (keycode) {
-        case SDLK_a: case SDLK_b: case SDLK_c: case SDLK_d: case SDLK_e:
-        case SDLK_f: case SDLK_g: case SDLK_h: case SDLK_i: case SDLK_j:
-        case SDLK_k: case SDLK_l: case SDLK_m: case SDLK_n: case SDLK_o:
-        case SDLK_p: case SDLK_q: case SDLK_r: case SDLK_s: case SDLK_t:
-        case SDLK_u: case SDLK_v: case SDLK_w: case SDLK_x: case SDLK_y:
-        case SDLK_z:
-            return std::string(1, static_cast<char>(keycode));
-        case SDLK_0: case SDLK_1: case SDLK_2: case SDLK_3: case SDLK_4:
-        case SDLK_5: case SDLK_6: case SDLK_7: case SDLK_8: case SDLK_9:
-            return std::string(1, static_cast<char>(keycode));
-        case SDLK_SPACE: return " ";
-        case SDLK_RETURN: return "[ENTER]";
-        case SDLK_BACKSPACE: return "[BACKSPACE]";
-        case SDLK_ESCAPE: return "[ESC]";
-        case SDLK_LSHIFT: return "[LSHIFT]";
-        case SDLK_RSHIFT: return "[RSHIFT]";
-        case SDLK_LCTRL: return "[LCTRL]";
-        case SDLK_RCTRL: return "[RCTRL]";
-        case SDLK_TAB: return "[TAB]";
-            // Add more keys as needed
-        default: return "[UNKNOWN]";
-        }
+    // Converts a key code to its representation
+    static const char* repr(SDL_Keycode keycode) {
+        static const char* unknown = "[UNKNOWN]";
+        const char* keyName = SDL_GetKeyName(keycode);
+        return keyName ? keyName : unknown;
     }
 };
 
+// Event structures
 struct KeyPressEvent {
-    char key;
-    Uint16 mod;
+
+    char key;    // The key that was pressed
+    Uint16 mod;  // Modifier keys (e.g., Shift, Ctrl)
+
     static void print(KeyPressEvent event) {
-        console_log(std::string("Recieved KeyPressEvent with key") + SDLKeyConverter::to_string(event.key), console_colors::RED);
+        console_log(std::string("Received KeyPressEvent with key ") + SDL_Utils::repr(event.key), console_colors::RED);
     }
 };
 
 struct KeyHoldEvent {
-    SDL_Keycode key;
-    Uint16 mod;
+    SDL_Keycode key; // The key being held down
+    Uint16 mod;      // Modifier keys
 };
 
 struct KeyReleaseEvent {
-    SDL_Keycode key;
-    Uint16 mod;
+    SDL_Keycode key; // The key that was released
+    Uint16 mod;      // Modifier keys
 };
 
 struct MouseClickEvent {
-    Uint8 button;
-    int x, y;
+    Uint8 button; // The mouse button that was clicked
+    int x, y;     // Mouse position at the time of click
 };
 
 struct MouseHoldEvent {
-    Uint8 button;
-    int x, y;
+    Uint8 button; // The mouse button being held down
+    int x, y;     // Mouse position
 };
 
 struct MouseReleaseEvent {
-    Uint8 button;
-    int x, y;
+    Uint8 button; // The mouse button that was released
+    int x, y;     // Mouse position at the time of release
 };
 
 struct MouseButtonClickEvent {
-    Uint8 button;
-    int x, y;
-    Uint32 clickCount;
+    Uint8 button; // The mouse button that was clicked
+    int x, y;     // Mouse position at the time of click
+    Uint32 clickCount; // Number of clicks
 };
 
 struct MouseMoveEvent {
-    int x, y; // Current position
-    int deltaX, deltaY; // Delta since last poll
+    int x, y;     // Current mouse position
+    int deltaX, deltaY; // Change in position since last event
 };
 
-
+// The Controller class handles input events from SDL and dispatches them
 class Controller {
 public:
-    Application& app;
+    Application& app; // Reference to the application instance
 
-    // Tracks the last mouse position
+    // Tracks the last mouse position for movement events
     int lastMouseX = 0;
     int lastMouseY = 0;
 
+    // Derived classes must register their own implementations of event handlers
+    // ADD_CONTROLLER_LISTENERS macro can be used for this purpose
+
+    // Event handler functions (to be overridden in derived classes)
+    static void on_KeyPress(KeyPressEvent evt) {};
+    static void on_KeyHeld(KeyHoldEvent evt) {};
+    static void on_KeyRelease(KeyReleaseEvent evt) {};
+    static void on_MouseClick(MouseClickEvent evt) {};
+    static void on_MouseClickHold(MouseHoldEvent evt) {};
+    static void on_MouseClickRelease(MouseReleaseEvent evt) {};
+    static void on_MouseButtonClick(MouseButtonClickEvent evt) {};
+
+    // Constructor: Initializes the Controller with the given application instance
     explicit Controller(Application& app)
-        : app(app), lastMouseX(0), lastMouseY(0)
-    {
-        ADD_EVENT_LISTENER(app.scene.dispatcher, KeyPressEvent, default_move);
-    }
+        : app(app), lastMouseX(0), lastMouseY(0) {}
 
-    static void default_move(KeyPressEvent event) {
-
-        switch (event.key)
-        {
-        case(SDLK_w):
-            //console_log("w key event");
-            //break;
-
-
-        default:
-            #ifdef _DEBUG
-                std::stringstream ss;
-                ss << "Key '" << SDLKeyConverter::to_string(event.key) << "' pressed";
-                console_log(ss.str());
-                #endif // _DEBUG
-            break;
-        }
-
-
-        if (event.key == SDLK_w)
-        {
-            console_log("w key event");
-
-        }
-        if (event.key == SDLK_ESCAPE)
-        {
-
-        }
-    }
-
-
-    void processInput() {
+    // Processes input events from SDL
+    void dispatchIOEvents() {
         SDL_Event event;
 
-
-
-
         while (SDL_PollEvent(&event)) {
-
-            // Escape key is handled differently. It toggles the console, regardless of whether the console is open
-            // if(event.type == SDL_KEYDOWN)
-            if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYDOWN)
-            {
+            // Toggle console when Escape is pressed
+            if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYDOWN) {
                 Application::current_application->console.open ^= 1;
-
             }
-
 
             // Step 1: Send event to ImGui if console is open
             if (app.console.open) {
@@ -209,5 +178,46 @@ public:
                 break;
             }
         }
+    }
+};
+
+// The basic_controller class is a concrete implementation of the Controller class
+class basic_controller : public Controller {
+public:
+
+    Entity& target;
+    basic_controller(Application& app, Entity& pawn) : Controller(app), target(pawn) { add_event_listeners(); }
+
+    // Register event listeners for input events
+    ADD_CONTROLLER_LISTENERS
+
+        // Override the event handler functions to provide specific behavior
+        static void on_KeyPress(KeyPressEvent event) {
+
+        console_log(SDL_Utils::repr(event.key));
+    }
+
+    static void on_KeyHeld(KeyHoldEvent event) {
+        console_log(SDL_Utils::repr(event.key));
+    }
+
+    static void on_KeyRelease(KeyReleaseEvent event) {
+        // Handle key release event
+    }
+
+    static void on_MouseClick(MouseClickEvent event) {
+        // Handle mouse click event
+    }
+
+    static void on_MouseClickHold(MouseHoldEvent event) {
+        // Handle mouse click hold event
+    }
+
+    static void on_MouseClickRelease(MouseReleaseEvent event) {
+        // Handle mouse release event
+    }
+
+    static void on_MouseButtonClick(MouseButtonClickEvent event) {
+        // Handle mouse button click event
     }
 };

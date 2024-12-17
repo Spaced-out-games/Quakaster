@@ -3,110 +3,74 @@
 #include "controller.h"
 #include "UICore.h"
 
-
-
-
-
 // Game application. Inherits from Application
 struct gameApp : public Application
 {
-	UI::IWidgetComponent* button = nullptr;
-	UI::IWidgetComponent* label = nullptr;
-	// Bootstrap function implementation as a static function
-	static void bootstrap_impl(Application& app);
+    // Bootstrap function implementation as a static function
+    static void bootstrap_impl(Application& app);
 
-	// Tick function implementation as a static function
-	static void tick_impl(Application& app);
+    // Tick function implementation as a static function
+    static void tick_impl(Application& app);
 
+    // Draw function implementation as a static function
+    static void draw_impl(Application& app);
 
-	static void draw_impl(Application& app);
-
-	// Constructor creates the application and assigns function pointers
-	gameApp(): Application()
-	{
-		tick = tick_impl;
-		bootstrap = bootstrap_impl;
-	}
+    // Constructor creates the application and assigns function pointers
+    gameApp() : Application()
+    {
+        tick_fn = tick_impl;
+        bootstrap_fn = bootstrap_impl;
+        draw_fn = draw_impl;
+    }
 };
 
-//static UI::UIWidget widget;
+// Ensure proper initialization if Entity requires it
+static Entity textEntity;  // Make sure this is correctly defined
 
 // Bootstrap implementation
 void gameApp::bootstrap_impl(Application& app)
 {
-	// Sets the scene: somewhere someplace somewhen.
-	Entity::setCurrentScene(app.scene);
+    // Sets the scene: somewhere, some place, some time.
+    Entity::setCurrentScene(app.scene);
 
-	// Creates an entity, add a consoleComponent so it can log to the screen
-	static Entity textEntity;
-	textEntity.add_component<consoleComponent>("consoleComponent tick", app.console);
+    // Creates an entity, adds a console component
+    textEntity.add_component<glm::vec3>();  // Ensure this is valid
 
-	// Adds a think script
-	//app.scene.addThink(consoleComponent::think, 5);
+    // Adds event listeners for console events
+    ADD_EVENT_LISTENER(app.scene.dispatcher, console_log_request, console_log_request::defaultEventListener);
+    ADD_EVENT_LISTENER(app.scene.dispatcher, ConsoleCommandLineEvent, ConsoleCommandLineEvent::default_eventListener);
 
-	// Adds an event listener
-	ADD_EVENT_LISTENER(app.scene.dispatcher, console_log_request, console_log_request::defaultEventListener);
-	ADD_EVENT_LISTENER(app.scene.dispatcher, ConsoleCommandLineEvent, ConsoleCommandLineEvent::default_eventListener);
-
-
-	// Sets the background color to black
-	glClearColor(0, 0, 0, 0);
-	//app.cast<gameApp>().button = new ImGuiButton(app.scene.dispatcher, "Button");
-	//app.cast<gameApp>().label  = new ImGuiLabel(app.scene.dispatcher, "Label");
-
-	ImFont* font = ImGui::GetIO().Fonts->AddFontFromFileTTF("C:/Windows/Fonts/Arial.ttf", 24.0f);
-
-	//widget.add_component<UI::Button>(app.scene.dispatcher, "Button test");
-	//widget.add_component<UI::Checkbox>("Test", false);
-
-	#ifdef _DEBUG
-		
-	#endif
-
-	
+    // Sets the background color to black
+    glClearColor(0, 0, 0, 0);
+    // Additional UI setup can go here if needed
 }
 
-
-
+// Tick function implementation
 void gameApp::tick_impl(Application& app)
 {
-	// Creates a static event. Just to make SDL happy.
-	SDL_Event event;
-	static Controller inputController(app);
+    // Creates a static event. Just to make SDL happy.
+    SDL_Event event;
 
-	
-	// A console log event. When it's sent, the system will print the text to the console
-	console_log_request request("Test event", app.console);
+    static basic_controller inputController(app, textEntity);  // Ensure this is properly defined
 
+    // A console log event. When it's sent, the system will print the text to the console
+    console_log_request request("Test event", app.console);
 
-	// Poll SDL events
-	/*
-	while (SDL_PollEvent(&event)) {
-		ImGui_ImplSDL2_ProcessEvent(&event);  // Process events for ImGui
-		if (event.type == SDL_QUIT) {
-			app.window.quit();
-		}
-	}*/
+    inputController.dispatchIOEvents();
 
-	inputController.processInput();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // Clear buffers
 
+    // Draw ImGui console
+    app.draw();
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Fire the event (passed by reference)
-	//EVENT_FIRE(app.scene.dispatcher, console_log_request, request);
-
-	// Draw imGui console
-	app.window.beginImGuiFrame();
-	app.console.draw();
-	app.window.endImGuiFrame();
-
-	// Tick the scene
-	app.scene.tick();
-
+    // Tick the scene
+    app.scene.tick();
 }
 
+// Draw function implementation
 void gameApp::draw_impl(Application& app)
 {
-
+    app.window.beginImGuiFrame();  // Begin ImGui frame
+    app.console.draw();  // Draw console
+    app.window.endImGuiFrame();  // End ImGui frame
 }

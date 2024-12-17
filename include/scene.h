@@ -22,7 +22,7 @@ public:
 	std::vector<thinkScript> scripts;
 
 	// Attempts to call all think scripts, but only succeeds if it's actually scheduled to do so
-	void tick()
+	inline void tick()
 	{
 		for (thinkScript& script : scripts)
 		{
@@ -36,9 +36,26 @@ public:
 	}
 
 	// Adds a think script to the game world
-	void addThink(func_ptr_t<void, Scene&> func, int tps = 60) {
+	inline void addThink(func_ptr_t<void, Scene&> func, int tps = 60) {
 		scripts.emplace_back(func, tps);
 	}
+
+	template <typename T, typename... Args>
+	inline void fire_event(Args&&... args) {
+		dispatcher.trigger<T>(T{ std::forward<Args>(args)... }); // Construct the event in place
+	}
+
+	// Overload for passing a pre-constructed event
+	template <typename T>
+	inline void fire_event(const T& event_instance) {
+		dispatcher.trigger<T>(event_instance); // Use a copy of the instance
+	}
+
+	template <typename T>
+	inline void fire_event(T&& event_instance) {
+		dispatcher.trigger<T>(std::forward<T>(event_instance)); // Perfectly forward the instance
+	}
+
 
 };
 
