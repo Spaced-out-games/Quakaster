@@ -24,6 +24,11 @@ public:
     {
     }
 
+    thinkScript(const thinkScript&) = default;
+    thinkScript(thinkScript&&) = default;
+    thinkScript& operator=(const thinkScript&) = default;
+    thinkScript& operator=(thinkScript&&) = default;
+
     // Tick interval in microseconds
     std::chrono::microseconds tick_interval;
 

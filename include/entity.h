@@ -29,7 +29,8 @@ void fire_event(entt::dispatcher& dispatcher, T&& event_instance) {
 /// <summary>
 /// Basic Entity. Inherit from this to construct your own types that add components in their constructor.
 /// INHERITED TYPES MUST NOT HAVE ADDITIONAL DATA ENTRIES. THIS ALLOWS STRAIGHTFORWARD AND SAFE DOWNCASTING
-/// </summary
+
+
 class Entity
 {
 public:
