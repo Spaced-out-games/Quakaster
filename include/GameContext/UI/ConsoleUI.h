@@ -3,6 +3,7 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
 #include "imgui.h"
+#include <include/GameContext/server/ConsoleInterpreter.h>
 
 // Size of a single console command
 #define CONSOLE_BUFFER_SIZE 256
@@ -10,37 +11,26 @@
 // Which character is used to accent user input within the integrated console
 #define CONSOLE_ACCENT_CHAR '~'
 
-enum class console_color : uint8_t
-{
-    WHITE = 0,
-    DEFAULT_TEXT = WHITE,
-    RED = 1,
-    DEFAULT_ERROR_CRITICAL = RED,
-    GREEN = 2,
-    DEFAULT_OKAY = GREEN,
-    YELLOW = 3,
-    DEFAULT_WARNING = YELLOW,
-    ORANGE = 4,
-    DEFAULT_WARNING_SEVERE = ORANGE
-};
 
-struct console_message {
-    console_color color;
-    std::string message;
-    console_message(std::string message, console_color color = console_color::DEFAULT_TEXT) : color(color), message(message) {}
-
-    console_message& operator+=(std::string append_string)
-    {
-        message += append_string;
-    }
-};
+#include "console_message.h"
 
 
 
-
-
+struct UIContext;
 
 struct ConsoleUI
 {
-
+    bool is_active(UIContext& context);
+    ConsoleInterpreter interpreter;
+    eventHandler& event_handler;
+    ConsoleUI(ConsoleInterpreter& interpreter, eventHandler& event_handler) :
+        interpreter(interpreter),
+        event_handler(event_handler) {}
 };
+
+#include <include/GameContext/UI/UIContext.h>
+
+bool ConsoleUI::is_active(UIContext& context)
+{
+    return context.
+}

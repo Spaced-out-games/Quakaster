@@ -54,7 +54,7 @@ file(GLOB IMGUI_SOURCES
 list(APPEND SOURCES ${IMGUI_SOURCES})
 
 # Define executable target
-add_executable(Engine_Demo ${SOURCES}  "include/entity.h" "include/scene.h" "include/think.h" "include/utility_types.h" "include/textComponent.h" "include/consoleComponent.h" )
+add_executable(Engine_Demo ${SOURCES}   "include/GameContext/GameContext.h" "include/GameContext/client/application.h" "include/GameContext/Window/window.h" "include/GameContext/server/server.h" "include/GameContext/server/ConsoleInterpreter.h" "include/GameContext/Scene.h" "include/GameContext/Window/Renderer.h" "include/GameContext/client/Client.h" "include/GameContext/UI/UIContext.h" "include/GameContext/UI/ConsoleUI.h" "include/GameContext/IO/controller.h" "include/GameContext/IO/controllerEvents.h" "include/GameContext/UI/console_message.h")
 
 # Link libraries
 target_link_libraries(Engine_Demo
