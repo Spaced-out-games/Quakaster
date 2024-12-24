@@ -92965,3 +92965,4 @@ sink(sigh<Ret(Args...), Allocator> &) -> sink<sigh<Ret(Args...), Allocator>>;
 #endif
 
 // IWYU pragma: end_exports
+using eventHandler = entt::dispatcher;
