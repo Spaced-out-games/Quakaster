@@ -1,19 +1,44 @@
 #pragma once
-#include "ConsoleUI.h"
+#include <cstdint>
+#include <vector>
+#include <include/GameContext/UI/UIBase.h>
+#include <include/GameContext/server/ConsoleInterpreter.h> // For ConsoleInterpreter
+#include <include/thirdparty/entt.hpp> // For eventHandler
+
+// Forward declaration of ConsoleUI
+struct ConsoleUI;
+
+
 
 struct UIContext
 {
-	// Whether UI is selected
-	uint8_t activeElement;
+    UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter);
 
-	// the console interface
-	ConsoleUI console;
+    // For handling events
+    eventHandler& event_handler;
 
-	// pauses to the console UI element
-	void pause()
-	{
+    ConsoleInterpreter& interpreter;
+    // UI Elements
+    std::vector<UIBase*> elements;
 
-		activeElement = 1;
-	}
+    // Current element
+    UIBase* current_element;
 
+    // Pointer to the console interface
+    ConsoleUI* console;
+
+    // Pauses to the console UI element
+    void pause()
+    {
+
+    }
 };
+
+#include <include/GameContext/UI/ConsoleUI.h>
+
+UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter) : event_handler(event_handler), interpreter(interpreter)
+{
+    ConsoleUI* console = new ConsoleUI{interpreter, event_handler, *this};
+
+    elements.emplace_back(console);
+}
