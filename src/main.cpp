@@ -13,8 +13,6 @@
 
 int main() {
     GameContext context;
-	while (true)
-	{
+	context.run();
 
-	}
 }

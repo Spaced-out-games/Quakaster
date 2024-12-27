@@ -5,7 +5,17 @@
 
 struct GameContext
 {
+	bool running = true;
+	ConsoleInterpreter interpreter;
+	//(eventHandler& event_handler, ConsoleInterpreter& interpreter)
+	GameContext() : app(event_handler, interpreter) {}
 	eventHandler event_handler;
 	Application app;
-
+	virtual void run()
+	{
+		while (running)
+		{
+			app.ui_context.draw();
+		}
+	}
 };
