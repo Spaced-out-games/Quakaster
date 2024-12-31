@@ -4,6 +4,7 @@
 #include <include/GameContext/UI/UIBase.h>
 #include <include/GameContext/server/ConsoleInterpreter.h> // For ConsoleInterpreter
 #include <include/thirdparty/entt.hpp> // For eventHandler
+#include <include/GameContext/window/Renderer.h>
 
 // Forward declaration of ConsoleUI
 struct ConsoleUI;
@@ -12,8 +13,8 @@ struct ConsoleUI;
 
 struct UIContext
 {
-
-    UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter);
+    Renderer& renderer;
+    UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer);
     ~UIContext()
     {
         for (size_t i = 0; i < elements.size(); i++)
@@ -24,6 +25,10 @@ struct UIContext
 
     inline void draw()
     {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame();//window);
+        ImGui::NewFrame();
+
         for (size_t i = 0; i < elements.size(); i++)
         {
             if (elements[i]->visible)
@@ -31,6 +36,9 @@ struct UIContext
                 elements[i]->draw();
             }
         }
+        ImGui::Render();
+
+
     }
 
     inline void add_UIElement(UIBase* new_UIelement) { elements.push_back(new_UIelement); }
@@ -61,7 +69,7 @@ struct UIContext
 
 #include <include/GameContext/UI/ConsoleUI.h>
 
-UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter) : event_handler(event_handler), interpreter(interpreter)
+UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer) : event_handler(event_handler), interpreter(interpreter), renderer(renderer)
 {
     //ConsoleUI* console = new ConsoleUI{interpreter, event_handler, *this};
     add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });

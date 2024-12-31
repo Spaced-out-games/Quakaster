@@ -78,6 +78,10 @@ struct ConsoleUI: public InputBase, public UIBase
             ImGui::End();
             return;
         }
+        else
+        {
+            std::cout << "Begin Failed";
+        }
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
             ui_context.current_element = this;
         }
@@ -134,6 +138,7 @@ struct ConsoleUI: public InputBase, public UIBase
 
 
         }
+        ImGui::End();
 
     }
 

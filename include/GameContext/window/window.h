@@ -5,7 +5,8 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
-#include "Renderer.h"
+// #include "Renderer.h"
+#include <include/GameContext/window/Renderer.h>
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
@@ -13,6 +14,8 @@
 
 class Window {
 public:
+    //Renderer renderer;
+
     Window();
     Window(int width, int height);
     ~Window();
@@ -31,14 +34,19 @@ public:
     void renderToTexture();
     GLuint renderTexture = 0;
 
+    inline Renderer& get_renderer() { return renderer; }
+
 private:
     void createFramebuffer();
     Renderer renderer;
     SDL_Window* window = nullptr;
     SDL_GLContext context = nullptr;
     glm::ivec2 dimensions;
-    ImGuiContext* ImGUIContext = nullptr;
-    ImGuiIO* ImGUI_IO = nullptr;
+    // ImGuiContext* ImGUIContext = nullptr;
+
+
+
+    // ImGuiIO* ImGUI_IO = nullptr;
     bool running = true;
 };
 
@@ -87,9 +95,9 @@ Window::Window(int width, int height) {
 
     // Initialize ImGui
     IMGUI_CHECKVERSION();
-    ImGUIContext = ImGui::CreateContext();
-    ImGUI_IO = &(ImGui::GetIO());
-    ImGUI_IO->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Optional: Enable keyboard controls
+    renderer.gui_context = ImGui::CreateContext();
+    renderer.gl_context = &(ImGui::GetIO());
+    // renderer.gl_context->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Optional: Enable keyboard controls
     ImGui::StyleColorsDark();
 
     // Initialize ImGui backends

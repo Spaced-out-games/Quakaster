@@ -4,7 +4,7 @@
 
 struct Application
 {
-	Application(eventHandler& event_handler, ConsoleInterpreter& interpreter) : ui_context( event_handler, interpreter )
+	Application(eventHandler& event_handler, ConsoleInterpreter& interpreter) : ui_context( event_handler, interpreter, window.get_renderer() )
 	{
 
 	}

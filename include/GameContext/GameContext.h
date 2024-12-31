@@ -2,6 +2,11 @@
 #include <include/thirdparty/entt.hpp>
 #include "include/GameContext/window/window.h"
 #include "include/GameContext/client/application.h"
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_opengl3.h>
+
+
 
 struct GameContext
 {
