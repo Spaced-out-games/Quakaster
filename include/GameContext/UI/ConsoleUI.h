@@ -12,13 +12,14 @@
 
 // Size of a single console command
 #define CONSOLE_BUFFER_SIZE 256
+#define CONSOLE_BUFFER_SIZE 256
 
 // Which character is used to accent user input within the integrated console
 #define CONSOLE_ACCENT_CHAR '~'
 
 struct UIContext;
 
-struct ConsoleUI: public InputBase, public UIBase
+struct ConsoleUI: public UIBase
 {
     // communication network with components
 
@@ -43,7 +44,7 @@ struct ConsoleUI: public InputBase, public UIBase
 
     ImU32 colorPallete[16];
     
-    inline bool is_focused() { return ui_context.current_element = this; }
+    
 
     void add_log(const console_message& consoleMsg);
 
@@ -62,10 +63,13 @@ struct ConsoleUI: public InputBase, public UIBase
         ui_context(ui_context) {}
     void draw() override
     {
-        if (!visible) return;
+        //if (!visible) return;
+
+        //ImGui::ShowDemoWindow();
 
         // reset focus to nullptr
-        //ui_context.current_element = nullptr;
+        
+
 
         // start a new window, and don't have it be contingent on a pre-existing .ini
         ImGui::SetNextWindowSize({ 720, 720 }, false);
@@ -75,16 +79,15 @@ struct ConsoleUI: public InputBase, public UIBase
         // Try to begin ImGui, and if it fails, return early
         if (!ImGui::Begin(title, &visible))
         {
+            std::cout << "Begin Failed";
             ImGui::End();
             return;
         }
         else
         {
-            std::cout << "Begin Failed";
+            
         }
-        if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
-            ui_context.current_element = this;
-        }
+
 
 
 
@@ -142,10 +145,6 @@ struct ConsoleUI: public InputBase, public UIBase
 
     }
 
-    void on_event(const SDL_Event& event) override
-    {
-        ImGui_ImplSDL2_ProcessEvent(&event);
-    }
 };
 
 

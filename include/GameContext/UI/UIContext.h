@@ -5,6 +5,8 @@
 #include <include/GameContext/server/ConsoleInterpreter.h> // For ConsoleInterpreter
 #include <include/thirdparty/entt.hpp> // For eventHandler
 #include <include/GameContext/window/Renderer.h>
+#include <include/GameContext/IO/InputBase.h>
+// #include <include/GameContext/IO/controller.h>
 
 // Forward declaration of ConsoleUI
 struct ConsoleUI;
@@ -13,8 +15,11 @@ struct ConsoleUI;
 
 struct UIContext
 {
+    // InputBase* current_controller;
+    
     Renderer& renderer;
-    UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer);
+    Window& window;
+    UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window);
     ~UIContext()
     {
         for (size_t i = 0; i < elements.size(); i++)
@@ -23,12 +28,11 @@ struct UIContext
         }
     }
 
+
+
     inline void draw()
     {
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplSDL2_NewFrame();//window);
-        ImGui::NewFrame();
-
+        // assign to the controller by default
         for (size_t i = 0; i < elements.size(); i++)
         {
             if (elements[i]->visible)
@@ -36,7 +40,19 @@ struct UIContext
                 elements[i]->draw();
             }
         }
-        ImGui::Render();
+
+
+
+
+
+        //SDL_PollEvent(&evt);
+
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+
+
+
+        // Swap buffers, etc.
+        //SDL_GL_SwapWindow(window.sdl_window);
 
 
     }
@@ -55,7 +71,7 @@ struct UIContext
     std::vector<UIBase*> elements;
 
     // Current element
-    UIBase* current_element = nullptr;
+    //InputBase* current_element = nullptr;
 
     // Pointer to the console interface
     ConsoleUI* console;
@@ -69,9 +85,12 @@ struct UIContext
 
 #include <include/GameContext/UI/ConsoleUI.h>
 
-UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer) : event_handler(event_handler), interpreter(interpreter), renderer(renderer)
+UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window) : event_handler(event_handler), interpreter(interpreter), renderer(renderer), window(window)
 {
     //ConsoleUI* console = new ConsoleUI{interpreter, event_handler, *this};
     add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });
+    
+    
+    
     //elements.emplace_back(console);
 }

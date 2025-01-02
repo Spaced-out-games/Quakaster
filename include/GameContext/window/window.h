@@ -24,8 +24,8 @@ public:
     void resize(int new_width, int new_height);
     bool is_running() const { return running; }
     void quit() { running = false; }
-    SDL_Window* getWindow() const { return window; }
-    SDL_GLContext getContext() const { return context; }
+    SDL_Window* getWindow() const { return sdl_window; }
+    SDL_GLContext getContext() const { return renderer.gl_context; }
 
     void beginImGuiFrame();
     void endImGuiFrame();
@@ -35,12 +35,12 @@ public:
     GLuint renderTexture = 0;
 
     inline Renderer& get_renderer() { return renderer; }
+    SDL_Window* sdl_window = nullptr;
 
 private:
     void createFramebuffer();
     Renderer renderer;
-    SDL_Window* window = nullptr;
-    SDL_GLContext context = nullptr;
+    //SDL_GLContext context = nullptr;
     glm::ivec2 dimensions;
     // ImGuiContext* ImGUIContext = nullptr;
 
@@ -62,21 +62,24 @@ Window::Window(int width, int height) {
     }
 
     // Set SDL OpenGL attributes
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     // Create SDL window
-    window = SDL_CreateWindow("OpenGL + SDL2 FBO Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    if (!window) {
+    sdl_window = SDL_CreateWindow("OpenGL + SDL2 FBO Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    if (!sdl_window) {
         std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
+        SDL_Quit(); // Cleanup SDL before exit
         exit(2);
     }
 
     // Create OpenGL context
-    context = SDL_GL_CreateContext(window);
-    if (!context) {
+    renderer.gl_context = SDL_GL_CreateContext(sdl_window);
+    if (!renderer.gl_context) {
         std::cerr << "SDL_GL_CreateContext Error: " << SDL_GetError() << std::endl;
+        SDL_DestroyWindow(sdl_window); // Cleanup the window before exit
+        SDL_Quit();
         exit(3);
     }
 
@@ -84,6 +87,9 @@ Window::Window(int width, int height) {
     GLenum err = glewInit();
     if (err != GLEW_OK) {
         std::cerr << "GLEW Error: " << glewGetErrorString(err) << std::endl;
+        SDL_GL_DeleteContext(renderer.gl_context); // Cleanup context before exit
+        SDL_DestroyWindow(sdl_window);
+        SDL_Quit();
         exit(4);
     }
 
@@ -96,20 +102,32 @@ Window::Window(int width, int height) {
     // Initialize ImGui
     IMGUI_CHECKVERSION();
     renderer.gui_context = ImGui::CreateContext();
-    renderer.gl_context = &(ImGui::GetIO());
-    // renderer.gl_context->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Optional: Enable keyboard controls
     ImGui::StyleColorsDark();
 
     // Initialize ImGui backends
-    if (!ImGui_ImplSDL2_InitForOpenGL(window, context)) {
+    if (!ImGui_ImplSDL2_InitForOpenGL(sdl_window, renderer.gl_context)) {
         std::cerr << "Failed to initialize ImGui SDL backend" << std::endl;
+        ImGui::DestroyContext(renderer.gui_context); // Cleanup ImGui context before exit
+        SDL_GL_DeleteContext(renderer.gl_context);
+        SDL_DestroyWindow(sdl_window);
+        SDL_Quit();
         exit(5);
     }
     if (!ImGui_ImplOpenGL3_Init("#version 330")) {
         std::cerr << "Failed to initialize ImGui OpenGL backend" << std::endl;
+        ImGui_ImplSDL2_Shutdown(); // Clean up before exit
+        ImGui::DestroyContext(renderer.gui_context);
+        SDL_GL_DeleteContext(renderer.gl_context);
+        SDL_DestroyWindow(sdl_window);
+        SDL_Quit();
         exit(6);
     }
-    //viewport.bind();
+
+    // Optional: Uncomment if needed
+    // renderer.gui_context->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable keyboard controls
+
+    // Bind viewport if necessary
+    // viewport.bind(); // Ensure this is defined and necessary
 }
 
 Window::~Window() {
@@ -120,13 +138,13 @@ Window::~Window() {
 
     //viewport.~FrameBuffer();
 
-    SDL_GL_DeleteContext(context);
-    SDL_DestroyWindow(window);
+    SDL_GL_DeleteContext(renderer.gl_context);
+    SDL_DestroyWindow(sdl_window);
     SDL_Quit();
 }
 
 void Window::swapBuffers() {
-    SDL_GL_SwapWindow(window);
+    SDL_GL_SwapWindow(sdl_window);
 }
 
 void Window::resize(int new_width, int new_height) {
