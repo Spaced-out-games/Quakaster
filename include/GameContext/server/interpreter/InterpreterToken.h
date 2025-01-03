@@ -20,14 +20,13 @@ enum token_type_t : uint8_t
     TOKEN_SEMICOLON,
     TOKEN_COMMA,
     TOKEN_COLON,
-    TOKEN_ASSIGN, // for a = b
+    TOKEN_ASSIGN,
     TOKEN_PLUS,
     TOKEN_MINUS,
     TOKEN_MULTIPLY,
     TOKEN_DIVIDE,
     TOKEN_BRACKET_CONTAINER, // For []
-    TOKEN_PARENTHESES_CONTAINER, // For ()
-    TOKEN_EQUALS
+    TOKEN_PARENTHESES_CONTAINER // For ()
 };
 
 
@@ -189,7 +188,6 @@ namespace Tokenizer
 
     static std::vector<Token> tokenize(std::string& content, size_t& offset) {
         std::vector<Token> tokens;
-        bool last_token_was_identifier = 0;
 
         skipWhitespace(content, offset);
 
@@ -197,43 +195,27 @@ namespace Tokenizer
             // Handle single-character tokens
             switch (content[offset]) {
             case ';':
-                last_token_was_identifier = false;
                 tokens.push_back(Token{ ";", TOKEN_SEMICOLON });
                 break;
             case ',':
-                last_token_was_identifier = false;
                 tokens.push_back(Token{ ",", TOKEN_COMMA });
                 break;
             case ':':
-                last_token_was_identifier = false;
                 tokens.push_back(Token{ ":", TOKEN_COLON });
                 break;
             case '=':
-                if (last_token_was_identifier)
-                {
-                    tokens.back().token_type = TOKEN_ASSIGN;
-                    break;
-                }
-
-
-
-                tokens.push_back(Token{ "=", TOKEN_EQUALS });
-                last_token_was_identifier = false;
+                tokens.push_back(Token{ "=", TOKEN_ASSIGN });
                 break;
             case '+':
-                last_token_was_identifier = false;
                 tokens.push_back(Token{ "+", TOKEN_PLUS });
                 break;
             case '-':
-                last_token_was_identifier = false;
                 tokens.push_back(Token{ "-", TOKEN_MINUS });
                 break;
             case '*':
-                last_token_was_identifier = false;
                 tokens.push_back(Token{ "*", TOKEN_MULTIPLY });
                 break;
             case '/':
-                last_token_was_identifier = false;
                 tokens.push_back(Token{ "/", TOKEN_DIVIDE });
                 break;
             default:
@@ -249,36 +231,18 @@ namespace Tokenizer
 
             // Check for digits to parse a number
             if (isdigit(content[offset]) || (content[offset] == '.')) {
-                last_token_was_identifier = false;
                 tokens.push_back(parse_number(content, offset)); // Parse and add the number token
             }
             // Check for identifiers
             else if (isalpha(content[offset]) || content[offset] == '_') {
-                if (last_token_was_identifier && tokens.back().token_type == TOKEN_ASSIGN)
-                {
-                    std::vector<Token> assignment_tokens;
-                    assignment_tokens.push_back(Token{ tokens.back().snippet, TOKEN_IDENTIFIER });
-                    assignment_tokens.push_back(parse_identifier(content, offset));
-
-                    auto& last_token = tokens.back();
-                    last_token.token_type = TOKEN_ASSIGN;
-                    last_token.value = assignment_tokens;
-                    break;
-                }
-
-                
                 tokens.push_back(parse_identifier(content, offset)); // Parse and add the identifier token
-
-                last_token_was_identifier = true;
             }
             // Check for containers
             else if (content[offset] == '(' || content[offset] == '[') {
-                last_token_was_identifier = false;
                 tokens.push_back(parse_container(content, offset)); // Parse and add the container token
             }
             else {
                 // Handle unexpected characters (optional)
-                last_token_was_identifier = false;
                 std::cerr << "Unexpected character: " << content[offset] << std::endl;
                 offset++;
             }
