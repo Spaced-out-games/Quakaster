@@ -3,7 +3,7 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
 #include "imgui.h"
-#include <include/GameContext/server/ConsoleInterpreter.h>
+#include <include/GameContext/server/interpreter/ConsoleInterpreter.h>
 #include "console_message.h"
 #include <include/GameContext/UI/UIContext.h> // Include UIContext before implementing methods
 #include <include/GameContext/IO/InputBase.h>
@@ -135,7 +135,7 @@ struct ConsoleUI: public UIBase
 
         if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
             std::string inputStr(input_buffer);
-            // this is where you would fire an event
+            interpreter.execute_command(inputStr, this);
 
 
 

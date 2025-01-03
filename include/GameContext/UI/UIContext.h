@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <vector>
 #include <include/GameContext/UI/UIBase.h>
-#include <include/GameContext/server/ConsoleInterpreter.h> // For ConsoleInterpreter
+#include <include/GameContext/server/interpreter/ConsoleInterpreter.h> // For ConsoleInterpreter
 #include <include/thirdparty/entt.hpp> // For eventHandler
 #include <include/GameContext/window/Renderer.h>
 #include <include/GameContext/IO/InputBase.h>

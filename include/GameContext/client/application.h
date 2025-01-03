@@ -5,7 +5,7 @@
 
 struct Application
 {
-
+	
 	Window window;
 	UIContext ui_context;
 

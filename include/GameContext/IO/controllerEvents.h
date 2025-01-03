@@ -13,138 +13,33 @@ public:
 	}
 };
 
-struct KeyPressEvent {
-	SDL_Keycode code;
-	Uint16 modifier;
-	static console_message get_console_message(KeyPressEvent& evt)
-	{
-		std::stringstream ss;
-		ss << "Recieved KeyPressEvent with key " << SDL_Utils::repr(evt.code);
-		return { ss.str(), console_color::DEFAULT_TEXT };
-	}
-};
+// Triggered when a key is pressed
+struct KeyPressEvent { SDL_Keycode code; Uint16 mod; KeyPressEvent(SDL_Keycode code, Uint16 mod = KMOD_NONE) : code(code), mod(mod) {} };
 
-struct KeyHoldEvent {
-	SDL_Keycode code;
-	Uint16 modifier;
-	static console_message get_console_message(KeyHoldEvent& evt)
-	{
-		std::stringstream ss;
-		ss << "Recieved KeyHoldEvent with key " << SDL_Utils::repr(evt.code);
-		return { ss.str(), console_color::DEFAULT_TEXT };
-	}
-};
+// Triggered when a key is held down
+struct KeyHoldEvent { SDL_Keycode code; Uint32 duration; Uint16 mod; KeyHoldEvent(SDL_Keycode code, Uint32 duration, Uint16 mod = KMOD_NONE) : code(code), duration(duration), mod(mod) {} };
 
-struct KeyReleaseEvent {
-	SDL_Keycode code;
-	Uint16 modifier;
-	static console_message get_console_message(KeyReleaseEvent& evt)
-	{
-		std::stringstream ss;
-		ss << "Recieved KeyPressEvent with key " << SDL_Utils::repr(evt.code);
-		return { ss.str(), console_color::DEFAULT_TEXT };
-	}
-};
+// Triggered when a key is released
+struct KeyReleaseEvent { SDL_Keycode code; Uint16 mod; KeyReleaseEvent(SDL_Keycode code, Uint16 mod = KMOD_NONE) : code(code), mod(mod) {} };
 
-//uses SDL2 button codes
-struct MouseClickEvent {
-	Uint8 button; // The mouse button that was clicked
-	int x, y;     // Mouse position at the time of click
+// Triggered when a mouse button is pressed
+struct MouseClickEvent { Uint8 button; Uint16 mod; MouseClickEvent(Uint8 button, Uint16 mod = KMOD_NONE) : button(button), mod(mod) {} };
 
-	static console_message get_console_message(const MouseClickEvent& evt) {
-		std::stringstream ss;
+// Triggered when a mouse button is released
+struct MouseReleaseEvent { Uint8 button; Uint16 mod; MouseReleaseEvent(Uint8 button, Uint16 mod = KMOD_NONE) : button(button), mod(mod) {} };
 
-		// Translate common mouse buttons to text
-		switch (evt.button) {
-		case SDL_BUTTON_LEFT:
-			ss << "LeftMouseButton";
-			break;
-		case SDL_BUTTON_RIGHT:
-			ss << "RightMouseButton";
-			break;
-		case SDL_BUTTON_MIDDLE:
-			ss << "MiddleMouseButton";
-			break;
-		default:
-			ss << "MouseButton" << static_cast<int>(evt.button);
-			break;
-		}
+// Triggered when the mouse is moved
+struct MouseMoveEvent { int x, y; int xrel, yrel; Uint16 mod; MouseMoveEvent(int x, int y, int xrel, int yrel, Uint16 mod = KMOD_NONE) : x(x), y(y), xrel(xrel), yrel(yrel), mod(mod) {} };
 
-		// Add the position to the message
-		ss << "click at position (" << evt.x << ", " << evt.y << ")";
+// Triggered when the mouse wheel is scrolled
+struct MouseScrollEvent { int x, y; Uint16 mod; MouseScrollEvent(int x, int y, Uint16 mod = KMOD_NONE) : x(x), y(y), mod(mod) {} };
 
-		return { ss.str(), console_color::DEFAULT_TEXT };
-	}
-};
+// Triggered when the window state changes
+struct WindowEvent {
+	Uint8 event_type;   // Type of window event (e.g., SDL_WINDOWEVENT_RESIZED, SDL_WINDOWEVENT_FOCUS_GAINED, etc.)
+	int data1;          // Data associated with the event (e.g., width for resize)
+	int data2;          // Additional data (e.g., height for resize)
 
-struct MouseHoldEvent {
-	Uint8 button; // The mouse button that was clicked
-	int x, y;     // Mouse position at the time of click
-
-	static console_message get_console_message(const MouseHoldEvent& evt) {
-		std::stringstream ss;
-
-		// Translate common mouse buttons to text
-		switch (evt.button) {
-		case SDL_BUTTON_LEFT:
-			ss << "LeftMouseButton";
-			break;
-		case SDL_BUTTON_RIGHT:
-			ss << "RightMouseButton";
-			break;
-		case SDL_BUTTON_MIDDLE:
-			ss << "MiddleMouseButton";
-			break;
-		default:
-			ss << "MouseButton" << static_cast<int>(evt.button);
-			break;
-		}
-
-		// Add the position to the message
-		ss << "held at position (" << evt.x << ", " << evt.y << ")";
-
-		return { ss.str(), console_color::DEFAULT_TEXT };
-	}
-};
-
-struct MouseReleaseEvent {
-	Uint8 button; // The mouse button that was clicked
-	int x, y;     // Mouse position at the time of click
-
-	static console_message get_console_message(const MouseReleaseEvent& evt) {
-		std::stringstream ss;
-
-		// Translate common mouse buttons to text
-		switch (evt.button) {
-		case SDL_BUTTON_LEFT:
-			ss << "LeftMouseButton";
-			break;
-		case SDL_BUTTON_RIGHT:
-			ss << "RightMouseButton";
-			break;
-		case SDL_BUTTON_MIDDLE:
-			ss << "MiddleMouseButton";
-			break;
-		default:
-			ss << "MouseButton" << static_cast<int>(evt.button);
-			break;
-		}
-
-		// Add the position to the message
-		ss << "released at position (" << evt.x << ", " << evt.y << ")";
-
-		return { ss.str(), console_color::DEFAULT_TEXT };
-	}
-};
-
-struct MouseMoveEvent {
-	int x, y;     // Current mouse position
-	int deltaX, deltaY; // Change in position since last event
-	static console_message get_console_message(const MouseMoveEvent& evt) {
-		std::stringstream ss;
-
-		ss << "Mouse moved by (" << evt.deltaX << ", " << evt.deltaY << ")";
-
-		return { ss.str(), console_color::DEFAULT_TEXT };
-	}
+	WindowEvent(Uint8 event_type, int data1 = 0, int data2 = 0)
+		: event_type(event_type), data1(data1), data2(data2) {}
 };

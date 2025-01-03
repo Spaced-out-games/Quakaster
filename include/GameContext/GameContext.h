@@ -5,6 +5,9 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
+#include <include/GameContext/IO/controller.h>
+#include <include/GameContext/Scene.h>
+#include <include/GameContext/ECS/Entity.h>
 
 
 
@@ -16,13 +19,22 @@ struct GameContext
 	// Interprets console commands
 	ConsoleInterpreter interpreter;
 
+	Scene scene;
+
+	ent dummy{scene.registry};
+
 	//
-	eventHandler event_handler;
+	entt::dispatcher event_handler;
 	Application app;
 
+	// absolutely NEEDS an event handler and UI context. 
+	Controller controller;
 
 	// Constructor
-	GameContext() : app(event_handler, interpreter) {}
+	GameContext() : app(event_handler, interpreter), controller(event_handler, app.ui_context, event_handler) {
+		if (controller.IOHandler == nullptr) { controller.init(); }
+		
+	}
 
 	// Prepares for the UI draw call
 	inline void begin_ui()
@@ -48,13 +60,32 @@ struct GameContext
 	{
 		SDL_GL_SwapWindow(app.window.sdl_window);
 	}
+	virtual void init()
+	{
+		// Use the scene's make_entity function to create an entity and get a handle
+		entt::handle handle = dummy.get_handle(); // Use the dummy entity's handle
+		dummy.add<EventListener>(event_handler, KEY_EVENTS);
+
+		// Emplace the EventListener directly into the registry
+		//auto& listener = scene.registry.emplace<EventListener>(handle.entity(), event_handler, event_type_mask::KEY_PRESS);
+
+		// Capture the handle in the lambda
+		//listener.on_keyPress = [handle](KeyPressEvent& evt) {
+			// Access the entity through the handle and print the key code
+			//std::cout << "Key '" << SDL_GetKeyName(evt.code) << "' (code: " << evt.code << ") pressed for entity: "
+		//		<< entt::to_integral(handle.entity()) << "\n";
+		//};
+	}
 
 	// Game loop
 	virtual void run()
 	{
+		init();
 		while (running)
 		{
-
+			//std::cout << 
+			//std::cout << dummy.inspect();
+			controller.update();
 			begin_ui();
 			draw_ui();
 			end_ui();
