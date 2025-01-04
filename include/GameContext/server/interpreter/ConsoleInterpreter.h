@@ -43,6 +43,37 @@ public:
         return token;
     }
 
+    void execute(std::string& input)
+    {
+        // tokenize
+        bool set = 0;
+        size_t index = 0;
+        size_t end_index;
+        std::vector<Token> tokens = Tokenizer::tokenize(input);
+        for (Token& token : tokens)
+        {
+            token = expand(token);
+            if (token.is_EOL() && !set)
+            {
+                end_index = index;
+                set = true;
+            }
+            index++;
+        }
+        Token& command = tokens[0];
+
+        // find the console command and pipe
+
+        auto& it = convars.find(command.snippet);
+        if (it != convars.end()) {
+            token_value_t& variant = it->second;
+
+            // pipe in tokens 1 through end_index
+            
+        }
+
+    }
+
     // Method to expand a single token
     /*Token expand(const Token& token) {
 

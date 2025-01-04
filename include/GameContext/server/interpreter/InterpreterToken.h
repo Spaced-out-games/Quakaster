@@ -86,7 +86,7 @@ public:
 
     bool is_identifier() { return token_type == TOKEN_IDENTIFIER; }
 
-    bool is_EOL() { return token_type == TOKEN_NEWLINE || token_type == TOKEN_SEMICOLON; }
+    bool is_EOL() { return token_type == TOKEN_NEWLINE || token_type == TOKEN_SEMICOLON || token_type == TOKEN_EOF; }
 
 
     bool is_literal()
