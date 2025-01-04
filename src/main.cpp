@@ -24,15 +24,18 @@ int main() {
 #include <include/GameContext/server/interpreter/InterpreterToken.h>
 // Example usage
 int main() {
-    std::string input = "test = 4 4";
+    std::string input = "sv_cheats = ~foo";
+
+
     ConsoleInterpreter interpreter;
 
     std::vector<Token> tokens = Tokenizer::tokenize(input);
-    tokens = interpreter.expand(tokens);
+    //tokens = interpreter.expand(tokens);
 
     for (auto& token: tokens)
     {
-        std::cout << token.to_string() << "\n";
+        token = interpreter.expand(token);
+        std::cout << token.to_string_debug() << "\n";
     }
     
 
