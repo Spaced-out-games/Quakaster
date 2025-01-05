@@ -6,7 +6,6 @@
 #include <include/thirdparty/entt.hpp> // For eventHandler
 #include <include/GameContext/window/Renderer.h>
 #include <include/GameContext/IO/InputBase.h>
-// #include <include/GameContext/IO/controller.h>
 
 // Forward declaration of ConsoleUI
 struct ConsoleUI;
