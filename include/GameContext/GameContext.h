@@ -9,12 +9,15 @@
 #include <include/GameContext/Scene.h>
 #include <include/GameContext/ECS/Entity.h>
 
-
+std::string my_command(std::span<Token> args) {
+	// Handle your command's logic here
+	return "Command executed successfully!";
+}
 
 struct GameContext
 {
 	// Whether or not the game is running
-	bool running = true;
+	int running = 1;
 
 	// Interprets console commands
 	ConsoleInterpreter interpreter;
@@ -33,9 +36,10 @@ struct GameContext
 	// Constructor
 	GameContext() : app(event_handler, interpreter), controller(event_handler, app.ui_context, event_handler) {
 		if (controller.IOHandler == nullptr) { controller.init(); }
-		
+		interpreter.add_command("quit", *my_command);
+		//interpreter.add_convar("quit", console_fn(GameContext::exit));
 	}
-
+	
 	// Prepares for the UI draw call
 	inline void begin_ui()
 	{
@@ -94,3 +98,4 @@ struct GameContext
 		}
 	}
 };
+
