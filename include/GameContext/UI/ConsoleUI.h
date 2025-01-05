@@ -29,7 +29,7 @@ struct ConsoleUI: public UIBase
 
 
     // personal actual members
-    char* title = "Integrated Console";
+    const char* title = "Integrated Console";
 
     // buffer for storing console input
     char input_buffer[CONSOLE_BUFFER_SIZE]{};
@@ -46,7 +46,10 @@ struct ConsoleUI: public UIBase
     
     
 
-    void add_log(const console_message& consoleMsg);
+    void add_log(const console_message& consoleMsg)
+    {
+        history.push_back(consoleMsg);
+    }
 
     inline void clear() { history.clear(); }
 
@@ -135,7 +138,8 @@ struct ConsoleUI: public UIBase
 
         if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
             std::string inputStr(input_buffer);
-            interpreter.execute_command(inputStr, this);
+            add_log(console_message{ interpreter.execute(inputStr), console_color::DEFAULT_WARNING });//, this);
+            memset(input_buffer, 0, sizeof(input_buffer));
 
 
 
