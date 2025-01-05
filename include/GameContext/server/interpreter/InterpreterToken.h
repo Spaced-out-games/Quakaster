@@ -8,8 +8,8 @@
 #include <stdexcept>
 #include <cctype>
 #include <optional>
-#include <include/thirdparty/glm/glm.hpp>
 #include <include/GameContext/utils/utility_types.h>
+#include <span>
 
 
 enum token_type_t : uint8_t
@@ -35,21 +35,22 @@ enum token_type_t : uint8_t
     TOKEN_NEWLINE,
     TOKEN_EOF,
     TOKEN_CURLY_CONTAINER,
+    CONSOLE_FUNC,
     TOKEN_ACCENT_CHAR = TOKEN_TILDE
 };
 
 class Token;
 
-using console_fn = func_ptr_t<void, std::vector<Token>>;
+using console_fn = func_ptr_t<std::string, std::span<Token>>;
 
 // Define a variant type to hold different token values
 using token_value_t = std::variant<
     int,
     float,
     std::string,
-    glm::vec3,
+    //glm::vec3,
     std::vector<Token>,
-    console_fn
+    void*
 >;
 
 
@@ -230,6 +231,8 @@ namespace Tokenizer
     Token parse_container(std::string& content, size_t& offset);
     Token parse_string(std::string& content, size_t& offset, char closer = '"');
     Token tokenize_once(std::string& content, size_t& offset);
+    void evaluate(Token& token);
+    Token evaluate_accent(Token& child);
     void merge(std::vector<Token>& tokens);
 
 
@@ -248,6 +251,8 @@ namespace Tokenizer
         }
 
         merge(tokens); // Merge tokens if necessary
+
+
         return tokens;
     }
 
@@ -345,13 +350,15 @@ namespace Tokenizer
             {
                 // Accented tokens assimulate
                 bool token_1_match = (tokens[i - 1].token_type == TOKEN_ACCENT_CHAR);
-                bool token_2_match = (tokens[i - 0].is_identifier());
+                bool token_2_match = (tokens[i - 0].is_identifier() || tokens[i - 0].is_literal() && tokens[i - 1].token_type != TOKEN_STRING);
                 if (token_1_match && token_2_match)
                 {
                     std::vector<Token> accent_target = { tokens[i] };
                     accent_target[0].needs_read = true;
                     tokens[i - 1].value = accent_target;
                     tokens.erase(tokens.begin() + i);
+
+                    evaluate(tokens[i - 1]);
                 }
                 
                 // token lookahead
@@ -367,6 +374,44 @@ namespace Tokenizer
             }
         }
 
+    }
+
+    void evaluate(Token& token)
+    {
+        Token* child = nullptr;
+        switch (token.token_type)
+        {
+        case TOKEN_IDENTIFIER:
+            break;
+        case TOKEN_ACCENT_CHAR:
+            child = &(std::get<std::vector<Token>>(token.value)[0]);
+            token = evaluate_accent(*child);
+        default:
+            break;
+        }
+    }
+
+    Token evaluate_accent(Token& child)
+    {
+        Token t;
+        int int_value, new_int_value;
+        std::string string_value, new_string_value;
+        float float_value, new_float_value;
+
+        switch (child.token_type)
+        {
+        case TOKEN_INTEGER:
+            int_value = std::get<int>(child.value);
+            if (int_value) { new_int_value = 0; }
+            else { new_int_value = 1; }
+            t = { std::to_string(new_int_value), TOKEN_INTEGER };
+            t.value = new_int_value;
+            return t;
+        default:
+            break;
+        }
+
+        return child;
     }
 
 
