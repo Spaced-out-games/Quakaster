@@ -1,23 +1,22 @@
 #pragma once
 #include <SDL.h>
 #include <GL/glew.h>
-#include <glm/glm.hpp>
+#include <include/thirdparty/glm/glm.hpp>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
-// #include "Renderer.h"
 #include <include/GameContext/window/Renderer.h>
 
 #define WINDOW_WIDTH 1920
 #define WINDOW_HEIGHT 1080
+#include <include/GameContext/graphics/VAO.h>
 
 
 class Window {
 public:
     //Renderer renderer;
-
     Window();
-    Window(int width, int height);
+    Window(ConsoleInterpreter& interpreter, int width, int height);
     ~Window();
 
     void swapBuffers();
@@ -50,9 +49,8 @@ private:
     bool running = true;
 };
 
-Window::Window() : Window(WINDOW_WIDTH, WINDOW_HEIGHT) {}
 
-Window::Window(int width, int height) {
+Window::Window(ConsoleInterpreter& interpreter, int width = WINDOW_WIDTH, int height = WINDOW_HEIGHT): renderer(interpreter) {
     dimensions = { width, height };
 
     // Initialize SDL
