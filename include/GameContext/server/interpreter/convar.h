@@ -55,16 +55,19 @@ struct Convar
     static token_type_t deduce_token_type() {
         
         if constexpr (std::is_same_v<T, int>) {
-            return TOKEN_INTEGER;
+            return TYPE_INTEGER;
         }
         else if constexpr (std::is_same_v<T, float>) {
-            return TOKEN_FLOAT;
+            return TYPE_FLOAT;
         }
         else if constexpr (std::is_same_v<T, std::string>) {
-            return TOKEN_STRING;
+            return TYPE_STRING;
         }
         else if constexpr (std::is_same_v<T, console_fn>) {
-            return CONSOLE_FUNC;
+            return TYPE_CONSOLE_FN;
+        }
+        else if constexpr (std::is_same_v<T, glm::vec3>) {
+            return TYPE_VEC3;
         }
         else {
             return TOKEN_UNKNOWN;

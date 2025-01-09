@@ -5,10 +5,11 @@
 #include <queue>
 #include <functional>
 #include <iostream>
-#include "InterpreterToken.h" // Ensure this path is correct
+#include "console_function.h"
 #include "Convar.h"
 #include <span>
 #include <include/GameContext/GameContext.h>
+#include <include/GameContext/UI/console_message.h>
 
 //struct Convar;
 
@@ -30,7 +31,7 @@ public:
         set_convar("exit_status", 1);
     }
    
-    bool is_command(const Token& token) { return convars[token.snippet].deduce_token_type<console_fn>() == CONSOLE_FUNC; }
+    bool is_command(const Token& token) { return convars[token.snippet].type == TYPE_CONSOLE_FN; }
 
     Token expand(Token& token) {
 
@@ -53,8 +54,9 @@ public:
         return token;
     }
 
-    std::string execute(std::string& input)
+    void execute(std::string& input, console_message& msg)
     {
+        msg.message = input;
         // Tokenize the input
         std::vector<Token> tokens = Tokenizer::tokenize(input);
 
@@ -122,39 +124,56 @@ public:
         {
             if (i < arguments.size()) // Ensure index is valid for arguments
             {
-                return execute_command(command_names[i], arguments[i]);
+                execute_command(msg,command_names[i], arguments[i]);
+                return;
             }
             else
             {
-                return "Warning: Mismatched command and argument sizes.\n";
+                msg.message+=  "Warning: Mismatched command and argument sizes.\n";
+                return;
             }
         }
+        msg.message = "syntax error";
     }
 
 
-    std::string execute_command(std::string& command, std::span<Token> args)
+    void execute_command(console_message& msg, std::string& command, std::span<Token> args)
     {
+        size_t argc = args.size();
         std::string result;
 
         // runs a function, piping in the rest of the tokens
         auto it = convars.find(command);
-        if (it != convars.end() && it->second.type == CONSOLE_FUNC)
+        if (it != convars.end() && it->second.type == TYPE_CONSOLE_FN)
         {
-            console_fn& func = it->second.get<console_fn>();
-            func(args);
-            return "";
+            console_fn func = reinterpret_cast<console_fn>(it->second.target);
+            func(msg, *this ,args);
+            return;
+        }
+
+        if (it == convars.end() || !it->second.visible)
+        {
+            msg.message = std::string("Convar '") + command + std::string("' does not exist");
+            return;
         }
 
         // sets a convar
         if (it != convars.end())
         {
             size_t offset = 0;
-            result += "command does not exist; attempting to assign convar";
+            //result += "command does not exist; attempting to assign convar";
 
             // Check for TOKEN_ASSIGN
-            if (args.size() >= 2 && ( args[0].token_type == TOKEN_ASSIGN || args[0].token_type == TOKEN_EQUALS))
+            if (args.size() >= 2 && (args[0].token_type == TOKEN_ASSIGN || args[0].token_type == TOKEN_EQUALS))
             {
                 offset = 1; // Move to the next token
+                argc--;
+            }
+
+            // just the convar name, without any arguments
+            if (argc == 0)
+            {
+
             }
 
             // Ensure offset is within bounds
@@ -165,17 +184,23 @@ public:
 
                 switch (variable.type)
                 {
-                case TOKEN_FLOAT:
-                    if (args[offset].token_type == TOKEN_FLOAT) { variable.set<float>(std::get<float>(args[offset].value)); }
-                    else { return "Type mismatch"; }
+                case TYPE_FLOAT:
+                    if (args[offset].token_type == TYPE_FLOAT) { variable.set<float>(std::get<float>(args[offset].value)); }
+                    else { msg += "Type mismatch"; return; }
                     break;
-                case TOKEN_INTEGER:
-                    if (args[offset].token_type == TOKEN_INTEGER) { variable.set<int>(std::get<int>(args[offset].value)); }
-                    else { return "Type mismatch"; }
+                case TYPE_INTEGER:
+                    if (args[offset].token_type == TYPE_INTEGER) { variable.set<int>(std::get<int>(args[offset].value)); }
+                    else { msg += "Type mismatch"; return; }
                     break;
-                case TOKEN_STRING:
-                    if (args[offset].token_type == TOKEN_STRING) { variable.set<std::string>(std::get<std::string>(args[offset].value)); }
-                    else { return "Type mismatch"; }
+                case TYPE_STRING:
+                    if (args[offset].token_type == TYPE_STRING) { variable.set<std::string>(std::get<std::string>(args[offset].value)); }
+                    else { msg += "Type mismatch"; return; }
+                    break;
+
+                case TYPE_GLENUM:
+                    if (args[offset].token_type == TYPE_GLENUM) { variable.set<GLenum>(std::get<GLenum>(args[offset].value)); }
+                    else { msg += "Type mismatch"; return; }
+
                     break;
 
 
@@ -183,73 +208,27 @@ public:
                     break;
                 }
 
-                return result;
-            }
-            else
-            {
-                result += "Error: Offset is out of range.\n";
-                return result; // Handle the error appropriately
+                msg.message += result;
+                return;
             }
         }
-
-        return "SYNTAX ERROR";
+        return;
     }
 
-
-
-    // Method to expand a single token
-    /*Token expand(const Token& token) {
-
-
-        //if(token.token_type == TOKEN_ASSIGN) {return token;}
-
-        // If the token is an identifier, look up its value in the convar map
-        if (token.token_type == TOKEN_IDENTIFIER) {
-            auto it = convars.find(token.snippet); // Use the snippet to look up the value
-            if (it != convars.end()) {
-                // If found, create a new token with the corresponding value
-                size_t offset = 0;
-                return Tokenizer::tokenize_once(it->second, offset); // Create a new token with the expanded value
-            }
-
-            // If not found, return the original token
-            if (is_command(token))
-            {
-                
-                return token;
-            }
-
-            
-        }
-        else if (token.token_type == TOKEN_BRACKET_CONTAINER || token.token_type == TOKEN_PARENTHESES_CONTAINER || token.token_type == TOKEN_ASSIGN) {
-            // If the token is a container, expand its nested tokens
-            auto nested_tokens = std::get<std::vector<Token>>(token.value); // Get the nested tokens
-            std::vector<Token> expanded_nested_tokens;
-
-            for (const auto& nested_token : nested_tokens) {
-                expanded_nested_tokens.push_back(expand(nested_token)); // Recursively expand each nested token
-            }
-
-            // Create a new token for the container with the expanded nested tokens
-            return Token(token.snippet, expanded_nested_tokens, token.token_type);
-        }
-
-        // For non-identifier tokens, return them directly
-        return token;
-    }*/
     // Add a new convar to the map
     template <typename T>
-    void add_convar(const std::string& name, T& target) {
+    void add_convar(const std::string& name, T& target, bool visible = 1) {
         assert(convars.find(name) == convars.end() && "Convar already exists!");
         convars[name].target = (void*)(&target);
         convars[name].type = convars[name].deduce_token_type<T>();
+        convars[name].visible = visible;
         //convars[name].set(value);
     }
 
-    void add_command(const std::string& name, void* target)
+    void add_command(const std::string& name, console_fn fn)
     {
-        convars[name].target = target;
-        convars[name].type = CONSOLE_FUNC;
+        convars[name].target = reinterpret_cast<void*>(fn); // Store the function pointer directly
+        convars[name].type = TYPE_CONSOLE_FN;
     }
 
     // Get a convar's value

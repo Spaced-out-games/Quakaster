@@ -35,13 +35,24 @@ enum token_type_t : uint8_t
     TOKEN_NEWLINE,
     TOKEN_EOF,
     TOKEN_CURLY_CONTAINER,
-    CONSOLE_FUNC,
-    TOKEN_ACCENT_CHAR = TOKEN_TILDE
+    TOKEN_ACCENT_CHAR = TOKEN_TILDE,
+
+
+
+
+
+    TYPE_CONSOLE_FN,
+    TYPE_GLENUM,
+    TYPE_VEC3,
+    // parity types
+    TYPE_INTEGER = TOKEN_INTEGER, 
+    TYPE_FLOAT   = TOKEN_FLOAT,
+    TYPE_STRING  = TOKEN_STRING,
+    
 };
 
-class Token;
 
-using console_fn = func_ptr_t<std::string, std::span<Token>>;
+
 
 // Define a variant type to hold different token values
 using token_value_t = std::variant<
@@ -50,7 +61,7 @@ using token_value_t = std::variant<
     std::string,
     //glm::vec3,
     std::vector<Token>,
-    void*
+    GLenum
 >;
 
 
@@ -103,6 +114,7 @@ public:
     bool operator!=(const Token& other) const {
         return !(*this == other);
     }
+    
 
     std::string to_string_debug(int depth = 0) {
         std::stringstream ss;
