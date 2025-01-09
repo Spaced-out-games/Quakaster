@@ -1,6 +1,5 @@
 #pragma once
 #include <include/thirdparty/entt.hpp>
-//#include "Scene.h"
 #include <include/GameContext/Scene.h>
 #include <include/GameContext/UI/UIContext.h>
 
