@@ -6,7 +6,6 @@
 #include <include/GameContext/server/interpreter/ConsoleInterpreter.h>
 #include "console_message.h"
 #include <include/GameContext/UI/UIContext.h> // Include UIContext before implementing methods
-#include <include/GameContext/IO/InputBase.h>
 #include <include/GameContext/UI/UIBase.h>
 #include <include/GameContext/UI/console_message.h>
 
@@ -42,7 +41,11 @@ struct ConsoleUI: public UIBase
 
     std::vector<console_message> history;
 
-    ImU32 colorPallete[16];
+
+
+
+
+    ImU32 colorPalette[16]{};
     
     
 
@@ -54,7 +57,18 @@ struct ConsoleUI: public UIBase
     inline void clear() { history.clear(); }
 
 
+    void add_colors()
+    {
+        colorPalette[static_cast<uint8_t>(console_color::WHITE)] = IM_COL32(255, 255, 255, 255);    // White(White)
 
+        colorPalette[static_cast<uint8_t>(console_color::RED)] = IM_COL32(255, 0, 0, 255);            // Red
+
+        colorPalette[static_cast<uint8_t>(console_color::GREEN)] = IM_COL32(0, 150, 0, 255);          // Green(Green)
+
+        colorPalette[static_cast<uint8_t>(console_color::YELLOW)] = IM_COL32(255, 255, 0, 255);       // Yellow
+
+        colorPalette[static_cast<uint8_t>(console_color::ORANGE)] = IM_COL32(255, 165, 0, 255);
+    }
 
 
 
@@ -63,7 +77,10 @@ struct ConsoleUI: public UIBase
     ConsoleUI(ConsoleInterpreter& interpreter, eventHandler& event_handler, UIContext& ui_context) :
         interpreter(interpreter),
         event_handler(event_handler),
-        ui_context(ui_context) {}
+        ui_context(ui_context)
+    {
+        add_colors();
+    }
     void draw() override
     {
         //if (!visible) return;
@@ -112,10 +129,12 @@ struct ConsoleUI: public UIBase
         if (line_copied)
             ImGui::LogToClipboard();
 
+
         // rendering the console history
         for (const auto& msg : history) {
             
-            ImGui::PushStyleColor(ImGuiCol_Text, colorPallete[(uint8_t)msg.color]);
+
+            ImGui::PushStyleColor(ImGuiCol_Text, colorPalette[(uint8_t)msg.color]);
             
             ImGui::TextUnformatted(msg.message.c_str());
             ImGui::PopStyleColor();
@@ -138,7 +157,9 @@ struct ConsoleUI: public UIBase
 
         if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
             std::string inputStr(input_buffer);
-            add_log(console_message{ interpreter.execute(inputStr), console_color::DEFAULT_WARNING });//, this);
+            console_message message = { "", console_color::DEFAULT_TEXT };
+            interpreter.execute(inputStr, message);
+            if(message.message != "") add_log(message);
             memset(input_buffer, 0, sizeof(input_buffer));
 
 
