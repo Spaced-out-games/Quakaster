@@ -31,7 +31,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}
     ${SDL_ROOT}/include
     ${GLEW_ROOT}/include
-    ${GLM_ROOT}/include
     ${IMGUI_ROOT}
     ${IMGUI_ROOT}/backends
 )
@@ -74,13 +73,16 @@ add_executable(Engine_Demo ${SOURCES}
     "include/GameContext/IO/controller.h"
     "include/GameContext/IO/controllerEvents.h"
     "include/GameContext/UI/console_message.h"
-    "include/GameContext/IO/InputBase.h"
+    
     "include/GameContext/UI/UIBase.h"
     "include/GameContext/utils/utility_types.h"
-    "include/GameContext/entity_components/basic_components.h"
-    "include/GameContext/ECS/Entity.h"
+    
     "include/GameContext/utils/Inspector.h"
- "include/GameContext/server/interpreter/InterpreterToken.h" "include/GameContext/server/interpreter/convar.h")
+    "include/GameContext/server/interpreter/InterpreterToken.h"
+    "include/GameContext/server/interpreter/convar.h"
+    "include/GameContext/UI/console_color.h"
+    "include/GameContext/components/camera.h"
+    "include/GameContext/components/transform.h" "include/GameContext/components/Framebuffer.h" "include/GameContext/resources/res_shader.h"  "include/GameContext/resources/res_mesh.h" "include/GameContext/graphics/VBO.h" "include/GameContext/graphics/VAO.h" "include/GameContext/components/gravity.h")
 
 # Link libraries
 target_link_libraries(Engine_Demo

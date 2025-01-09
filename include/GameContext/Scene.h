@@ -6,8 +6,5 @@ struct Scene
 {
 	entt::registry registry;
 
-	entt::handle make_entity()
-	{
-		return entt::handle{ registry, registry.create() };
-	}
+
 };
