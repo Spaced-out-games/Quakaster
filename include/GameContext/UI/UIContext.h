@@ -5,7 +5,6 @@
 #include <include/GameContext/server/interpreter/ConsoleInterpreter.h> // For ConsoleInterpreter
 #include <include/thirdparty/entt.hpp> // For eventHandler
 #include <include/GameContext/window/Renderer.h>
-#include <include/GameContext/IO/InputBase.h>
 
 // Forward declaration of ConsoleUI
 struct ConsoleUI;
@@ -46,7 +45,7 @@ struct UIContext
 
         //SDL_PollEvent(&evt);
 
-        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        
 
 
 
@@ -86,7 +85,6 @@ struct UIContext
 
 UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window) : event_handler(event_handler), interpreter(interpreter), renderer(renderer), window(window)
 {
-    //ConsoleUI* console = new ConsoleUI{interpreter, event_handler, *this};
     add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });
     
     
