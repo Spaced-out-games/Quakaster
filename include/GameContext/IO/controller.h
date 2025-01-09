@@ -3,7 +3,6 @@
 #include <include/thirdparty/entt.hpp>
 #include <include/GameContext/server/interpreter/ConsoleInterpreter.h>
 #include <include/GameContext/UI/UIContext.h>
-#include <include/GameContext/IO/InputBase.h>
 #include <include/GameContext/utils/utility_types.h>
 
 struct Controller
