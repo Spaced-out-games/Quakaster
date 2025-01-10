@@ -5,12 +5,13 @@
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
-#include <include/GameContext/IO/controller.h>
+#include <include/GameContext/components/ent_controller.h>
 #include <include/GameContext/Scene.h>
 #include <include/GameContext/components/camera.h>
 #include <include/GameContext/components/Framebuffer.h>
 #include <include/GameContext/graphics/VAO.h>
 #include <include/GameContext/graphics/VBO.h> // Just in case
+#include <chrono>
 
 //#include <resources/shaders/default.frag>
 
@@ -22,12 +23,20 @@ std::string my_command(ConsoleInterpreter& interpreter, std::span<Token> args) {
 	return "Command executed successfully!";
 }
 
+static float deltaTime;
+
 struct GameContext
 {
+	// Timing variables
+	
+	// Timing variables using std::chrono
+	std::chrono::steady_clock::time_point lastFrameTime;
+	std::chrono::steady_clock::time_point currentFrameTime;
+
 	glm::vec3 bg_color = { 0.45f, 0.55f, 0.60f };
-	Camera camera;
 	// Whether or not the game is running
 	int running = 1;
+	
 
 	// Interprets console commands
 	ConsoleInterpreter interpreter;
@@ -52,8 +61,7 @@ struct GameContext
 		interpreter.add_command("bg_color", bg_color_fn);
 
 		
-		
-		camera.bind_convars(interpreter);
+
 	}
 
 	static void bg_color_fn(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
@@ -140,6 +148,15 @@ struct GameContext
 		return;
 	}
 
+	// Updates timing information for the current frame
+	inline void update_dt()
+	{
+		currentFrameTime = std::chrono::steady_clock::now(); // Get current time
+		std::chrono::duration<float> elapsed = currentFrameTime - lastFrameTime; // Time elapsed
+		deltaTime = elapsed.count(); // Convert to seconds
+		lastFrameTime = currentFrameTime; // Update the last frame time
+	}
+	
 
 	// Game loop
 	virtual void run()
@@ -147,32 +164,38 @@ struct GameContext
 
 
 		// Load a shader resource
-		Shader s = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
+		Shader shader = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
 		// Points to draw
 		std::vector<default_vertex_t> points = {
-	{{0.0f, 1.1547f, 0.0f}}, // Top vertex (approx 2 / sqrt(3))
-	{{-0.5f, -0.5774f, 0.0f}}, // Bottom-left vertex (-1 / sqrt(3))
-	{{0.5f, -0.5774f, 0.0f}},  // Bottom-right vertex
+	{{0.0f, 1.1547f, 1.0f}}, // Top vertex (approx 2 / sqrt(3))
+	{{-0.5f, -0.5774f, 1.0f}}, // Bottom-left vertex (-1 / sqrt(3))
+	{{0.5f, -0.5774f, 1.0f}},  // Bottom-right vertex
 		};
 
-		// Create VAO and VBO
-		auto entity1 = scene.registry.create();
-		entt::handle handle1{ scene.registry, entity1 };
-		Mesh mesh1(handle1, points, s); // Mesh with first shader
+		auto camera_test = scene.registry.create();
+		auto handle = entt::handle{ scene.registry, camera_test };
+		handle.emplace<Camera>(handle);
+		handle.emplace<ent_controller>(event_handler, handle);
+		handle.emplace<tag_target_camera>();
+		handle.emplace<Transform>();
 
-		// Add VBO to VAO
+		handle.get<Camera>().bind_convars(interpreter);
 
-		//default_vertex_t::set_pointers();
-		//VBO::unbind();
-		//vao.unbind();
+		// Create an entity with a mesh
+		auto triangle_Mesh = scene.registry.create();
+		entt::handle handle1{ scene.registry, triangle_Mesh };
+		Mesh mesh1(handle1, points, shader); // Mesh with first shader
+
+
 
 		init();
 		while (running)
 		{
+			update_dt();
 			glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
-			s->bind();
-			//vao.bind();
-			//glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(points.size()));
+			glClear(GL_COLOR_BUFFER_BIT);
+			scene.registry.get<Camera>(camera_test).set_shader_uniforms(shader);
+
 			Mesh::draw_all(scene.registry);
 
 			controller.update();
@@ -180,6 +203,7 @@ struct GameContext
 			draw_ui();
 			end_ui();
 			
+
 
 			refresh();
 		}

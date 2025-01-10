@@ -22,9 +22,12 @@ public:
     shader_handle& operator=(const T& value) {
         if (uniformLocation == -1) {
 //            console_log("Uniform location is invalid.", console_colors::DEFAULT_ERROR_CRITICAL);
-            __debugbreak();
+            //__debugbreak();
         }
-        setUniformValue(uniformLocation, value);
+        else
+        {
+            setUniformValue(uniformLocation, value);
+        }
         return *this;
     }
 
@@ -99,7 +102,7 @@ public:
         GLint location = glGetUniformLocation(program_ID, uniformName.c_str());
         if (location == -1) {
 //            console_log("Uniform " + uniformName + " not found in shader.", console_colors::DEFAULT_ERROR_CRITICAL);
-            __debugbreak();
+            //__debugbreak();
         }
         return shader_handle(program_ID, location); // Return a shader_handle with location
     }

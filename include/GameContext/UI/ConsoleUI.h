@@ -85,8 +85,6 @@ struct ConsoleUI: public UIBase
     {
         //if (!visible) return;
 
-        //ImGui::ShowDemoWindow();
-
         // reset focus to nullptr
         
 
@@ -151,7 +149,7 @@ struct ConsoleUI: public UIBase
 
         // Focus the input text box when the window is appearing
         if (ImGui::IsWindowAppearing()) {
-            ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
+            //ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
         }
 
 

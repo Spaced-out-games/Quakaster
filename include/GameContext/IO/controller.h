@@ -4,6 +4,7 @@
 #include <include/GameContext/server/interpreter/ConsoleInterpreter.h>
 #include <include/GameContext/UI/UIContext.h>
 #include <include/GameContext/utils/utility_types.h>
+#include <unordered_map>
 
 struct Controller
 {
@@ -15,6 +16,9 @@ struct Controller
     entt::dispatcher& dispatcher; // Event dispatcher
     int lastMouseX = 0;
     int lastMouseY = 0;
+
+    std::unordered_map<int, bool> keyStates;
+
 
     // Constructor
     Controller(eventHandler& event_handler, UIContext& ui_context, entt::dispatcher& dispatcher)
@@ -44,9 +48,20 @@ struct Controller
         if (!IOHandler)
             init();
 
+
+        int xrel = 0;
+        int yrel = 0;
+        Uint16 mod;
+
         // Poll and process SDL events
         while (SDL_PollEvent(&event))
         {
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
+            {
+                dispatcher.trigger(KeyPressEvent{ event.key.keysym.sym, event.key.keysym.mod });
+                return;
+            }
+
             // Forward the event to ImGui
             ImGui_ImplSDL2_ProcessEvent(&event);
 
@@ -57,10 +72,15 @@ struct Controller
                 {
                 case SDL_KEYDOWN:
                     dispatcher.trigger(KeyPressEvent{ event.key.keysym.sym, event.key.keysym.mod });
+                    keyStates[static_cast<int>(event.key.keysym.sym)] = 1;
                     break;
 
                 case SDL_KEYUP:
                     dispatcher.trigger(KeyReleaseEvent{ event.key.keysym.sym, event.key.keysym.mod });
+
+                    
+                    keyStates.erase(static_cast<int>(event.key.keysym.sym));
+
                     break;
 
                 case SDL_MOUSEBUTTONDOWN:
@@ -77,8 +97,38 @@ struct Controller
                     dispatcher.trigger(WindowEvent{ event.window.event });
                     break;
 
+                case SDL_MOUSEMOTION:
+                    // Get mouse motion details
+                    lastMouseX = event.motion.x;
+                    lastMouseY = event.motion.y;
+                    xrel = event.motion.xrel; // Change in x position
+                    yrel = event.motion.yrel; // Change in y position
+                    mod = event.motion.state; // Modifier keys
+
+                    // Trigger mouse move event
+                    dispatcher.trigger(MouseMoveEvent{ lastMouseX, lastMouseY, xrel, yrel, mod });
+
+                    // Update ImGui mouse position
+                    IOHandler->MousePos = ImVec2(static_cast<float>(lastMouseX), static_cast<float>(lastMouseY));
+                    break;
+
                 default:
                     break;
+                }
+            }
+        }
+
+        if (!IOHandler->WantCaptureKeyboard || !IOHandler->WantCaptureMouse)
+        {
+            if (!IOHandler->WantCaptureKeyboard || !IOHandler->WantCaptureMouse)
+            {
+                for (const auto& [key, isPressed] : keyStates)
+                {
+                    if (isPressed)
+                    {
+                        // Trigger a repeat event for the pressed key
+                        dispatcher.trigger(KeyHoldEvent{ key });
+                    }
                 }
             }
         }
@@ -87,38 +137,35 @@ struct Controller
 
 
 enum event_type_mask : uint8_t {
-    KEY_PRESS = 0x01,
-    KEY_HOLD = 0x02,
-    KEY_RELEASE = 0x04,
-    MOUSE_PRESS = 0x08,
-    MOUSE_RELEASE = 0x10,
-    MOUSE_MOVE = 0x20,
-    MOUSE_SCROLL = 0x40,
-    WINDOW_EVENT = 0x80,
+    KEY_PRESS =     1 << 1,
+    KEY_HOLD =      1 << 2,
+    KEY_RELEASE =   1 << 3,
+    MOUSE_PRESS =   1 << 4,
+    MOUSE_RELEASE = 1 << 5,
+    MOUSE_MOVE =    1 << 6,
+    MOUSE_SCROLL =  1 << 7,
+    WINDOW_EVENT =  1 << 8,
     
-    KEY_EVENTS = KEY_PRESS & KEY_RELEASE & KEY_HOLD,
-    MOUSE_EVENTS = MOUSE_PRESS & MOUSE_RELEASE & MOUSE_MOVE & MOUSE_SCROLL,
-    ALL_EVENTS = KEY_EVENTS & MOUSE_EVENTS & WINDOW_EVENT // more explicit than 0xff
+    KEY_EVENTS = KEY_PRESS | KEY_RELEASE | KEY_HOLD,
+    MOUSE_EVENTS = MOUSE_PRESS | MOUSE_RELEASE | MOUSE_MOVE | MOUSE_SCROLL,
+    ALL_EVENTS = KEY_EVENTS | MOUSE_EVENTS | WINDOW_EVENT // more explicit than 0xff
 };
 
 #include <functional> // Include for std::function
 #include <iostream>   // Include for std::cout (optional, for demonstration)
 
 struct EventListener {
-
     const event_type_mask mask;
-    static void test_fn(KeyPressEvent& ref) { std::cout << " on_keyPress WARNING: noimpl\n"; }
+    std::function<void(KeyPressEvent&)> on_keyPress = [](KeyPressEvent&) {};
+    std::function<void(KeyHoldEvent&)> on_keyHold = [](KeyHoldEvent&) {};
+    std::function<void(KeyReleaseEvent&)> on_keyRelease = [](KeyReleaseEvent&) {};
 
-    std::function<void(KeyPressEvent&)> on_keyPress;
-    std::function<void(KeyHoldEvent&)> on_keyHold;
-    std::function<void(KeyReleaseEvent&)> on_keyRelease;
+    std::function<void(MouseClickEvent&)> on_mousePress = [](MouseClickEvent&) {};
+    std::function<void(MouseReleaseEvent&)> on_mouseRelease = [](MouseReleaseEvent&) {};
+    std::function<void(MouseMoveEvent&)> on_mouseMove = [](MouseMoveEvent&) {};
+    std::function<void(MouseScrollEvent&)> on_mouseScroll = [](MouseScrollEvent&) {};
 
-    std::function<void(MouseClickEvent&)> on_mousePress;
-    std::function<void(MouseReleaseEvent&)> on_mouseRelease;
-    std::function<void(MouseMoveEvent&)> on_mouseMove;
-    std::function<void(MouseScrollEvent&)> on_mouseScroll;
-
-    std::function<void(WindowEvent&)> on_windowEvent;
+    std::function<void(WindowEvent&)> on_windowEvent = [](WindowEvent&) {};
 
     EventListener(entt::dispatcher& dispatcher, event_type_mask mask): mask(mask)
     {

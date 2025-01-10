@@ -17,7 +17,7 @@ public:
 struct KeyPressEvent { SDL_Keycode code; Uint16 mod; KeyPressEvent(SDL_Keycode code, Uint16 mod = KMOD_NONE) : code(code), mod(mod) {} };
 
 // Triggered when a key is held down
-struct KeyHoldEvent { SDL_Keycode code; Uint32 duration; Uint16 mod; KeyHoldEvent(SDL_Keycode code, Uint32 duration, Uint16 mod = KMOD_NONE) : code(code), duration(duration), mod(mod) {} };
+struct KeyHoldEvent { SDL_Keycode code; Uint32 duration; KeyHoldEvent(SDL_Keycode code) : code(code), duration(duration) {} };
 
 // Triggered when a key is released
 struct KeyReleaseEvent { SDL_Keycode code; Uint16 mod; KeyReleaseEvent(SDL_Keycode code, Uint16 mod = KMOD_NONE) : code(code), mod(mod) {} };

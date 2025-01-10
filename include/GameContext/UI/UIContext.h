@@ -14,7 +14,7 @@ struct ConsoleUI;
 struct UIContext
 {
     // InputBase* current_controller;
-    
+    bool paused = 0;
     Renderer& renderer;
     Window& window;
     UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window);
@@ -30,6 +30,10 @@ struct UIContext
 
     inline void draw()
     {
+        if (paused)
+        {
+            return;
+        }
         // assign to the controller by default
         for (size_t i = 0; i < elements.size(); i++)
         {
@@ -77,7 +81,7 @@ struct UIContext
     // Pauses to the console UI element
     void pause()
     {
-
+        paused = !paused;
     }
 };
 
