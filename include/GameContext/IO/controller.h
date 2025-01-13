@@ -6,6 +6,13 @@
 #include <include/GameContext/utils/utility_types.h>
 #include <unordered_map>
 
+/*
+
+Added some QOL changes to GUI so that opening the GUI would automatically open some widgets. Needs streamlined, though.
+
+Note to self: on pause, set an index to -1, and have each GUI component have its index passed when drawing. The GUI element will set the Context's index pointer to itself, and setting focus. Ideally, each widget should have a priority integer so that it's more controllable and not contingent on ordering
+*/
+
 struct Controller
 {
     // SDL event
