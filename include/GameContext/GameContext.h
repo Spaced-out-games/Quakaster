@@ -15,6 +15,8 @@
 
 //#include <resources/shaders/default.frag>
 
+
+#include <include/GameContext/resources/res_texture.h>
 #include <include/GameContext/resources/res_shader.h>
 #include <include/GameContext/resources/res_mesh.h>
 
@@ -166,10 +168,36 @@ struct GameContext
 		// Load a shader resource
 		Shader shader = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
 		// Points to draw
-		std::vector<default_vertex_t> points = {
-	{{0.0f, 1.1547f, 1.0f}}, // Top vertex (approx 2 / sqrt(3))
-	{{-0.5f, -0.5774f, 1.0f}}, // Bottom-left vertex (-1 / sqrt(3))
-	{{0.5f, -0.5774f, 1.0f}},  // Bottom-right vertex
+		std::vector<default_vertex_t> vertices = {
+	{{-0.5f, -0.5f, -0.5f}}, // Vertex 0: Bottom-left-back
+	{{ 0.5f, -0.5f, -0.5f}}, // Vertex 1: Bottom-right-back
+	{{ 0.5f,  0.5f, -0.5f}}, // Vertex 2: Top-right-back
+	{{-0.5f,  0.5f, -0.5f}}, // Vertex 3: Top-left-back
+	{{-0.5f, -0.5f,  0.5f}}, // Vertex 4: Bottom-left-front
+	{{ 0.5f, -0.5f,  0.5f}}, // Vertex 5: Bottom-right-front
+	{{ 0.5f,  0.5f,  0.5f}}, // Vertex 6: Top-right-front
+	{{-0.5f,  0.5f,  0.5f}}, // Vertex 7: Top-left-front
+		};
+
+		std::vector<uint32_t> indices = {
+			// Back face
+			0, 1, 2,
+			0, 2, 3,
+			// Front face
+			4, 5, 6,
+			4, 6, 7,
+			// Left face
+			0, 3, 7,
+			0, 7, 4,
+			// Right face
+			1, 5, 6,
+			1, 6, 2,
+			// Top face
+			3, 2, 6,
+			3, 6, 7,
+			// Bottom face
+			0, 1, 5,
+			0, 5, 4,
 		};
 
 		auto camera_test = scene.registry.create();
@@ -178,13 +206,16 @@ struct GameContext
 		handle.emplace<ent_controller>(event_handler, handle);
 		handle.emplace<tag_target_camera>();
 		handle.emplace<Transform>();
+		handle.emplace<Texture>("resources/images/atlas.png", GL_TEXTURE_2D, GL_TEXTURE0);
+		//handle.get<Texture>().bind();
 
 		handle.get<Camera>().bind_convars(interpreter);
 
 		// Create an entity with a mesh
 		auto triangle_Mesh = scene.registry.create();
 		entt::handle handle1{ scene.registry, triangle_Mesh };
-		Mesh mesh1(handle1, points, shader); // Mesh with first shader
+		Mesh mesh1(handle1, vertices, indices, shader); // Mesh with first shader
+		handle.get<Camera>().look_at({ 0.0,0.0,0.0 });
 
 
 
@@ -195,9 +226,14 @@ struct GameContext
 			glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 			glClear(GL_COLOR_BUFFER_BIT);
 			scene.registry.get<Camera>(camera_test).set_shader_uniforms(shader);
+			
+			
+			handle.get<Texture>().bind();
 
 			Mesh::draw_all(scene.registry);
 
+
+			//t.set_uniforms(handle.get<Shader>());
 			controller.update();
 			begin_ui();
 			draw_ui();

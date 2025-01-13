@@ -14,7 +14,7 @@ struct ConsoleUI;
 struct UIContext
 {
     // InputBase* current_controller;
-    bool paused = 0;
+    bool paused = 1;
     Renderer& renderer;
     Window& window;
     UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window);
@@ -39,7 +39,7 @@ struct UIContext
         {
             if (elements[i]->visible)
             {
-                elements[i]->draw();
+                elements[i]->draw(this);
             }
         }
 

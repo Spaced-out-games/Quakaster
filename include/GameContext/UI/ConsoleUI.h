@@ -40,7 +40,7 @@ struct ConsoleUI: public UIBase
     bool scrollToBottom = false;
 
     std::vector<console_message> history;
-
+    bool last_pause_state = 0;
 
 
 
@@ -81,8 +81,10 @@ struct ConsoleUI: public UIBase
     {
         add_colors();
     }
-    void draw() override
+    void draw(UIContext* ctx) override
     {
+        
+
         //if (!visible) return;
 
         // reset focus to nullptr
@@ -99,6 +101,7 @@ struct ConsoleUI: public UIBase
         {
             std::cout << "Begin Failed";
             ImGui::End();
+            //last_pause_state = ui_context.paused;
             return;
         }
         else
@@ -148,9 +151,17 @@ struct ConsoleUI: public UIBase
         ImGui::PushItemWidth(-1);
 
         // Focus the input text box when the window is appearing
-        if (ImGui::IsWindowAppearing()) {
-            //ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
+        //if (ImGui::IsWindowAppearing()) {
+        
+        // last_pause_state = ui_context.paused;
+
+        if (last_pause_state == 0 && ui_context.paused == 0)
+        {
+            // this is supposed to be called when the console opens
+            ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
+            last_pause_state = 1;
         }
+        //}
 
 
         if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
@@ -159,13 +170,14 @@ struct ConsoleUI: public UIBase
             interpreter.execute(inputStr, message);
             if(message.message != "") add_log(message);
             memset(input_buffer, 0, sizeof(input_buffer));
-
+            last_pause_state = 0;
 
 
 
         }
         ImGui::End();
 
+        //last_pause_state = ui_context.paused;
     }
 
 };
