@@ -1,17 +1,19 @@
 #pragma once
 #include <GL/glew.h>
 #include <include/GameContext/graphics/VAO.h>
-#include <include/GameContext/graphics/VBO.h> // Just in case
+#include <include/GameContext/graphics/VBO.h>
+#include <include/GameContext/graphics/EBO.h>
 #include <include/thirdparty/entt.hpp>
+
 /*
 ALERT!!!
 
 This is not a real type. It only acts as a fake container for initializing mesh components in a way that feels like OOP
 */
 struct Mesh {
-    // Mesh constructor that creates and binds VAO and VBO
+    // Mesh constructor that creates and binds VAO, VBO, and EBO
     template <typename vertex_t>
-    Mesh(entt::handle& entity, const std::vector<vertex_t>& vertices, Shader shader) {
+    Mesh(entt::handle& entity, const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, Shader shader) {
         // Create and bind VAO
         entity.emplace<VAO>();
         auto& vao = entity.get<VAO>();
@@ -22,39 +24,47 @@ struct Mesh {
         auto& vbo = entity.get<VBO>();
         vbo.bind();
 
+        // Create and bind EBO
+        entity.emplace<EBO>();
+        auto& ebo = entity.get<EBO>();
+        ebo.set_data(indices); // Upload indices to the EBO
+
         // Store the shader in the entity
         entity.emplace<Shader>(shader);
 
         // Set vertex attribute pointers using the shader program
         vertex_t::set_pointers();
 
-        // Unbind VBO and VAO
+        // Unbind VBO, EBO, and VAO
         VBO::unbind();
+        EBO::unbind();
         vao.unbind();
     }
+
     ~Mesh() = default;
 
     // Draw all meshes in the registry
     static void draw_all(entt::registry& registry) {
-        // Iterate over entities with VAO, VBO, and Shader components
-        auto view = registry.view<VAO, VBO, Shader>();
+        // Iterate over entities with VAO, VBO, EBO, and Shader components
+        auto view = registry.view<VAO, VBO, EBO, Shader>();
         for (auto entity : view) {
             auto& vao = view.get<VAO>(entity);
             auto& vbo = view.get<VBO>(entity);
+            auto& ebo = view.get<EBO>(entity);
             auto& shader = view.get<Shader>(entity);
 
-            if (registry.all_of<Transform>(entity))
-            {
+            if (registry.all_of<Transform>(entity)) {
                 auto& transform = registry.get<Transform>(entity);
                 shader->operator[]("model") = transform.get_matrix();
             }
 
-
             // Bind the shader for this mesh
             shader->bind();
             vao.bind();
-            glDrawArrays(GL_TRIANGLES, 0, vbo.get_vertex_count());
+            ebo.bind(); // Bind the EBO before drawing
+            glDrawElements(GL_TRIANGLES, ebo.get_index_count(), GL_UNSIGNED_INT, 0); // Draw using indices
             VAO::unbind();
+            EBO::unbind(); // Unbind the EBO after drawing
         }
     }
 };
