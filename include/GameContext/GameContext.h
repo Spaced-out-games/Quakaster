@@ -166,7 +166,7 @@ struct GameContext
 
 
 		// Load a shader resource
-		Shader shader = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
+		//Shader shader = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
 		// Points to draw
 		std::vector<default_vertex_t> vertices = {
 	{{-0.5f, -0.5f, -0.5f}}, // Vertex 0: Bottom-left-back
@@ -203,19 +203,21 @@ struct GameContext
 		auto camera_test = scene.registry.create();
 		auto handle = entt::handle{ scene.registry, camera_test };
 		handle.emplace<Camera>(handle);
-		handle.emplace<ent_controller>(event_handler, handle);
-		handle.emplace<tag_target_camera>();
-		handle.emplace<Transform>();
-		handle.emplace<Texture>("resources/images/atlas.png", GL_TEXTURE_2D, GL_TEXTURE0);
-		//handle.get<Texture>().bind();
 
 		handle.get<Camera>().bind_convars(interpreter);
+		handle.get<Camera>().look_at({ 0.0,0.0,0.0 });
+		handle.emplace<ent_controller>(event_handler, handle);
+
+		//handle.get<Texture>().bind();
+
 
 		// Create an entity with a mesh
 		auto triangle_Mesh = scene.registry.create();
 		entt::handle handle1{ scene.registry, triangle_Mesh };
-		Mesh mesh1(handle1, vertices, indices, shader); // Mesh with first shader
-		handle.get<Camera>().look_at({ 0.0,0.0,0.0 });
+		//handle1.emplace<Shader>("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
+		handle1.emplace<Texture>("resources/images/atlas.png", GL_TEXTURE_2D);
+		Mesh mesh1(handle1, vertices, indices, "albedo_texture_shader", "resources/shaders/default.vert", "resources/shaders/default.frag"); // Mesh with first shader
+		
 
 
 
@@ -225,10 +227,10 @@ struct GameContext
 			update_dt();
 			glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 			glClear(GL_COLOR_BUFFER_BIT);
-			scene.registry.get<Camera>(camera_test).set_shader_uniforms(shader);
+			scene.registry.get<Camera>(camera_test).set_shader_uniforms(handle1.get<Shader>());
 			
 			
-			handle.get<Texture>().bind();
+			handle1.get<Texture>().bind();
 
 			Mesh::draw_all(scene.registry);
 

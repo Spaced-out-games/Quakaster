@@ -16,7 +16,7 @@ struct ent_controller : public EventListener {
 	{
 		on_keyPress = [this](KeyPressEvent& evt)
 		{
-			if (target.all_of<Transform>())
+			if (target.all_of<Camera>())
 			{
 
 				// THIS MIGHT CAUSE SOME STUPID SHIT IF NOT CAMERA!!!
@@ -52,8 +52,9 @@ struct ent_controller : public EventListener {
 
 		on_keyHold = [this](KeyHoldEvent& evt)
 		{
-			if (target.all_of<Transform>())
+			if (target.all_of<Camera>())
 			{
+
 				// THIS MIGHT CAUSE SOME STUPID SHIT IF NOT CAMERA!!!
 				Transform& transform = target.get<Camera>(); // This was get<Transform>
 				//glm::vec3& position = target.get<Transform>().position;
@@ -71,6 +72,8 @@ struct ent_controller : public EventListener {
 					break;
 				case SDLK_s:
 					transform.move(-transform.get_forward_vector() * deltaTime * 10.0f);
+					break;
+				case SDLK_ESCAPE:
 					break;
 
 				default:

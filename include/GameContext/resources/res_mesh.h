@@ -13,7 +13,7 @@ This is not a real type. It only acts as a fake container for initializing mesh 
 struct Mesh {
     // Mesh constructor that creates and binds VAO, VBO, and EBO
     template <typename vertex_t>
-    Mesh(entt::handle& entity, const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, Shader shader) {
+    Mesh(entt::handle& entity, const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, std::string shader_name, std::string vertex_path, std::string fragment_path) {
         // Create and bind VAO
         entity.emplace<VAO>();
         auto& vao = entity.get<VAO>();
@@ -30,7 +30,7 @@ struct Mesh {
         ebo.set_data(indices); // Upload indices to the EBO
 
         // Store the shader in the entity
-        entity.emplace<Shader>(shader);
+        entity.emplace<Shader>(shader_name, vertex_path, fragment_path);
 
         // Set vertex attribute pointers using the shader program
         vertex_t::set_pointers();

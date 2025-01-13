@@ -189,4 +189,11 @@ private:
 // Resource Loader for res_shader
 
 
-using Shader = std::shared_ptr<res_shader>;
+//using Shader = std::shared_ptr<res_shader>;
+
+struct Shader : public std::shared_ptr<res_shader> {
+    // Constructor initializing the base class (std::shared_ptr)
+    Shader(const std::string& name, const std::string& vertex_path, const std::string& fragment_path)
+        : std::shared_ptr<res_shader>(res_shader::load(name, vertex_path, fragment_path)) {
+    }
+};
