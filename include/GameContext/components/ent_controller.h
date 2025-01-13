@@ -2,12 +2,16 @@
 #include <include/GameContext/components/camera.h>
 #include <include/GameContext/IO/controller.h>
 #include <include/thirdparty/entt.hpp>
+#include <math.h>
 //#include <include/GameContext/GameContext.h>
 
 extern float deltaTime;
 
 struct ent_controller : public EventListener {
 	entt::handle target;
+	float pitch = 0.0;
+	float yaw = 0.0;
+	bool warp = 0;
 	ent_controller(entt::dispatcher& dispatcher, entt::handle& handle): EventListener(dispatcher, ALL_EVENTS), target(handle)
 	{
 		on_keyPress = [this](KeyPressEvent& evt)
@@ -15,28 +19,32 @@ struct ent_controller : public EventListener {
 			if (target.all_of<Transform>())
 			{
 
-				Transform& transform = target.get<Transform>();
+				// THIS MIGHT CAUSE SOME STUPID SHIT IF NOT CAMERA!!!
+				Transform& transform = target.get<Camera>(); // This was get<Transform>
 				//glm::vec3& position = target.get<Transform>().position;
-				std::cout << deltaTime;
+
 				switch (evt.code)
 				{
 				case SDLK_a:
-					transform.translate(transform.get_right_vector() * deltaTime * 10.0f);
+					transform.move(-transform.get_right_vector() * deltaTime * 10.0f);
 					break;
 				case SDLK_d:
-					transform.translate(-transform.get_right_vector() * deltaTime * 10.0f);
+					transform.move(transform.get_right_vector() * deltaTime * 10.0f);
 					break;
 				case SDLK_w:
-					transform.translate(-transform.get_forward_vector() * deltaTime * 10.0f);
+					transform.move(transform.get_forward_vector() * deltaTime * 10.0f);
 					break;
 				case SDLK_s:
-					transform.translate(transform.get_forward_vector() * deltaTime * 10.0f);
-					//transform.position += transform.get_forward_vector() * deltaTime * 10.0f;
+					transform.move(-transform.get_forward_vector() * deltaTime * 10.0f);
+					break;
+				case SDLK_ESCAPE:
 					break;
 
 				default:
 					break;
 				}
+
+
 
 			}
 		};
@@ -46,57 +54,71 @@ struct ent_controller : public EventListener {
 		{
 			if (target.all_of<Transform>())
 			{
-
-				Transform& transform = target.get<Transform>();
+				// THIS MIGHT CAUSE SOME STUPID SHIT IF NOT CAMERA!!!
+				Transform& transform = target.get<Camera>(); // This was get<Transform>
 				//glm::vec3& position = target.get<Transform>().position;
-				std::cout << deltaTime;
+
 				switch (evt.code)
 				{
 				case SDLK_a:
-					transform.translate(transform.get_right_vector() * deltaTime * 10.0f);
+					transform.move(-transform.get_right_vector() * deltaTime * 10.0f);
 					break;
 				case SDLK_d:
-					transform.translate(-transform.get_right_vector() * deltaTime * 10.0f);
+					transform.move(transform.get_right_vector() * deltaTime * 10.0f);
 					break;
 				case SDLK_w:
-					transform.translate(-transform.get_forward_vector() * deltaTime * 10.0f);
+					transform.move(transform.get_forward_vector() * deltaTime * 10.0f);
 					break;
 				case SDLK_s:
-					transform.translate(transform.get_forward_vector() * deltaTime * 10.0f);
-					//transform.position += transform.get_forward_vector() * deltaTime * 10.0f;
+					transform.move(-transform.get_forward_vector() * deltaTime * 10.0f);
 					break;
 
 				default:
 					break;
 				}
 
+
+
 			}
 		};
 
 		on_mouseMove = [this](MouseMoveEvent& evt)
 		{
-			// Get FOV of owning entity
+			// Get FOV of the owning entity
 			float fov = 90.0f; // Default FOV
-			if (target.all_of<Camera>())
-			{
+			if (target.all_of<Camera>()) {
 				fov = target.get<Camera>().fov;
 			}
 
 			// Convert FOV to radians for calculations
 			float fovRadians = glm::radians(fov);
 
-			// Calculate pitch from WINDOW_WIDTH, WINDOW_HEIGHT, and fovRadians
-			float pitch = 0.01 * evt.yrel;
-			float yaw = 0.01 * evt.xrel;
+			// Calculate pitch and yaw deltas from mouse input
+			float pitchDelta = 0.01f * -evt.yrel;
+			float yawDelta = 0.01f * -evt.xrel;
 
-			
+			// Clamp pitch to avoid flipping (e.g., within [-89, 89] degrees)
+			float maxPitch = glm::radians(89.0f);
+			pitch = glm::clamp(pitch + pitchDelta, -maxPitch, maxPitch);
 
-			// Use the yaw and pitch to update the camera direction or transform
-			// Assuming you have a function to update the camera's orientation
-			Transform& target_transform = target.get<Camera>();
-			//target_transform.rotate(pitch, yaw, 0.0f);
+			// Wrap yaw to stay within [0, 360) degrees
+			yaw += yawDelta;
+			//yaw = glm::mod(yaw, glm::radians(360.0f));
+			//if (yaw < 0.0f) yaw += glm::radians(360.0f);
 
-//			target_transform.rotate(pitch, yaw, 0.0f);
+			// Update the target transform's rotation
+			Transform& targetTransform = target.get<Camera>();
+
+			// Calculate pitch and yaw rotations using quaternions
+			glm::quat pitchQuat = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X
+			glm::quat yawQuat = glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));     // Rotate around Y
+
+			// Combine pitch and yaw rotations with the current rotation
+			targetTransform.rotation = glm::normalize(yawQuat * pitchQuat);
+
+			// Reset mouse position to the center of the window
+			//SDL_SetRelativeMouseMode(SDL_FALSE);
+			//if(warp) SDL_WarpMouseInWindow(SDL_GL_GetCurrentWindow(), WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
 		};
 
 	}
