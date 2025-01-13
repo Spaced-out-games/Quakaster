@@ -12,7 +12,7 @@
 
 struct Camera: public Transform
 {
-	Camera(entt::handle parent, float fov = 90.0f, float near = 0.01f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) {}
+	Camera(entt::handle parent, float fov = 90.0f, float near = 0.01f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 0.0,0.0,5.0 }); }
 	float fov;
 	float near;
 	float far;
@@ -54,19 +54,10 @@ struct Camera: public Transform
 	}
 	void set_shader_uniforms(Shader& shader)
 	{
-		glm::mat4 parent_transform = { 1.0f };
 
-		if (target.all_of<Transform>())
-		{
-			parent_transform = target.get<Transform>().get_matrix();
-		}
-		else
-		{
-			parent_transform = { 1.0f };
-		}
 
 		// transform the camera by the parent entity's transform
-		shader->operator[]("u_view") = get_matrix();// *parent_transform;
+		shader->operator[]("u_view") = glm::inverse(get_matrix());// *parent_transform;
 		shader->operator[]("u_proj") = get_projection_matrix();
 
 		//shader["u_view"] = get_matrix();
