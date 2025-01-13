@@ -44,6 +44,10 @@ struct Controller
     // Update controller input and forward events
     void update()
     {
+        
+
+        // Only draw if in relative mode
+        ui_context.paused = ui_context.paused;
         // Ensure ImGui is ready
         if (!IOHandler)
             init();
@@ -53,20 +57,32 @@ struct Controller
         int yrel = 0;
         Uint16 mod;
 
+        
+
         // Poll and process SDL events
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
             {
+                // Toggle the relative mode
+                ui_context.paused = !ui_context.paused; // Toggle the state
+
+                // this will cause errors
+                ConsoleUI* consoleUI = dynamic_cast<ConsoleUI*>(ui_context.elements.at(0));
+
+                if (!ui_context.paused) { consoleUI->last_pause_state = 0; }
+
+
+                SDL_SetRelativeMouseMode(ui_context.paused ? SDL_TRUE : SDL_FALSE); // Set relative mouse mode
                 dispatcher.trigger(KeyPressEvent{ event.key.keysym.sym, event.key.keysym.mod });
-                return;
+                return; // Skip further processing for this event
             }
 
             // Forward the event to ImGui
             ImGui_ImplSDL2_ProcessEvent(&event);
 
             // Handle events not captured by ImGui
-            if (!IOHandler->WantCaptureKeyboard || !IOHandler->WantCaptureMouse)
+            if ((!IOHandler->WantCaptureKeyboard || !IOHandler->WantCaptureMouse) && ui_context.paused)
             {
                 switch (event.type)
                 {
@@ -78,7 +94,7 @@ struct Controller
                 case SDL_KEYUP:
                     dispatcher.trigger(KeyReleaseEvent{ event.key.keysym.sym, event.key.keysym.mod });
 
-                    
+
                     keyStates.erase(static_cast<int>(event.key.keysym.sym));
 
                     break;
@@ -98,19 +114,23 @@ struct Controller
                     break;
 
                 case SDL_MOUSEMOTION:
-                    // Get mouse motion details
-                    lastMouseX = event.motion.x;
-                    lastMouseY = event.motion.y;
-                    xrel = event.motion.xrel; // Change in x position
-                    yrel = event.motion.yrel; // Change in y position
-                    mod = event.motion.state; // Modifier keys
+                    if (ui_context.paused)
+                    {
+                        // Get mouse motion details
+                        lastMouseX = event.motion.x;
+                        lastMouseY = event.motion.y;
+                        xrel = event.motion.xrel; // Change in x position
+                        yrel = event.motion.yrel; // Change in y position
+                        mod = event.motion.state; // Modifier keys
 
-                    // Trigger mouse move event
-                    dispatcher.trigger(MouseMoveEvent{ lastMouseX, lastMouseY, xrel, yrel, mod });
+                        // Trigger mouse move event
+                        dispatcher.trigger(MouseMoveEvent{ lastMouseX, lastMouseY, xrel, yrel, mod });
 
-                    // Update ImGui mouse position
-                    IOHandler->MousePos = ImVec2(static_cast<float>(lastMouseX), static_cast<float>(lastMouseY));
-                    break;
+                        // Update ImGui mouse position
+                        IOHandler->MousePos = ImVec2(static_cast<float>(lastMouseX), static_cast<float>(lastMouseY));
+                        break;
+                    }
+                    
 
                 default:
                     break;
