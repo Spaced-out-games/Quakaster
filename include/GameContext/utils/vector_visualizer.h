@@ -40,6 +40,7 @@ struct vector_visualizer: public Transform
 	}
 	static void draw_all(entt::registry& registry, Camera& camera)
 	{
+		camera.set_shader_uniforms(shader);
 		auto view = registry.view<vector_visualizer>();
 		for (auto entity : view) {
 			vector_visualizer& visualizer = registry.get<vector_visualizer>(entity);
@@ -57,6 +58,8 @@ struct vector_visualizer: public Transform
 			// bind the shader
 
 			shader.bind();
+
+
 			visualizer.vao.bind();
 			visualizer.vbo.bind();
 			visualizer.ebo.bind();
@@ -65,7 +68,7 @@ struct vector_visualizer: public Transform
 
 
 			VAO::unbind();
-			EBO::unbind(); // Unbind the EBO after drawing
+			EBO::unbind();
 
 
 		}

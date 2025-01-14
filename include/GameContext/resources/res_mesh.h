@@ -44,7 +44,7 @@ struct Mesh {
     ~Mesh() = default;
 
     // Draw all meshes in the registry
-    static void draw_all(entt::registry& registry) {
+    static void draw_all(entt::registry& registry, Camera& camera) {
         // Iterate over entities with VAO, VBO, EBO, and Shader components
         auto view = registry.view<VAO, VBO, EBO, Shader>();
         for (auto entity : view) {
@@ -53,6 +53,8 @@ struct Mesh {
             auto& ebo = view.get<EBO>(entity);
             auto& shader = view.get<Shader>(entity);
 
+
+            camera.set_shader_uniforms(shader);
             if (registry.all_of<Texture>(entity))
             {
                 registry.get<Texture>(entity).bind();
@@ -62,6 +64,7 @@ struct Mesh {
 
             // Bind the shader for this mesh
             shader->bind();
+
             vao.bind();
             ebo.bind(); // Bind the EBO before drawing
             glDrawElements(GL_TRIANGLES, ebo.get_index_count(), GL_UNSIGNED_INT, 0); // Draw using indices

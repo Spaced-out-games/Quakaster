@@ -227,15 +227,15 @@ struct GameContext
 			glClear(GL_COLOR_BUFFER_BIT);
 			//scene.registry.get<Camera>(camera_test).set_shader_uniforms(handle1.get<Shader>());
 			
-			player.get<Camera>().set_shader_uniforms(cube.get<Shader>());
+			//player.get<Camera>().set_shader_uniforms(cube.get<Shader>());
 			
-			//handle1.get<Texture>().bind();
+			
 
-			Mesh::draw_all(scene.registry);
+			Mesh::draw_all(scene.registry, player.get<Camera>());
 
 
-			player.get<Camera>().set_shader_uniforms(cube.get<Shader>());
-			vector_visualizer::draw_all(scene.registry, player.get<Camera>());
+			//player.get<Camera>().set_shader_uniforms(cube.get<Shader>());
+			//vector_visualizer::draw_all(scene.registry, player.get<Camera>());
 
 
 			controller.update();
