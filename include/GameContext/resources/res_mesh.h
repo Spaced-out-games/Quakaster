@@ -59,9 +59,6 @@ struct Mesh {
             }
 
             //if (registry.all_of<Transform>(entity)) {
-            //    auto& transform = registry.get<Transform>(entity);
-            //    shader->operator[]("u_model") = transform.get_matrix();
-            //}
 
             // Bind the shader for this mesh
             shader->bind();

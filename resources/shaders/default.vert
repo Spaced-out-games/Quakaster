@@ -2,6 +2,8 @@
 layout(location = 0) in vec3 aPos;
 uniform mat4 u_view;
 uniform mat4 u_proj;
+uniform mat4 u_model;
+
 
 out vec2 TexCoord;
 

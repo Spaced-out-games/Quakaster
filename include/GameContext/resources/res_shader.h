@@ -78,8 +78,12 @@ public:
     void set_uniform(const glm::mat4& value) {
         glUniformMatrix4fv(program_ID, 1, GL_FALSE, &value[0][0]);
     }
-    res_shader() = default;
+    res_shader()
+    {
+        std::cout << "";
+    }
     res_shader(const std::string& vertex_path, const std::string& fragment_path) {
+        std::cout << "";
         compile_and_link(vertex_path, fragment_path);
     }
 

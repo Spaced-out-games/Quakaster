@@ -3,7 +3,7 @@ layout(location = 0) in vec3 aPos;
 uniform mat4 u_view;
 uniform mat4 u_proj;
 uniform mat4 u_model;
-// uniform vec3 u_vector;
+uniform vec3 u_vector;
 
 
 void main() {

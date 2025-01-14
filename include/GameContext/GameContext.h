@@ -159,20 +159,20 @@ struct GameContext
 	// Game loop
 	virtual void run()
 	{
-
+		vector_visualizer::init();
 
 		// Load a shader resource
 		//Shader shader = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
 		// Points to draw
 		std::vector<default_vertex_t> vertices = {
-	{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
-	{{1.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
-	{{1.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
-	{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
-	{{0.0f, 0.0f, 1.0f}},  // Vertex 4: Bottom-left-front
-	{{1.0f, 0.0f, 1.0f}},  // Vertex 5: Bottom-right-front
-	{{1.0f, 1.0f, 1.0f}},  // Vertex 6: Top-right-front
-	{{0.0f, 1.0f, 1.0f}},  // Vertex 7: Top-left-front
+			{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
+			{{1.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
+			{{1.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
+			{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
+			{{0.0f, 0.0f, 1.0f}},  // Vertex 4: Bottom-left-front
+			{{1.0f, 0.0f, 1.0f}},  // Vertex 5: Bottom-right-front
+			{{1.0f, 1.0f, 1.0f}},  // Vertex 6: Top-right-front
+			{{0.0f, 1.0f, 1.0f}},  // Vertex 7: Top-left-front
 		};
 
 
@@ -198,43 +198,44 @@ struct GameContext
 		};
 
 
-		auto camera_test = scene.registry.create();
-		auto handle = entt::handle{ scene.registry, camera_test };
-		handle.emplace<Camera>(handle);
+		// Initialize the player
+		auto player = entt::handle{ scene.registry, scene.registry.create() };
+		player.emplace<Camera>(player);
+		player.get<Camera>().bind_convars(interpreter);
+		player.get<Camera>().look_at({ 0.0,0.0,0.0 });
+		player.emplace<ent_controller>(event_handler, player.get<Camera>());
 
-
-		handle.get<Camera>().bind_convars(interpreter);
-		handle.get<Camera>().look_at({ 0.0,0.0,0.0 });
-		handle.emplace<ent_controller>(event_handler, handle.get<Camera>());
-
-		//handle.get<Texture>().bind();
+		//player.get<Texture>().bind();
 
 
 		// Create an entity with a mesh
-		auto triangle_Mesh = scene.registry.create();
-		entt::handle handle1{ scene.registry, triangle_Mesh };
-		//handle1.emplace<Shader>("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
-		Texture::unbind();
-		
-		Mesh mesh1(handle1, vertices, indices, "albedo_texture_shader", "resources/shaders/default.vert", "resources/shaders/default.frag"); // Mesh with first shader
-		
-		vector_visualizer::init();
-		vector_visualizer v;
-		//handle1.emplace<vector_visualizer>();
+		auto cube = entt::handle{ scene.registry, scene.registry.create() };
+		Mesh cube_mesh(cube, vertices, indices, "albedo_texture_shader", "resources/shaders/default.vert", "resources/shaders/default.frag"); // Mesh with first shader
 
-		init();
+
+		
+
+
+
+		
+		
+
 		while (running)
 		{
 			update_dt();
 			glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 			glClear(GL_COLOR_BUFFER_BIT);
-			scene.registry.get<Camera>(camera_test).set_shader_uniforms(handle1.get<Shader>());
+			//scene.registry.get<Camera>(camera_test).set_shader_uniforms(handle1.get<Shader>());
 			
+			player.get<Camera>().set_shader_uniforms(cube.get<Shader>());
 			
 			//handle1.get<Texture>().bind();
 
 			Mesh::draw_all(scene.registry);
-			vector_visualizer::draw_all(scene.registry, handle.get<Camera>());
+
+
+			player.get<Camera>().set_shader_uniforms(cube.get<Shader>());
+			vector_visualizer::draw_all(scene.registry, player.get<Camera>());
 
 
 			controller.update();

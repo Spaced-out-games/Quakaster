@@ -1,6 +1,9 @@
 #version 330 core
 out vec4 FragColor;
-
+uniform mat4 u_view;
+uniform mat4 u_proj;
+uniform mat4 u_model;
+uniform vec3 u_vector;
 
 
 void main() {

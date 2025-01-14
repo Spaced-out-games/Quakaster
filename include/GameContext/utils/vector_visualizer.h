@@ -15,8 +15,7 @@ struct vector_visualizer: public Transform
 
 	static void init()
 	{
-		//shader = new res_shader("resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
-
+		vector_visualizer::shader.compile_and_link("resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
 	}
 
 	vector_visualizer()
@@ -80,14 +79,6 @@ struct vector_visualizer: public Transform
 	VBO vbo;
 	EBO ebo;
 	
-	struct initializer
-	{
-		initializer()
-		{
-			vector_visualizer::shader.compile_and_link("resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
-		}
-	};
-	vector_visualizer::initializer initr;
 };
 
 
