@@ -55,14 +55,17 @@ struct Camera: public Transform
 	void set_shader_uniforms(Shader& shader)
 	{
 
-
-		// transform the camera by the parent entity's transform
 		shader->operator[]("u_view") = glm::inverse(get_matrix());// *parent_transform;
 		shader->operator[]("u_proj") = get_projection_matrix();
-
-		//shader["u_view"] = get_matrix();
-		//shader["u_proj"] = get_projection_matrix();
 	}
+	void set_shader_uniforms(res_shader& shader)
+	{
+
+		shader["u_view"] = glm::inverse(get_matrix());// *parent_transform;
+		shader["u_proj"] = get_projection_matrix();
+	}
+
+
 
 	void bind_convars(ConsoleInterpreter& interpreter)
 	{

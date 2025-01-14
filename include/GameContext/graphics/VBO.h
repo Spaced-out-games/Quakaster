@@ -13,6 +13,11 @@ public:
     */
     template <typename vertex_t>
     VBO(const std::vector<vertex_t>& vertices) {
+        init<vertex_t>(vertices);
+    }
+    template <typename vertex_t>
+    void init(const std::vector<vertex_t>& vertices)
+    {
         glGenBuffers(1, &vboID); // Generate a VBO
         bind(); // Bind the VBO
 

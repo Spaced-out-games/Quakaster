@@ -14,51 +14,78 @@ extern std::string root_directory;
 class shader_handle {
 public:
     // Constructor is private, accessible only to res_shader
-    shader_handle(GLuint programID, GLint location)
-        : programID(programID), uniformLocation(location) {}
+    shader_handle(GLuint programID, GLint location, std::string name = "N/a")
+        : programID(programID), uniformLocation(location), name(name) {}
 
     // Overload the assignment operator to set uniforms
     template<typename T>
     shader_handle& operator=(const T& value) {
         if (uniformLocation == -1) {
-//            console_log("Uniform location is invalid.", console_colors::DEFAULT_ERROR_CRITICAL);
-            //__debugbreak();
+            std::cout << "Uniform location is invalid (ID: " << name << ")";
+             __debugbreak();
         }
         else
         {
-            setUniformValue(uniformLocation, value);
+            set_uniform(uniformLocation, value);
         }
         return *this;
     }
 
-private:
-    GLuint programID;
-    GLint uniformLocation; // Store uniform location instead of name
+
 
     // Helper methods to set the uniform values based on type
-    void setUniformValue(GLint location, int value) {
+    void set_uniform(GLint location, int value) {
         glUniform1i(location, value);
     }
 
-    void setUniformValue(GLint location, float value) {
+    void set_uniform(GLint location, float value) {
         glUniform1f(location, value);
     }
 
-    void setUniformValue(GLint location, const glm::vec3& value) {
+    void set_uniform(GLint location, const glm::vec3& value) {
         glUniform3fv(location, 1, &value[0]);
     }
 
-    void setUniformValue(GLint location, const glm::mat4& value) {
+    void set_uniform(GLint location, const glm::mat4& value) {
         glUniformMatrix4fv(location, 1, GL_FALSE, &value[0][0]);
     }
+
+private:
+    #ifdef _DEBUG
+    std::string name;
+    #endif
+    GLuint programID;
+    GLint uniformLocation; // Store uniform location instead of name
 };
 
 
 class res_shader {
 public:
 
+    // Helper methods to set the uniform values based on type
+    void set_uniform(int value) {
+        glUniform1i(program_ID, value);
+    }
+
+    void set_uniform(float value) {
+        glUniform1f(program_ID, value);
+    }
+
+    void set_uniform(const glm::vec3& value) {
+        glUniform3fv(program_ID, 1, &value[0]);
+    }
+
+    void set_uniform(const glm::mat4& value) {
+        glUniformMatrix4fv(program_ID, 1, GL_FALSE, &value[0][0]);
+    }
+    res_shader() = default;
     res_shader(const std::string& vertex_path, const std::string& fragment_path) {
+        compile_and_link(vertex_path, fragment_path);
+    }
+
+    void compile_and_link(const std::string& vertex_path, const std::string& fragment_path) {
         std::string error_message;
+
 
         GLuint vertex_shader = load_shader(vertex_path, GL_VERTEX_SHADER, error_message);
         if (vertex_shader == 0) {
@@ -101,10 +128,10 @@ public:
     shader_handle operator[](const std::string& uniformName) {
         GLint location = glGetUniformLocation(program_ID, uniformName.c_str());
         if (location == -1) {
-//            console_log("Uniform " + uniformName + " not found in shader.", console_colors::DEFAULT_ERROR_CRITICAL);
-            //__debugbreak();
+            std::cout << "ERROR: could not find uniform with name '" << uniformName << "'.\n";
+            __debugbreak();
         }
-        return shader_handle(program_ID, location); // Return a shader_handle with location
+        return shader_handle(program_ID, location, uniformName); // Return a shader_handle with location
     }
 
     ~res_shader() {
@@ -119,7 +146,7 @@ public:
     GLuint get_program_ID() const { return program_ID; }
 
     static std::string load_source(const std::string& source_path) {
-        std::ifstream shader_file(source_path);
+        std::ifstream shader_file(std::string(root_directory + source_path));
         if (!shader_file.is_open()) {
             return "";
         }
@@ -129,7 +156,8 @@ public:
         return buffer.str();
     }
 
-    static GLuint load_shader(const std::string& source_path, GLenum shader_type, std::string& error_message) {
+    static GLuint load_shader(const std::string source_path, GLenum shader_type, std::string& error_message) {
+
         std::string code = load_source(source_path);
 
         if (code.empty()) {
@@ -171,8 +199,8 @@ public:
     {
         auto handle = res_shader::shader_cache.load(
             entt::hashed_string{ name.c_str()},
-            root_directory + vertex_path.c_str(),
-            root_directory + fragment_path.c_str()
+            vertex_path.c_str(),
+            fragment_path.c_str()
         );
         return handle.first->second.handle();
     }

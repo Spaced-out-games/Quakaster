@@ -7,15 +7,17 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <include/GameContext/window/Renderer.h>
 
-#define WINDOW_WIDTH 1920
-#define WINDOW_HEIGHT 1080
+#define WINDOW_WIDTH 1366
+#define WINDOW_HEIGHT 768
+
+//#define WINDOW_WIDTH 1920
+//#define WINDOW_HEIGHT 1080
+
 #include <include/GameContext/graphics/VAO.h>
 
 
 class Window {
 public:
-    //Renderer renderer;
-    Window();
     Window(ConsoleInterpreter& interpreter, int width, int height);
     ~Window();
 
@@ -130,6 +132,8 @@ Window::Window(ConsoleInterpreter& interpreter, int width = WINDOW_WIDTH, int he
 
     // Bind viewport if necessary
     // viewport.bind(); // Ensure this is defined and necessary
+
+    renderer.init();
 }
 
 Window::~Window() {

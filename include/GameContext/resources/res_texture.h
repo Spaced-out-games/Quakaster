@@ -54,6 +54,11 @@ struct Texture
 		glBindTexture(texture_type, tex_ID);
 	}
 
+	static void unbind()
+	{
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
 	GLuint tex_ID;
 	GLenum texture_type;
 	int width;

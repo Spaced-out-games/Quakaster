@@ -27,7 +27,7 @@ struct Mesh {
         // Create and bind EBO
         entity.emplace<EBO>();
         auto& ebo = entity.get<EBO>();
-        ebo.set_data(indices); // Upload indices to the EBO
+        ebo.init(indices); // Upload indices to the EBO
 
         // Store the shader in the entity
         entity.emplace<Shader>(shader_name, vertex_path, fragment_path);
@@ -38,7 +38,7 @@ struct Mesh {
         // Unbind VBO, EBO, and VAO
         VBO::unbind();
         EBO::unbind();
-        vao.unbind();
+        VAO::unbind();
     }
 
     ~Mesh() = default;
@@ -53,10 +53,15 @@ struct Mesh {
             auto& ebo = view.get<EBO>(entity);
             auto& shader = view.get<Shader>(entity);
 
-            if (registry.all_of<Transform>(entity)) {
-                auto& transform = registry.get<Transform>(entity);
-                shader->operator[]("model") = transform.get_matrix();
+            if (registry.all_of<Texture>(entity))
+            {
+                registry.get<Texture>(entity).bind();
             }
+
+            //if (registry.all_of<Transform>(entity)) {
+            //    auto& transform = registry.get<Transform>(entity);
+            //    shader->operator[]("u_model") = transform.get_matrix();
+            //}
 
             // Bind the shader for this mesh
             shader->bind();
@@ -64,6 +69,8 @@ struct Mesh {
             ebo.bind(); // Bind the EBO before drawing
             glDrawElements(GL_TRIANGLES, ebo.get_index_count(), GL_UNSIGNED_INT, 0); // Draw using indices
             VAO::unbind();
+            //VBO::unbind();
+            
             EBO::unbind(); // Unbind the EBO after drawing
         }
     }

@@ -8,6 +8,10 @@ public:
     EBO() {
         glGenBuffers(1, &eboID); // Generate an EBO
     }
+    EBO(const std::vector<uint32_t>& indices) {
+        glGenBuffers(1, &eboID); // Generate an EBO
+        init(indices);
+    }
 
     ~EBO() {
         glDeleteBuffers(1, &eboID); // Cleanup
@@ -21,7 +25,7 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind any EBO
     }
 
-    void set_data(const std::vector<uint32_t>& indices) {
+    void init(const std::vector<uint32_t>& indices) {
         bind(); // Bind the EBO
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
         indexCount = indices.size(); // Store the index count

@@ -16,6 +16,12 @@ struct Transform {
         return matrix * glm::mat4_cast(rotation);
     }
 
+    glm::mat4 get_matrix(entt::entity entity, entt::registry scene) const
+    {
+        glm::mat4 parent_transform = scene.get<Transform>(entity).get_matrix();
+        return Transform::get_matrix() * parent_transform;
+    }
+
     glm::mat4 get_matrix(entt::handle owner) const {
         glm::mat4 matrix = glm::mat4(1.0f); // Initialize the matrix to identity
 

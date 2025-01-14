@@ -19,11 +19,7 @@
 #include <include/GameContext/resources/res_texture.h>
 #include <include/GameContext/resources/res_shader.h>
 #include <include/GameContext/resources/res_mesh.h>
-
-std::string my_command(ConsoleInterpreter& interpreter, std::span<Token> args) {
-	// Handle your command's logic here
-	return "Command executed successfully!";
-}
+#include <include/GameContext/utils/vector_visualizer.h>
 
 static float deltaTime;
 
@@ -169,44 +165,47 @@ struct GameContext
 		//Shader shader = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
 		// Points to draw
 		std::vector<default_vertex_t> vertices = {
-	{{-0.5f, -0.5f, -0.5f}}, // Vertex 0: Bottom-left-back
-	{{ 0.5f, -0.5f, -0.5f}}, // Vertex 1: Bottom-right-back
-	{{ 0.5f,  0.5f, -0.5f}}, // Vertex 2: Top-right-back
-	{{-0.5f,  0.5f, -0.5f}}, // Vertex 3: Top-left-back
-	{{-0.5f, -0.5f,  0.5f}}, // Vertex 4: Bottom-left-front
-	{{ 0.5f, -0.5f,  0.5f}}, // Vertex 5: Bottom-right-front
-	{{ 0.5f,  0.5f,  0.5f}}, // Vertex 6: Top-right-front
-	{{-0.5f,  0.5f,  0.5f}}, // Vertex 7: Top-left-front
+	{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
+	{{1.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
+	{{1.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
+	{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
+	{{0.0f, 0.0f, 1.0f}},  // Vertex 4: Bottom-left-front
+	{{1.0f, 0.0f, 1.0f}},  // Vertex 5: Bottom-right-front
+	{{1.0f, 1.0f, 1.0f}},  // Vertex 6: Top-right-front
+	{{0.0f, 1.0f, 1.0f}},  // Vertex 7: Top-left-front
 		};
+
 
 		std::vector<uint32_t> indices = {
 			// Back face
-			0, 1, 2,
-			0, 2, 3,
+			0, 2, 1,  // Flipped 2 and 1
+			0, 3, 2,  // Flipped 3 and 2
 			// Front face
-			4, 5, 6,
-			4, 6, 7,
+			5, 6, 4,  // Flipped 6 and 4
+			6, 7, 4,  // Flipped 7 and 4
 			// Left face
-			0, 3, 7,
-			0, 7, 4,
+			0, 7, 3,  // Flipped 7 and 3
+			0, 4, 7,  // Flipped 4 and 7
 			// Right face
-			1, 5, 6,
-			1, 6, 2,
+			1, 6, 5,  // Flipped 6 and 5
+			1, 2, 6,  // Flipped 2 and 6
 			// Top face
-			3, 2, 6,
-			3, 6, 7,
+			3, 6, 2,  // Flipped 6 and 2
+			3, 7, 6,  // Flipped 7 and 6
 			// Bottom face
-			0, 1, 5,
-			0, 5, 4,
+			0, 1, 5,  // Flipped 1 and 5
+			0, 5, 4   // Flipped 5 and 4
 		};
+
 
 		auto camera_test = scene.registry.create();
 		auto handle = entt::handle{ scene.registry, camera_test };
 		handle.emplace<Camera>(handle);
 
+
 		handle.get<Camera>().bind_convars(interpreter);
 		handle.get<Camera>().look_at({ 0.0,0.0,0.0 });
-		handle.emplace<ent_controller>(event_handler, handle);
+		handle.emplace<ent_controller>(event_handler, handle.get<Camera>());
 
 		//handle.get<Texture>().bind();
 
@@ -215,11 +214,13 @@ struct GameContext
 		auto triangle_Mesh = scene.registry.create();
 		entt::handle handle1{ scene.registry, triangle_Mesh };
 		//handle1.emplace<Shader>("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
-		handle1.emplace<Texture>("resources/images/atlas.png", GL_TEXTURE_2D);
+		Texture::unbind();
+		
 		Mesh mesh1(handle1, vertices, indices, "albedo_texture_shader", "resources/shaders/default.vert", "resources/shaders/default.frag"); // Mesh with first shader
 		
-
-
+		vector_visualizer::init();
+		vector_visualizer v;
+		//handle1.emplace<vector_visualizer>();
 
 		init();
 		while (running)
@@ -230,12 +231,12 @@ struct GameContext
 			scene.registry.get<Camera>(camera_test).set_shader_uniforms(handle1.get<Shader>());
 			
 			
-			handle1.get<Texture>().bind();
+			//handle1.get<Texture>().bind();
 
 			Mesh::draw_all(scene.registry);
+			vector_visualizer::draw_all(scene.registry, handle.get<Camera>());
 
 
-			//t.set_uniforms(handle.get<Shader>());
 			controller.update();
 			begin_ui();
 			draw_ui();
