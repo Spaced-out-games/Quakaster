@@ -8,6 +8,6 @@ uniform mat4 u_model;
 out vec2 TexCoord;
 
 void main() {
-    gl_Position = u_proj * u_view * vec4(aPos, 1.0);
+    gl_Position = u_proj * u_view * u_model * vec4(aPos, 1.0);
     TexCoord = aPos.xz;
 }

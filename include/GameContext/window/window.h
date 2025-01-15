@@ -124,9 +124,9 @@ Window::Window(ConsoleInterpreter& interpreter, int width = WINDOW_WIDTH, int he
     }
 
 
-    //if (SDL_SetRelativeMouseMode(SDL_TRUE) != 0) {
-    //    SDL_Log("Failed to enable relative mouse mode: %s", SDL_GetError());
-    //}
+    if (SDL_SetRelativeMouseMode(SDL_TRUE) != 0) {
+        SDL_Log("Failed to enable relative mouse mode: %s", SDL_GetError());
+    }
     // Optional: Uncomment if needed
     // renderer.gui_context->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable keyboard controls
 

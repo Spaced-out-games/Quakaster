@@ -10,9 +10,9 @@
 struct meshComponent
 {
 
-	//meshComponent() {
-	//	default_constructed = 1;
-	//}
+	meshComponent() {
+		default_constructed = 1;
+	}
 
 
 	template <typename vertex_t>
@@ -42,7 +42,7 @@ struct meshComponent
 		// Unbind only the VAO since unbinding the others removes the relation
 		VAO::unbind();
 
-
+		shader.init(shader_name, vertex_path, fragment_path);
 	}
 
 

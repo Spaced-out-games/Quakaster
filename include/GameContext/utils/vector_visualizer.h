@@ -11,7 +11,8 @@
 
 struct vector_visualizer
 {
-	glm::vec3 vector;
+	vector_visualizer() = default;
+	glm::vec3 vector = {10.0,1.0,1.0};
 
 	static void init()
 	{
@@ -19,23 +20,29 @@ struct vector_visualizer
 			{{0.0,0.0,0.0}},
 			{{1.0,0.0,0.0}},
 			{{0.0,1.0,0.0}},
-			{{0.0,0.0,1.0}}
+			{{0.0,0.0,1.0}},
+			{{0.577f,0.577f,0.577f} },
+
 
 		};
 		std::vector<uint32_t> indices = {
 			0,1,
 			0,2,
-			0,3
+			0,3,
+			0,4
 		};
-		//mesh.init();
-
-		//vector_visualizer::mesh.init(vertices, indices, "vector_visualizer_shader", "resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
+		//vector_visualizer::shader.init()
+		vector_visualizer::mesh.init(vertices, indices, "vector_visualizer_shader", "resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
 	}
 
 	static void draw_all(entt::registry& registry, Camera& camera)
 	{
-		shader->bind();
+		Shader& shader = vector_visualizer::mesh.shader;
 		mesh.vao.bind();
+		shader->bind();
+
+		//show_uniforms(shader->program_ID);
+
 		auto view = registry.view<vector_visualizer>();
 		for (auto entity : view)
 		{
@@ -46,9 +53,14 @@ struct vector_visualizer
 			{
 				shader->operator[]("u_model") = registry.get<Transform>(entity).get_matrix();
 			}
+			else
+			{
+				shader->operator[]("u_model") = glm::mat4(1.0f);
+			}
+			//shader->operator[]("u_proj") = glm::mat4(1.0);
 			shader->operator[]("u_vector") = registry.get<vector_visualizer>(entity).vector;
 
-			glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
 
 
 		}
@@ -56,14 +68,14 @@ struct vector_visualizer
 
 	private:
 
-		static Shader shader;
+		//static Shader shader;
 
 		// This will be excluded from meshComponent::draw_all, since this isn't registered in any entt::registry ; )
-		//static meshComponent mesh;
+		static meshComponent mesh;
 };
 
 
 
 
-Shader vector_visualizer::shader;
-//meshComponent vector_visualizer::mesh;
+//Shader vector_visualizer::shader;
+meshComponent vector_visualizer::mesh;

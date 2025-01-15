@@ -7,7 +7,7 @@
 #include <cmath>
 
 struct Transform {
-    glm::vec3 position = glm::vec3(-10.0f, 0.0f, 0.0f); // Position of the transform
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f); // Position of the transform
     glm::quat rotation = glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)); // Rotation as a quaternion
 
     // Get the transformation matrix

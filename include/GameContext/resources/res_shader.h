@@ -80,7 +80,7 @@ public:
     }
     res_shader()
     {
-        std::cout << "";
+        //std::cout << "";
     }
     res_shader(const std::string& vertex_path, const std::string& fragment_path) {
         std::cout << "";
@@ -155,7 +155,7 @@ public:
         }
     }
 
-    void bind() const { glUseProgram(program_ID); }
+    void bind() const { glUseProgram(program_ID); std::cout << "bound shader (" << program_ID << ")\n"; }
     void unbind() const { glUseProgram(0); }
 
     GLuint get_program_ID() const { return program_ID; }
@@ -219,7 +219,7 @@ public:
         );
         return handle.first->second.handle();
     }
-private:
+//private:
     static inline entt::resource_cache<res_shader> shader_cache;
     GLuint program_ID = 0;
     struct shader_loader {
@@ -236,17 +236,19 @@ private:
 
 struct Shader {
     std::shared_ptr<res_shader> ptr; // Use composition instead of inheritance
-
+    std::string debug_name;
     // Default constructor
     Shader() = default;
 
     // Constructor initializing the shared_ptr
     Shader(const std::string& name, const std::string& vertex_path, const std::string& fragment_path) {
+        debug_name = debug_name + name;
         init(name, vertex_path, fragment_path);
     }
 
     // Initialization function
     void init(const std::string& name, const std::string& vertex_path, const std::string& fragment_path) {
+        debug_name = debug_name + name;
         ptr = res_shader::load(name, vertex_path, fragment_path);
     }
 

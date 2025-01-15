@@ -19,10 +19,10 @@
 #include <include/GameContext/resources/res_texture.h>
 #include <include/GameContext/resources/res_shader.h>
 //#include <include/GameContext/resources/res_mesh.h>
-//#include <include/GameContext/utils/vector_visualizer.h>
+#include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/resources/meshComponent.h>
 
-static float deltaTime;
+static float deltaTime = 0.0f;
 
 struct GameContext
 {
@@ -130,7 +130,11 @@ struct GameContext
 
 	// Refreshes the frame and displays it to the screen
 	inline void refresh() { SDL_GL_SwapWindow(app.window.sdl_window); }
-	virtual void init() {}
+	virtual void init()
+	{
+
+
+	}
 
 	static void quit(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
 		//auto shader = res_shader::load("default", "resources/shaders/default.vert", "resources/shaders/default.frag");
@@ -219,20 +223,28 @@ struct GameContext
 			"resources/shaders/default.vert",
 			"resources/shaders/default.frag"
 		);
+		cube.emplace<vector_visualizer>();
+		cube.emplace<Transform>();
+		auto& transform = cube.get<Transform>();
+		auto& visualizer = cube.get<vector_visualizer>();
 		//cube.emplace<Transform>();
 
-		//vector_visualizer::init();
+		vector_visualizer::init();
 
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 		while (running)
 		{
+
 			update_dt();
-			
+			transform.move(visualizer.vector * deltaTime);
+
+			std::cout << "dt: " << deltaTime << '\n';
+
 			glClear(GL_COLOR_BUFFER_BIT);
 
 
 			meshComponent::draw_all(scene.registry, player.get<Camera>());
-			//vector_visualizer::draw_all(scene.registry, player.get<Camera>());
+			vector_visualizer::draw_all(scene.registry, player.get<Camera>());
 
 
 			controller.update();

@@ -10,8 +10,8 @@ extern float deltaTime;
 struct ent_controller : public EventListener {
 	//entt::handle target;
 	Transform& target_transform;
-	float pitch = 0.0;
-	float yaw = 0.0;
+	//float pitch = 0.0;
+	//float yaw = 0.0;
 	bool warp = 0;
 	ent_controller(entt::dispatcher& dispatcher, Transform& transform): EventListener(dispatcher, ALL_EVENTS), target_transform(transform)//target(handle)
 	{

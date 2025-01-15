@@ -8,3 +8,17 @@ static void check_gl_error(const std::string& context) {
         __debugbreak();
     }
 }
+void show_uniforms(GLuint programID)
+{
+    GLint numUniforms;
+    glGetProgramiv(programID, GL_ACTIVE_UNIFORMS, &numUniforms);
+
+    for (GLint i = 0; i < numUniforms; ++i) {
+        char name[256];
+        GLsizei length;
+        GLint size;
+        GLenum type;
+        glGetActiveUniform(programID, i, sizeof(name), &length, &size, &type, name);
+        printf("Uniform #%d Type: %u Name: %s\n", i, type, name);
+    }
+}
