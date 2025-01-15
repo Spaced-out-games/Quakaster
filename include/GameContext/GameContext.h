@@ -162,19 +162,18 @@ struct GameContext
 	{
 		init();
 
-
 		// Load a shader resource
 		//Shader shader = res_shader::load("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
 		// Points to draw
 		std::vector<default_vertex_t> vertices = {
-	{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
-	{{1.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
-	{{1.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
-	{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
-	{{0.0f, 0.0f, 1.0f}},  // Vertex 4: Bottom-left-front
-	{{1.0f, 0.0f, 1.0f}},  // Vertex 5: Bottom-right-front
-	{{1.0f, 1.0f, 1.0f}},  // Vertex 6: Top-right-front
-	{{0.0f, 1.0f, 1.0f}},  // Vertex 7: Top-left-front
+			{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
+			{{1.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
+			{{1.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
+			{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
+			{{0.0f, 0.0f, 1.0f}},  // Vertex 4: Bottom-left-front
+			{{1.0f, 0.0f, 1.0f}},  // Vertex 5: Bottom-right-front
+			{{1.0f, 1.0f, 1.0f}},  // Vertex 6: Top-right-front
+			{{0.0f, 1.0f, 1.0f}},  // Vertex 7: Top-left-front
 		};
 
 
