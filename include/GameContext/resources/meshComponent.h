@@ -61,11 +61,16 @@ struct meshComponent
 			
 
 			shader->bind();
-			camera.set_shader_uniforms(shader);
+			camera.set_shader_uniforms(shader, entity, &registry);
 
 			if (registry.all_of<Transform>(entity))
 			{
 				shader->operator[]("u_model") = registry.get<Transform>(entity).get_matrix();
+			}
+
+			else
+			{
+				shader->operator[]("u_model") = glm::mat4(1.0f);
 			}
 
 			vao.bind();

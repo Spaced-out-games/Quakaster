@@ -11,8 +11,10 @@
 
 struct vector_visualizer
 {
-	vector_visualizer() = default;
-	glm::vec3 vector = {10.0,1.0,1.0};
+	vector_visualizer(glm::vec3& inspected_vector): vector(inspected_vector)
+	{
+	}
+	glm::vec3& vector;
 
 	static void init()
 	{
@@ -49,9 +51,10 @@ struct vector_visualizer
 			// Consider moving this outside of the loop, should improve performance
 			camera.set_shader_uniforms(shader);
 
+
 			if (registry.all_of<Transform>(entity))
 			{
-				shader->operator[]("u_model") = registry.get<Transform>(entity).get_matrix();
+				shader->operator[]("u_model") = glm::inverse(registry.get<Transform>(entity).get_matrix());
 			}
 			else
 			{

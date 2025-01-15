@@ -12,7 +12,7 @@
 
 struct Camera: public Transform
 {
-	Camera(entt::handle parent, float fov = 90.0f, float near = 0.01f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 0.0,0.0,5.0 }); }
+	Camera(entt::handle parent, float fov = 90.0f, float near = 0.01f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 1.0,0.0,5.0 }); }
 	float fov;
 	float near;
 	float far;
@@ -52,10 +52,20 @@ struct Camera: public Transform
 		const float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT; // Replace with actual aspect ratio
 		return glm::perspective(glm::radians(fov), aspect_ratio, near, far);
 	}
-	void set_shader_uniforms(Shader& shader)
+	void set_shader_uniforms(Shader& shader, entt::entity owner = entt::null, entt::registry* registry = nullptr)
 	{
-
-		shader->operator[]("u_view") = glm::inverse(get_matrix());// *parent_transform;
+		if (registry)
+		{
+			if (registry->all_of<Transform>(owner))
+			{
+				shader->operator[]("u_view") = glm::inverse(get_matrix(owner, *registry));
+			}
+			
+		}
+		else
+		{
+			shader->operator[]("u_view") = glm::inverse(get_matrix());// *parent_transform;
+		}
 		shader->operator[]("u_proj") = get_projection_matrix();
 	}
 	void set_shader_uniforms(res_shader& shader)

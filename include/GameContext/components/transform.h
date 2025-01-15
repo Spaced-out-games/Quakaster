@@ -16,10 +16,10 @@ struct Transform {
         return matrix * glm::mat4_cast(rotation);
     }
 
-    glm::mat4 get_matrix(entt::entity entity, entt::registry scene) const
+    glm::mat4 get_matrix(entt::entity entity, entt::registry& scene) const
     {
         glm::mat4 parent_transform = scene.get<Transform>(entity).get_matrix();
-        return Transform::get_matrix() * parent_transform;
+        return Transform::get_matrix();
     }
 
     glm::mat4 get_matrix(entt::handle owner) const {
@@ -78,26 +78,12 @@ struct Transform {
     }
 
     // Rotate by delta pitch/yaw in radians
-    void rotate_from_mouse(float delta_pitch, float delta_yaw, float sensitivity = 0.1f) {
-        // Scale the deltas by sensitivity
-        delta_pitch *= sensitivity;
-        delta_yaw *= sensitivity;
-
-        // Calculate forward vector pitch (to clamp)
-        glm::vec3 forward = get_forward_vector();
-        float pitchAngle = glm::degrees(glm::asin(forward.y));
-
-        // Clamp pitch to avoid flipping
-        if ((pitchAngle > 89.0f && delta_pitch < 0) || (pitchAngle < -89.0f && delta_pitch > 0)) {
-            delta_pitch = 0;
-        }
-
-        // Update yaw and pitch
-        glm::quat yawRotation = glm::angleAxis(delta_yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::quat pitchRotation = glm::angleAxis(delta_pitch, get_right_vector());
-
-        rotation = glm::normalize(yawRotation * rotation);
-        rotation = glm::normalize(rotation * pitchRotation);
+    void rotate(float deltaPitch, float deltaYaw)
+    {
+        // Update the target transform's rotation using quaternions
+        //glm::quat pitchQuat = glm::angleAxis(deltaPitch, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X
+        //glm::quat yawQuat = glm::angleAxis(deltaYaw, glm::vec3(0.0f, 1.0f, 0.0f));     // Rotate around Y
+        //rotation = glm::normalize(yawQuat * rotation * pitchQuat);
     }
 
     // Utility to get Euler angles for debugging or UI

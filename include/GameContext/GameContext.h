@@ -206,9 +206,10 @@ struct GameContext
 		player.emplace<Camera>(player);
 		player.get<Camera>().bind_convars(interpreter);
 		player.get<Camera>().look_at({ 0.0,0.0,0.0 });
-		player.emplace<ent_controller>(event_handler, player.get<Camera>());
+		player.emplace<Transform>();
+		player.emplace<ent_controller>(event_handler, player.get<Transform>());
 
-
+		
 
 		// Create an entity with a mesh
 		//entt::handle{ scene.registry, scene.registry.create() };
@@ -223,10 +224,12 @@ struct GameContext
 			"resources/shaders/default.vert",
 			"resources/shaders/default.frag"
 		);
-		cube.emplace<vector_visualizer>();
+		//cube.emplace<vector_visualizer>(origin);
 		cube.emplace<Transform>();
-		auto& transform = cube.get<Transform>();
-		auto& visualizer = cube.get<vector_visualizer>();
+
+
+		player.emplace<vector_visualizer>(player.get<ent_controller>().wish_dir);
+		//auto& visualizer = cube.get<vector_visualizer>();
 		//cube.emplace<Transform>();
 
 		vector_visualizer::init();
@@ -236,7 +239,7 @@ struct GameContext
 		{
 
 			update_dt();
-			transform.move(visualizer.vector * deltaTime);
+			//transform.move(visualizer.vector * deltaTime);
 
 			std::cout << "dt: " << deltaTime << '\n';
 

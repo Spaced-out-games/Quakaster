@@ -3,109 +3,129 @@
 #include <include/GameContext/IO/controller.h>
 #include <include/thirdparty/entt.hpp>
 #include <math.h>
-//#include <include/GameContext/GameContext.h>
 
 extern float deltaTime;
 
 struct ent_controller : public EventListener {
-	//entt::handle target;
-	Transform& target_transform;
-	//float pitch = 0.0;
-	//float yaw = 0.0;
-	bool warp = 0;
-	ent_controller(entt::dispatcher& dispatcher, Transform& transform): EventListener(dispatcher, ALL_EVENTS), target_transform(transform)//target(handle)
-	{
-		on_keyPress = [this](KeyPressEvent& evt)
-		{
+    Transform& target_transform;
+    glm::vec3 wish_dir;
+    glm::vec3 velocity = { 0.0f, 0.0f, 0.0f }; // test
+    bool warp = false;
+    bool moving = false;
+    bool in_air = true; // Change based on collision detection
+    float speed = 10.0f;
+    float air_accel = 1.0f; // Air acceleration factor
+    float ground_accel = 5.0f; // Ground acceleration factor
 
-			// THIS MIGHT CAUSE SOME STUPID SHIT IF NOT CAMERA!!!
-			//Transform& transform = target.get<Camera>(); // This was get<Transform>
-			Transform& transform = target_transform;
-			//glm::vec3& position = target.get<Transform>().position;
+    ent_controller(entt::dispatcher& dispatcher, Transform& transform)
+        : EventListener(dispatcher, ALL_EVENTS), target_transform(transform)
+    {
+        on_keyPress = [this](KeyPressEvent& evt) {
+            handleMovement<KeyPressEvent>(evt);
+            applyMovement();
+        };
 
-			switch (evt.code)
-			{
-			case SDLK_a:
-				transform.move(-transform.get_right_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_d:
-				transform.move(transform.get_right_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_w:
-				transform.move(transform.get_forward_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_s:
-				transform.move(-transform.get_forward_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_ESCAPE:
-				break;
+        on_keyRelease = [this](KeyReleaseEvent& evt) {
+            moving = false; // Stop moving when the key is released
+        };
 
-			default:
-				break;
-			}
+        on_keyHold = [this](KeyHoldEvent& evt) {
+            handleMovement<KeyHoldEvent>(evt);
+            applyMovement();
+        };
 
-		};
-		on_keyRelease = [this](KeyReleaseEvent& evt) {};
+        on_mouseMove = [this](MouseMoveEvent& evt) {
+            // Calculate pitch and yaw deltas from mouse input
+            float pitchDelta = 0.01f * -evt.yrel;
+            float yawDelta = 0.01f * -evt.xrel;
 
-		on_keyHold = [this](KeyHoldEvent& evt)
-		{
-			// THIS MIGHT CAUSE SOME STUPID SHIT IF NOT CAMERA!!!
-			//Transform& transform = target.get<Camera>(); // This was get<Transform>
-			Transform& transform = target_transform;
-			//glm::vec3& position = target.get<Transform>().position;
+            // Update the target transform's rotation using quaternions
+            glm::quat pitchQuat = glm::angleAxis(pitchDelta, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X
+            glm::quat yawQuat = glm::angleAxis(yawDelta, glm::vec3(0.0f, 1.0f, 0.0f));     // Rotate around Y
 
-			switch (evt.code)
-			{
-			case SDLK_a:
-				transform.move(-transform.get_right_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_d:
-				transform.move(transform.get_right_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_w:
-				transform.move(transform.get_forward_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_s:
-				transform.move(-transform.get_forward_vector() * deltaTime * 10.0f);
-				break;
-			case SDLK_ESCAPE:
-				break;
+            // Combine pitch and yaw rotations with the current rotation
+            target_transform.rotation = glm::normalize(yawQuat * target_transform.rotation * pitchQuat);
+        };
+    }
+    template <typename T>
+    void handleMovement(T& evt) {
+        wish_dir = { 0.0f, 0.0f, 0.0f };
+        Transform& transform = target_transform;
 
-			default:
-				break;
-			}
-		};
+        switch (evt.code) {
+        case SDLK_a:
+            moving = true;
+            wish_dir -= transform.get_right_vector();
+            break;
+        case SDLK_d:
+            moving = true;
+            wish_dir += transform.get_right_vector();
+            break;
+        case SDLK_w:
+            moving = true;
+            wish_dir += transform.get_forward_vector();
+            break;
+        case SDLK_s:
+            moving = true;
+            wish_dir -= transform.get_forward_vector();
+            break;
+        case SDLK_ESCAPE:
+            break;
+        default:
+            moving = false;
+            break;
+        }
 
-		on_mouseMove = [this](MouseMoveEvent& evt)
-		{
+        if (moving) {
+            wish_dir = glm::normalize(wish_dir) * speed; // Normalize the direction and apply speed
+        }
+    }
 
-			// Calculate pitch and yaw deltas from mouse input
-			float pitchDelta = 0.01f * -evt.yrel;
-			float yawDelta = 0.01f * -evt.xrel;
+    void applyMovement() {
+        if (moving) {
+            if (!in_air) {
+                // Apply ground acceleration
+                applyGroundAcceleration();
+            }
+            else {
+                // Apply air acceleration
+                applyAirAcceleration();
+            }
 
-			// Clamp pitch to avoid flipping (e.g., within [-89, 89] degrees)
-			float maxPitch = glm::radians(89.0f);
-			pitch = glm::clamp(pitch + pitchDelta, -maxPitch, maxPitch);
+            // Move the transform based on velocity
+            target_transform.move(velocity * deltaTime);
+        }
+    }
 
-			// Wrap yaw to stay within [0, 360) degrees
-			yaw += yawDelta;
-			//yaw = glm::mod(yaw, glm::radians(360.0f));
-			//if (yaw < 0.0f) yaw += glm::radians(360.0f);
+    void applyGroundAcceleration() {
+        // Project velocity onto the wish direction
+        float currentSpeed = glm::dot(velocity, wish_dir);
+        float addSpeed = speed - currentSpeed;
 
-			// Update the target transform's rotation
-			Transform& targetTransform = target_transform;
+        if (addSpeed <= 0.0f) return; // Already at max speed
 
-			// Calculate pitch and yaw rotations using quaternions
-			glm::quat pitchQuat = glm::angleAxis(pitch, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X
-			glm::quat yawQuat = glm::angleAxis(yaw, glm::vec3(0.0f, 1.0f, 0.0f));     // Rotate around Y
+        float accelSpeed = ground_accel * deltaTime; // Acceleration based on time
 
-			// Combine pitch and yaw rotations with the current rotation
-			targetTransform.rotation = glm::normalize(yawQuat * pitchQuat);
+        if (accelSpeed > addSpeed) {
+            accelSpeed = addSpeed; // Cap acceleration
+        }
 
-			// Reset mouse position to the center of the window
-			//SDL_SetRelativeMouseMode(SDL_FALSE);
-			//if(warp) SDL_WarpMouseInWindow(SDL_GL_GetCurrentWindow(), WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
-		};
+        velocity += accelSpeed * wish_dir; // Update velocity
+    }
 
-	}
+    void applyAirAcceleration() {
+        // Air acceleration logic
+        float currentSpeed = glm::dot(velocity, wish_dir);
+        float addSpeed = speed - currentSpeed;
+
+        if (addSpeed <= 0.0f) return; // Already at max speed
+
+        float accelSpeed = air_accel * deltaTime; // Air acceleration based on time
+
+        if (accelSpeed > addSpeed) {
+            accelSpeed = addSpeed; // Cap acceleration
+        }
+
+        velocity += accelSpeed * wish_dir; // Update velocity
+    }
 };
