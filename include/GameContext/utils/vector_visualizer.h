@@ -6,101 +6,64 @@
 #include <include/thirdparty/entt.hpp>
 #include <include/GameContext/components/transform.h>
 #include <include/GameContext/resources/res_shader.h>
+#include <include/GameContext/resources/meshComponent.h>
 
-struct vector_visualizer: public Transform
+
+struct vector_visualizer
 {
-	static std::vector<default_vertex_t> vertices;
-	static std::vector<uint32_t> indices;
-	static res_shader shader; // Not initialized until the first construction to prevent errors with OpenGL
+	glm::vec3 vector;
 
 	static void init()
 	{
-		//shader = new res_shader("resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
+		std::vector<default_vertex_t> vertices = {
+			{{0.0,0.0,0.0}},
+			{{1.0,0.0,0.0}},
+			{{0.0,1.0,0.0}},
+			{{0.0,0.0,1.0}}
 
+		};
+		std::vector<uint32_t> indices = {
+			0,1,
+			0,2,
+			0,3
+		};
+		//mesh.init();
+
+		//vector_visualizer::mesh.init(vertices, indices, "vector_visualizer_shader", "resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
 	}
 
-	vector_visualizer()
-	{
-		vao.bind();
-
-
-		vbo.init(vertices);
-		//vbo.bind();
-
-		ebo.init(indices);
-		ebo.bind();
-		default_vertex_t::set_pointers();
-
-
-		VAO::unbind();
-
-		//VBO::unbind();
-		EBO::unbind();
-		
-
-	}
 	static void draw_all(entt::registry& registry, Camera& camera)
 	{
+		shader->bind();
+		mesh.vao.bind();
 		auto view = registry.view<vector_visualizer>();
-		for (auto entity : view) {
-			vector_visualizer& visualizer = registry.get<vector_visualizer>(entity);
+		for (auto entity : view)
+		{
+			// Consider moving this outside of the loop, should improve performance
+			camera.set_shader_uniforms(shader);
 
 			if (registry.all_of<Transform>(entity))
 			{
-				shader["u_model"] = registry.get<Transform>(entity).get_matrix();
+				shader->operator[]("u_model") = registry.get<Transform>(entity).get_matrix();
 			}
-			else
-			{
-				shader["u_model"] = glm::mat4(1.0f);
-			}
+			shader->operator[]("u_vector") = registry.get<vector_visualizer>(entity).vector;
 
-
-			// bind the shader
-
-			shader.bind();
-			visualizer.vao.bind();
-			visualizer.vbo.bind();
-			visualizer.ebo.bind();
-
-			glDrawElements(GL_LINES, visualizer.ebo.get_index_count(), GL_UNSIGNED_INT, 0);
-
-
-			VAO::unbind();
-			EBO::unbind(); // Unbind the EBO after drawing
+			glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, 0);
 
 
 		}
 	}
 
+	private:
 
+		static Shader shader;
 
-	glm::vec3 vector;
-	
-	VAO vao;
-	VBO vbo;
-	EBO ebo;
-	
-	struct initializer
-	{
-		initializer()
-		{
-			vector_visualizer::shader.compile_and_link("resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
-		}
-	};
-	vector_visualizer::initializer initr;
+		// This will be excluded from meshComponent::draw_all, since this isn't registered in any entt::registry ; )
+		//static meshComponent mesh;
 };
 
 
-std::vector<default_vertex_t> vector_visualizer::vertices = {
-	{{0.0,0.0,0.0}},
-	{{1.0,0.0,0.0}},
-	{{0.0,1.0,0.0}},
-	{{0.0,0.0,1.0}}
 
-};
-std::vector<uint32_t> vector_visualizer::indices = {
-	0,1,
-	0,2,
-	0,3
-};
-res_shader vector_visualizer::shader;
+
+Shader vector_visualizer::shader;
+//meshComponent vector_visualizer::mesh;

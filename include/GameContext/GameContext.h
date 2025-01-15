@@ -18,8 +18,9 @@
 
 #include <include/GameContext/resources/res_texture.h>
 #include <include/GameContext/resources/res_shader.h>
-#include <include/GameContext/resources/res_mesh.h>
-#include <include/GameContext/utils/vector_visualizer.h>
+//#include <include/GameContext/resources/res_mesh.h>
+//#include <include/GameContext/utils/vector_visualizer.h>
+#include <include/GameContext/resources/meshComponent.h>
 
 static float deltaTime;
 
@@ -103,7 +104,7 @@ struct GameContext
 		}
 
 
-
+		glClearColor(target->r, target->g, target->b, 1.00f);
 
 	}
 
@@ -138,7 +139,7 @@ struct GameContext
 
 		
 
-		//shader_handle.first->second.handle().get()->bind()
+		//shader_player.first->second.handle().get()->bind()
 
 
 		interpreter.set_convar("game_running", 0);
@@ -159,6 +160,7 @@ struct GameContext
 	// Game loop
 	virtual void run()
 	{
+		init();
 
 
 		// Load a shader resource
@@ -197,44 +199,41 @@ struct GameContext
 			0, 5, 4   // Flipped 5 and 4
 		};
 
+		auto player = entt::handle{ scene.registry, scene.registry.create() };
+		player.emplace<Camera>(player);
+		player.get<Camera>().bind_convars(interpreter);
+		player.get<Camera>().look_at({ 0.0,0.0,0.0 });
+		player.emplace<ent_controller>(event_handler, player.get<Camera>());
 
-		auto camera_test = scene.registry.create();
-		auto handle = entt::handle{ scene.registry, camera_test };
-		handle.emplace<Camera>(handle);
-
-
-		handle.get<Camera>().bind_convars(interpreter);
-		handle.get<Camera>().look_at({ 0.0,0.0,0.0 });
-		handle.emplace<ent_controller>(event_handler, handle.get<Camera>());
-
-		//handle.get<Texture>().bind();
 
 
 		// Create an entity with a mesh
-		auto triangle_Mesh = scene.registry.create();
-		entt::handle handle1{ scene.registry, triangle_Mesh };
-		//handle1.emplace<Shader>("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
-		Texture::unbind();
-		
-		Mesh mesh1(handle1, vertices, indices, "albedo_texture_shader", "resources/shaders/default.vert", "resources/shaders/default.frag"); // Mesh with first shader
-		
-		vector_visualizer::init();
-		vector_visualizer v;
-		//handle1.emplace<vector_visualizer>();
+		//entt::handle{ scene.registry, scene.registry.create() };
+		//vector_vis_mesh.emplace<Shader>("test", "resources/shaders/default.vert", "resources/shaders/default.frag");
+		entt::handle cube = { scene.registry, scene.registry.create() };
 
-		init();
+
+		cube.emplace<meshComponent>(
+			vertices,
+			indices,
+			"default_shader",
+			"resources/shaders/default.vert",
+			"resources/shaders/default.frag"
+		);
+		//cube.emplace<Transform>();
+
+		//vector_visualizer::init();
+
+		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 		while (running)
 		{
 			update_dt();
-			glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
+			
 			glClear(GL_COLOR_BUFFER_BIT);
-			scene.registry.get<Camera>(camera_test).set_shader_uniforms(handle1.get<Shader>());
-			
-			
-			//handle1.get<Texture>().bind();
 
-			Mesh::draw_all(scene.registry);
-			vector_visualizer::draw_all(scene.registry, handle.get<Camera>());
+
+			meshComponent::draw_all(scene.registry, player.get<Camera>());
+			//vector_visualizer::draw_all(scene.registry, player.get<Camera>());
 
 
 			controller.update();

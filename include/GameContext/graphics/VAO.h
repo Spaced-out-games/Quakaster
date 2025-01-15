@@ -1,42 +1,68 @@
 #pragma once
 #include <GL/glew.h>
-#include <vector>
+#include <include/GameContext/graphics/gl_utils.h>
 #include <include/GameContext/graphics/VBO.h>
+#include <vector>
+
 
 class VAO {
 public:
-    VAO() {
-        glGenVertexArrays(1, &vaoID); // Generate a VAO
+
+    // Doesn't call init();
+    VAO() : primitive_type(GL_TRIANGLES) {
+
     }
 
+    // Constructor that generates a VAO and sets the primitive type
+    VAO(GLenum primitive_type)
+        : primitive_type(primitive_type), vaoID(0) {
+        init();
+    }
+
+    // Destructor to clean up VAO
     ~VAO() {
-        glDeleteVertexArrays(1, &vaoID); // Cleanup
+        if (vaoID != 0) {
+            glDeleteVertexArrays(1, &vaoID); // Cleanup
+            std::cerr << "Deleted VAO (ID: " << vaoID << ")." << std::endl;
+            check_gl_error("glDeleteVertexArrays");
+        }
     }
 
+    void init()
+    {
+        glGenVertexArrays(1, &vaoID); // Generate a VAO
+        assert(vaoID != 0 && "Failed to generate VAO"); // Ensure VAO is generated
+        std::cerr << "VAO generated with ID: " << vaoID << std::endl;
+        check_gl_error("glGenVertexArrays");
+    }
+
+    // Bind the VAO
     void bind() const {
         glBindVertexArray(vaoID); // Bind the VAO
+        check_gl_error("glBindVertexArray");
+        std::cerr << "Bound VAO (ID: " << vaoID << ")." << std::endl;
     }
 
+    // Unbind any VAO
     static void unbind() {
         glBindVertexArray(0); // Unbind any VAO
+        check_gl_error("glBindVertexArray (unbind)");
+        std::cerr << "Unbound VAO." << std::endl;
     }
 
-    template <typename vertex_t>
-    void add_buffer(const VBO& vbo, GLuint layout) {
-        bind(); // Bind the VAO
+    // Deleted copy constructor and copy assignment operator
+    VAO(const VAO&) = delete;
+    VAO& operator=(const VAO&) = delete;
 
-        vbo.bind(); // Bind the VBO
+    // Deleted move constructor and move assignment operator
+    VAO(VAO&&) = delete;
+    VAO& operator=(VAO&&) = delete;
 
-        // Set the vertex attribute pointers
-        // Assuming vertex_t is a struct that defines attributes
-        // The following is an example; you may need to adjust based on your vertex structure
-        glEnableVertexAttribArray(layout); // Enable the vertex attribute
-        glVertexAttribPointer(layout, sizeof(vertex_t) / sizeof(float), GL_FLOAT, GL_FALSE, sizeof(vertex_t), (void*)0);
+    // Primitive type for drawing (e.g., GL_TRIANGLES, GL_LINES)
+    GLenum primitive_type = GL_TRIANGLES;
 
-        VBO::unbind(); // Unbind the VBO
-        unbind(); // Unbind the VAO
-    }
 
 private:
-    GLuint vaoID; // The ID of the VAO
+    GLuint vaoID = 0xff; // The ID of the VAO
+
 };

@@ -58,10 +58,10 @@ struct Mesh {
                 registry.get<Texture>(entity).bind();
             }
 
-            //if (registry.all_of<Transform>(entity)) {
-            //    auto& transform = registry.get<Transform>(entity);
-            //    shader->operator[]("u_model") = transform.get_matrix();
-            //}
+            if (registry.all_of<Transform>(entity)) {
+                auto& transform = registry.get<Transform>(entity);
+                shader->operator[]("u_model") = transform.get_matrix();
+            }
 
             // Bind the shader for this mesh
             shader->bind();
@@ -69,8 +69,6 @@ struct Mesh {
             ebo.bind(); // Bind the EBO before drawing
             glDrawElements(GL_TRIANGLES, ebo.get_index_count(), GL_UNSIGNED_INT, 0); // Draw using indices
             VAO::unbind();
-            //VBO::unbind();
-            
             EBO::unbind(); // Unbind the EBO after drawing
         }
     }

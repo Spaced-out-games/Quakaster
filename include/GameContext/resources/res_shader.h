@@ -83,7 +83,11 @@ public:
         compile_and_link(vertex_path, fragment_path);
     }
 
-    void compile_and_link(const std::string& vertex_path, const std::string& fragment_path) {
+    inline void init(const std::string& vertex_path, const std::string& fragment_path) {
+        compile_and_link(vertex_path, fragment_path);
+    }
+
+    inline void compile_and_link(const std::string& vertex_path, const std::string& fragment_path) {
         std::string error_message;
 
 
@@ -122,6 +126,13 @@ public:
 
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
+    }
+
+    static GLint current_shader_id()
+    {
+        GLint program_ID = 0;
+        glGetIntegerv(GL_CURRENT_PROGRAM, &program_ID);
+        return program_ID;
     }
 
     // Overload [] operator to return a shader_handle for uniform access
@@ -167,7 +178,7 @@ public:
 
         GLuint shader_ID;
         error_message = compile_source(shader_ID, code, shader_type);
-
+        std::cout << error_message;
         return shader_ID;
     }
 
@@ -219,9 +230,33 @@ private:
 
 //using Shader = std::shared_ptr<res_shader>;
 
-struct Shader : public std::shared_ptr<res_shader> {
-    // Constructor initializing the base class (std::shared_ptr)
-    Shader(const std::string& name, const std::string& vertex_path, const std::string& fragment_path)
-        : std::shared_ptr<res_shader>(res_shader::load(name, vertex_path, fragment_path)) {
+struct Shader {
+    std::shared_ptr<res_shader> ptr; // Use composition instead of inheritance
+
+    // Default constructor
+    Shader() = default;
+
+    // Constructor initializing the shared_ptr
+    Shader(const std::string& name, const std::string& vertex_path, const std::string& fragment_path) {
+        init(name, vertex_path, fragment_path);
+    }
+
+    // Initialization function
+    void init(const std::string& name, const std::string& vertex_path, const std::string& fragment_path) {
+        ptr = res_shader::load(name, vertex_path, fragment_path);
+    }
+
+    // Overload operators for convenience
+    res_shader* operator->() const {
+        return ptr.get();
+    }
+
+    res_shader& operator*() const {
+        return *ptr;
+    }
+
+    // Check if the shader is valid
+    bool valid() const {
+        return static_cast<bool>(ptr);
     }
 };
