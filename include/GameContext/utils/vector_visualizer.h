@@ -61,6 +61,8 @@ struct vector_visualizer
 				shader->operator[]("u_model") = glm::mat4(1.0f);
 			}
 			//shader->operator[]("u_proj") = glm::mat4(1.0);
+
+			//shader->operator[]("u_view"); // FIX MEEEEEE
 			shader->operator[]("u_vector") = registry.get<vector_visualizer>(entity).vector;
 
 			glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
