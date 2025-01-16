@@ -13,6 +13,8 @@
 #include <include/GameContext/graphics/VBO.h> // Just in case
 #include <chrono>
 
+// TODO: Implement 'help' and 'echo'
+
 //#include <resources/shaders/default.frag>
 
 
@@ -24,6 +26,7 @@
 
 static float deltaTime = 0.0f;
 
+
 struct GameContext
 {
 	// Timing variables
@@ -32,7 +35,7 @@ struct GameContext
 	std::chrono::steady_clock::time_point lastFrameTime;
 	std::chrono::steady_clock::time_point currentFrameTime;
 
-	glm::vec3 bg_color = { 0.45f, 0.55f, 0.60f };
+	glm::vec3 bg_color = { 0.0f,1.0f,1.0f };//{ 0.45f, 0.55f, 0.60f };
 	// Whether or not the game is running
 	int running = 1;
 	
@@ -43,7 +46,7 @@ struct GameContext
 	Scene scene;
 
 	//
-	entt::dispatcher event_handler;
+	static entt::dispatcher event_handler;
 	Application app;
 
 	// absolutely NEEDS an event handler and UI context. 
@@ -62,7 +65,11 @@ struct GameContext
 		
 
 	}
+	static void console_log(std::string message,console_color color = console_color::DEFAULT_TEXT)
+	{
+		event_handler.trigger(console_message{message, color });
 
+	}
 	static void bg_color_fn(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
 
 		glm::vec3* target = (glm::vec3*)interpreter.convars["bg_color_value"].target;
@@ -86,6 +93,7 @@ struct GameContext
 		}
 
 
+
 		if (args.size() == 3)
 		{
 			// set X
@@ -107,8 +115,9 @@ struct GameContext
 		glClearColor(target->r, target->g, target->b, 1.00f);
 
 	}
+	static void help_fn(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
 
-	
+	}
 	// Prepares for the UI draw call
 	inline void begin_ui()
 	{
@@ -133,19 +142,9 @@ struct GameContext
 	virtual void init()
 	{
 
-
 	}
 
 	static void quit(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
-		//auto shader = res_shader::load("default", "resources/shaders/default.vert", "resources/shaders/default.frag");
-
-		
-
-		
-
-		//shader_player.first->second.handle().get()->bind()
-
-
 		interpreter.set_convar("game_running", 0);
 		msg.message = "Quiting game...";
 		return;
@@ -171,13 +170,13 @@ struct GameContext
 		// Points to draw
 		std::vector<default_vertex_t> vertices = {
 			{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
-			{{1.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
-			{{1.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
+			{{100.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
+			{{100.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
 			{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
-			{{0.0f, 0.0f, 1.0f}},  // Vertex 4: Bottom-left-front
-			{{1.0f, 0.0f, 1.0f}},  // Vertex 5: Bottom-right-front
-			{{1.0f, 1.0f, 1.0f}},  // Vertex 6: Top-right-front
-			{{0.0f, 1.0f, 1.0f}},  // Vertex 7: Top-left-front
+			{{0.0f, 0.0f, 100.0f}},  // Vertex 4: Bottom-left-front
+			{{100.0f, 0.0f, 100.0f}},  // Vertex 5: Bottom-right-front
+			{{100.0f, 1.0f, 100.0f}},  // Vertex 6: Top-right-front
+			{{0.0f, 1.0f, 100.0f}},  // Vertex 7: Top-left-front
 		};
 
 
@@ -207,9 +206,9 @@ struct GameContext
 		player.get<Camera>().bind_convars(interpreter);
 		player.get<Camera>().look_at({ 0.0,0.0,0.0 });
 		player.emplace<Transform>();
-		player.emplace<ent_controller>(event_handler, player.get<Transform>());
+		player.emplace<ent_controller>(event_handler, player.get<Camera>());
 
-		
+
 
 		// Create an entity with a mesh
 		//entt::handle{ scene.registry, scene.registry.create() };
@@ -226,13 +225,17 @@ struct GameContext
 		);
 		//cube.emplace<vector_visualizer>(origin);
 		cube.emplace<Transform>();
+		cube.emplace<Texture>("resources/images/atlas.png");
 
+		glm::vec3 scaled_velocity;
 
-		player.emplace<vector_visualizer>(player.get<ent_controller>().wish_dir);
+		player.emplace<vector_visualizer>(scaled_velocity, player.get<Camera>());
 		//auto& visualizer = cube.get<vector_visualizer>();
 		//cube.emplace<Transform>();
 
 		vector_visualizer::init();
+
+
 
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 		while (running)
@@ -241,18 +244,50 @@ struct GameContext
 			update_dt();
 			//transform.move(visualizer.vector * deltaTime);
 
-			std::cout << "dt: " << deltaTime << '\n';
+
+				auto& cam_controller = player.get<ent_controller>();
+				//cam_controller.velocity *= 0.999f;
+//				player.get<ent_controller>().velocity
+				cam_controller.applyMovement();
+				if (!cam_controller.moving)
+				{
+					if (cam_controller.in_air)
+					{
+						//cam_controller.velocity *= 0.85;
+
+					}
+					else
+					{
+						cam_controller.velocity *= 0.5;
+					}
+
+					//cam_controller.wish_dir = glm::normalize(wish_dir) * speed; // Normalize the direction and apply speed
+
+				}
+				else
+				{
+					cam_controller.wish_dir = glm::normalize(cam_controller.wish_dir) * cam_controller.speed;
+
+				}
+
+				player.get<Camera>().move(cam_controller.velocity * deltaTime);
+
+			//std::cout << "dt: " << deltaTime << '\n';
 
 			glClear(GL_COLOR_BUFFER_BIT);
 
 
 			meshComponent::draw_all(scene.registry, player.get<Camera>());
 			vector_visualizer::draw_all(scene.registry, player.get<Camera>());
-
+			scaled_velocity = player.get<ent_controller>().velocity / deltaTime;
 
 			controller.update();
 			begin_ui();
 			draw_ui();
+			std::string string = std::to_string((int)(glm::length(player.get<ent_controller>().velocity) * 100.0f));
+			ImGui::Text("Speed");
+			ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
+
 			end_ui();
 			
 
@@ -262,3 +297,6 @@ struct GameContext
 	}
 };
 
+
+
+entt::dispatcher GameContext::event_handler;

@@ -155,7 +155,14 @@ public:
         }
     }
 
-    void bind() const { glUseProgram(program_ID); std::cout << "bound shader (" << program_ID << ")\n"; }
+    void bind() const { glUseProgram(program_ID); 
+    
+    
+    
+    
+    
+    
+    std::cout << "bound shader (" << program_ID << ")\n"; }
     void unbind() const { glUseProgram(0); }
 
     GLuint get_program_ID() const { return program_ID; }

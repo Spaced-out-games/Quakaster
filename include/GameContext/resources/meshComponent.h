@@ -18,7 +18,7 @@ struct meshComponent
 	template <typename vertex_t>
 	meshComponent(const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, std::string shader_name, std::string vertex_path, std::string fragment_path, GLenum primitive_type = GL_TRIANGLES) : shader(shader_name, vertex_path, fragment_path)
 	{
-		std::cout << "test";
+		//std::cout << "test";
 		init<vertex_t>(vertices, indices, shader_name, vertex_path, fragment_path, primitive_type);
 	}
 
@@ -34,6 +34,8 @@ struct meshComponent
 
 		ebo.init(indices);
 		ebo.bind();
+
+
 
 		//shader = res_shader::load(shader_name, vertex_path, fragment_path);
 
@@ -63,6 +65,11 @@ struct meshComponent
 			shader->bind();
 			camera.set_shader_uniforms(shader, entity, &registry);
 
+			if (registry.all_of<Texture>(entity))
+			{
+				registry.get<Texture>(entity).bind();
+			}
+
 			if (registry.all_of<Transform>(entity))
 			{
 				shader->operator[]("u_model") = registry.get<Transform>(entity).get_matrix();
@@ -77,7 +84,7 @@ struct meshComponent
 
 			glDrawElements(mesh_component.vao.primitive_type, ebo.get_index_count(), GL_UNSIGNED_INT, 0); // Draw using indices
 			std::string context = "";
-			check_gl_error(context);
+			// check_gl_error(context);
 			//VAO::unbind();
 			//EBO::unbind(); // Unbind the EBO after drawing
 

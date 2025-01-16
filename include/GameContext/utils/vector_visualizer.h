@@ -9,12 +9,13 @@
 #include <include/GameContext/resources/meshComponent.h>
 
 
-struct vector_visualizer
+struct vector_visualizer: public Transform
 {
-	vector_visualizer(glm::vec3& inspected_vector): vector(inspected_vector)
+	vector_visualizer(glm::vec3& inspected_vector, Transform& transform): vector(inspected_vector), transform(transform)
 	{
 	}
 	glm::vec3& vector;
+	Transform& transform;
 
 	static void init()
 	{
@@ -48,18 +49,14 @@ struct vector_visualizer
 		auto view = registry.view<vector_visualizer>();
 		for (auto entity : view)
 		{
+			auto& visualizer = registry.get<vector_visualizer>(entity);
 			// Consider moving this outside of the loop, should improve performance
 			camera.set_shader_uniforms(shader);
 
+			// std::cout << visualizer.transform.position.x;
 
-			if (registry.all_of<Transform>(entity))
-			{
-				shader->operator[]("u_model") = glm::inverse(registry.get<Transform>(entity).get_matrix());
-			}
-			else
-			{
-				shader->operator[]("u_model") = glm::mat4(1.0f);
-			}
+			shader->operator[]("u_model") = glm::translate(glm::mat4(1.0f), visualizer.transform.position + glm::vec3{0.0,-1.0f,0.0});
+
 			//shader->operator[]("u_proj") = glm::mat4(1.0);
 
 			//shader->operator[]("u_view"); // FIX MEEEEEE

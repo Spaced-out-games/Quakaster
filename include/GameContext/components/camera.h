@@ -12,7 +12,7 @@
 
 struct Camera: public Transform
 {
-	Camera(entt::handle parent, float fov = 90.0f, float near = 0.01f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 1.0,0.0,5.0 }); }
+	Camera(entt::handle parent, float fov = 90.0f, float near = 0.1f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 1.0,2.0,5.0 }); }
 	float fov;
 	float near;
 	float far;

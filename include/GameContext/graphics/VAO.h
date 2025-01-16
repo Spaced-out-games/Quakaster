@@ -23,8 +23,8 @@ public:
     ~VAO() {
         if (vaoID != 0) {
             glDeleteVertexArrays(1, &vaoID); // Cleanup
-            std::cerr << "Deleted VAO (ID: " << vaoID << ")." << std::endl;
-            check_gl_error("glDeleteVertexArrays");
+            // std::cerr << "Deleted VAO (ID: " << vaoID << ")." << std::endl;
+            // check_gl_error("glDeleteVertexArrays");
         }
     }
 
@@ -32,22 +32,22 @@ public:
     {
         glGenVertexArrays(1, &vaoID); // Generate a VAO
         assert(vaoID != 0 && "Failed to generate VAO"); // Ensure VAO is generated
-        std::cerr << "VAO generated with ID: " << vaoID << std::endl;
-        check_gl_error("glGenVertexArrays");
+        // std::cerr << "VAO generated with ID: " << vaoID << std::endl;
+        // check_gl_error("glGenVertexArrays");
     }
 
     // Bind the VAO
     void bind() const {
         glBindVertexArray(vaoID); // Bind the VAO
-        check_gl_error("glBindVertexArray");
-        std::cerr << "Bound VAO (ID: " << vaoID << ")." << std::endl;
+        // check_gl_error("glBindVertexArray");
+        // std::cerr << "Bound VAO (ID: " << vaoID << ")." << std::endl;
     }
 
     // Unbind any VAO
     static void unbind() {
         glBindVertexArray(0); // Unbind any VAO
-        check_gl_error("glBindVertexArray (unbind)");
-        std::cerr << "Unbound VAO." << std::endl;
+        // check_gl_error("glBindVertexArray (unbind)");
+        // std::cerr << "Unbound VAO." << std::endl;
     }
 
     // Deleted copy constructor and copy assignment operator

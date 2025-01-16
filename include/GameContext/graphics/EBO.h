@@ -25,32 +25,32 @@ public:
 
     ~EBO() {
         glDeleteBuffers(1, &eboID); // Cleanup
-        check_gl_error("glDeleteBuffers for EBO");
-        std::cerr << "Deleted EBO ID: " << eboID << std::endl;
+        // check_gl_error("glDeleteBuffers for EBO");
+        // std::cerr << "Deleted EBO ID: " << eboID << std::endl;
     }
 
     void bind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID); // Bind the EBO
-        check_gl_error("glBindBuffer for EBO");
-        std::cerr << "Bound EBO ID: " << eboID << std::endl;
+        // check_gl_error("glBindBuffer for EBO");
+        // std::cerr << "Bound EBO ID: " << eboID << std::endl;
     }
 
     static void unbind() {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // Unbind any EBO
-        check_gl_error("glBindBuffer (unbind) for EBO");
-        std::cerr << "Unbound EBO" << std::endl;
+        // check_gl_error("glBindBuffer (unbind) for EBO");
+        // std::cerr << "Unbound EBO" << std::endl;
     }
 
     void init(const std::vector<uint32_t>& indices) {
         glGenBuffers(1, &eboID); // Generate an EBO
-        check_gl_error("glGenBuffers for EBO");
+        // check_gl_error("glGenBuffers for EBO");
         assert(eboID != 0 && "Failed to generate EBO ID");
-        std::cerr << "Generated EBO ID: " << eboID << std::endl;
+        // std::cerr << "Generated EBO ID: " << eboID << std::endl;
         bind(); // Bind the EBO
-        std::cerr << "Initializing EBO ID: " << eboID << " with " << indices.size() << " indices." << std::endl;
+        // std::cerr << "Initializing EBO ID: " << eboID << " with " << indices.size() << " indices." << std::endl;
 
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(uint32_t), indices.data(), GL_STATIC_DRAW);
-        check_gl_error("glBufferData for EBO");
+        // check_gl_error("glBufferData for EBO");
         indexCount = indices.size(); // Store the index count
 
         unbind(); // Unbind the EBO

@@ -7,5 +7,5 @@ uniform sampler2D texture_0; // Sampler for the texture bound to GL_TEXTURE0
 
 void main() {
     // Sample the texture at the provided texture coordinates
-    FragColor = texture(texture_0, TexCoord);
+    FragColor = texture(texture_0, TexCoord); // vec4(1.0,1.0,1.0,1.0);
 }

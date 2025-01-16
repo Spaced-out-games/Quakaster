@@ -23,7 +23,7 @@ struct ConsoleUI: public UIBase
     // communication network with components
 
     ConsoleInterpreter& interpreter;
-    eventHandler& event_handler;
+    entt::dispatcher& event_handler;
     UIContext& ui_context;
 
 
@@ -74,13 +74,20 @@ struct ConsoleUI: public UIBase
 
 
 
-    ConsoleUI(ConsoleInterpreter& interpreter, eventHandler& event_handler, UIContext& ui_context) :
+    ConsoleUI(ConsoleInterpreter& interpreter, entt::dispatcher& event_handler, UIContext& ui_context) :
         interpreter(interpreter),
         event_handler(event_handler),
         ui_context(ui_context)
     {
+        event_handler.sink<console_message>().connect<&ConsoleUI::callback>(this);
+
+
         add_colors();
     }
+    void callback(console_message& msg) {
+        this->add_log(msg);
+    }
+
     void draw(UIContext* ctx) override
     {
         
