@@ -56,9 +56,9 @@ struct AABB : public Transform
 
 	static void draw_all(entt::registry& registry, Camera& camera)
 	{
-		Shader& shader = AABB::mesh.shader;
+		//Shader& shader = AABB::mesh.shader;
 		mesh.vao.bind();
-		shader->bind();
+		AABB::mesh.shader->bind();
 
 		//show_uniforms(shader->program_ID);
 
@@ -67,16 +67,17 @@ struct AABB : public Transform
 		{
 			auto& visualizer = registry.get<AABB>(entity);
 			// Consider moving this outside of the loop, should improve performance
-			camera.set_shader_uniforms(shader);
+			camera.set_shader_uniforms(AABB::mesh.shader);
 
 			// std::cout << visualizer.transform.position.x;
 
-			shader->operator[]("u_location") = registry.get<AABB>(entity).
+			AABB::mesh.shader->operator[]("u_location") = registry.get<AABB>(entity).
 
 			//shader->operator[]("u_proj") = glm::mat4(1.0);
 
 			//shader->operator[]("u_view"); // FIX MEEEEEE
-			shader->operator[]("u_dimensions") = registry.get<AABB>(entity).dimensions;
+			
+				AABB::mesh.shader->operator[]("u_dimensions") = registry.get<AABB>(entity).dimensions;
 
 			glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
 
