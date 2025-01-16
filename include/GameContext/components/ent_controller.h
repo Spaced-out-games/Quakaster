@@ -111,6 +111,7 @@ struct ent_controller : public EventListener {
             break;
         }
 
+
         
     }
 
@@ -129,10 +130,18 @@ struct ent_controller : public EventListener {
             //target_transform.move(velocity * deltaTime);
         }
     }
-
+    
     void applyGroundAcceleration() {
+        // Ensure wish_dir is not a zero vector
+        if (glm::length(wish_dir) > 0.0f) {
+            wish_dir = glm::normalize(wish_dir);
+        }
+        else {
+            return; // No movement direction, exit early
+        }
+
         // Calculate the current speed in the wish direction
-        float currentSpeed = glm::dot(velocity, glm::normalize(wish_dir));
+        float currentSpeed = glm::dot(velocity, wish_dir);
         float addSpeed = speed - currentSpeed;
 
         if (addSpeed <= 0.0f) return; // Already at or above desired speed
@@ -146,13 +155,20 @@ struct ent_controller : public EventListener {
         }
 
         // Apply acceleration
-        velocity += accelSpeed * glm::normalize(wish_dir);
+        velocity += accelSpeed * wish_dir;
     }
 
-
     void applyAirAcceleration() {
+        // Ensure wish_dir is not a zero vector
+        if (glm::length(wish_dir) > 0.0f) {
+            wish_dir = glm::normalize(wish_dir);
+        }
+        else {
+            return; // No movement direction, exit early
+        }
+
         // Calculate the current speed in the wish direction
-        float currentSpeed = glm::dot(velocity, glm::normalize(wish_dir));
+        float currentSpeed = glm::dot(velocity, wish_dir);
         float addSpeed = speed - currentSpeed;
 
         if (addSpeed <= 0.0f) return; // Already at or above desired speed
@@ -166,7 +182,7 @@ struct ent_controller : public EventListener {
         }
 
         // Apply acceleration
-        velocity += accelSpeed * glm::normalize(wish_dir);
+        velocity += accelSpeed * wish_dir;
     }
 
 };

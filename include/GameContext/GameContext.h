@@ -141,7 +141,7 @@ struct GameContext
 	inline void refresh() { SDL_GL_SwapWindow(app.window.sdl_window); }
 	virtual void init()
 	{
-
+		glLineWidth(2.0f);
 	}
 
 	static void quit(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
@@ -258,7 +258,8 @@ struct GameContext
 					}
 					else
 					{
-						cam_controller.velocity *= 0.5;
+						cam_controller.velocity *= pow(0.01f, deltaTime);
+
 					}
 
 					//cam_controller.wish_dir = glm::normalize(wish_dir) * speed; // Normalize the direction and apply speed
