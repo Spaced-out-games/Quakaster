@@ -23,6 +23,7 @@
 //#include <include/GameContext/resources/res_mesh.h>
 #include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/resources/meshComponent.h>
+#include <include/GameContext/components/AABB.h>
 
 static float deltaTime = 0.0f;
 
