@@ -142,7 +142,7 @@ struct GameContext
 	inline void refresh() { SDL_GL_SwapWindow(app.window.sdl_window); }
 	virtual void init()
 	{
-		glLineWidth(2.0f);
+		glLineWidth(4.0f);
 	}
 
 	static void quit(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
@@ -235,8 +235,8 @@ struct GameContext
 		//cube.emplace<Transform>();
 
 		vector_visualizer::init();
-
-
+		AABB::init();
+		cube.emplace<AABB>(player.get<Camera>().position);
 
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 		while (running)
@@ -281,14 +281,32 @@ struct GameContext
 
 			meshComponent::draw_all(scene.registry, player.get<Camera>());
 			vector_visualizer::draw_all(scene.registry, player.get<Camera>());
-			scaled_velocity = player.get<ent_controller>().velocity / deltaTime;
+			AABB::draw_all(scene.registry, player.get<Camera>());
+
+			scaled_velocity = player.get<ent_controller>().velocity / 100.0f;
 
 			controller.update();
 			begin_ui();
 			draw_ui();
 			std::string string = std::to_string((int)(glm::length(player.get<ent_controller>().velocity) * 100.0f));
-			ImGui::Text("Speed");
-			ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
+
+			ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always); // Set position
+			ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Always); // Set size
+
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // Remove border
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // Transparent background
+
+			if (ImGui::Begin("Invisible Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+				ImGui::Text("Speed");
+				ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
+			}
+			ImGui::End();
+
+			ImGui::PopStyleVar(2);
+			ImGui::PopStyleColor();
+
+
 
 			end_ui();
 			

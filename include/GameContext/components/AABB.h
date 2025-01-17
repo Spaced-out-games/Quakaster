@@ -10,25 +10,26 @@
 
 
 // Code reused almost word-for-word from vector_visualizer
-struct AABB : public Transform
+struct AABB
 {
-	AABB()
+	AABB(glm::vec3& location): location(location)
 	{
 	}
-	glm::vec3 dimensions;
-	glm::vec3 position;
+	glm::vec3& location;
+	glm::vec3 dimensions = {1.5,3.0,1.5};
+	//glm::vec3 position;
 
 	static void init()
 	{
 		std::vector<default_vertex_t> vertices = {
-			{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
-			{{1.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
-			{{1.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
-			{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
-			{{0.0f, 0.0f, 1.0f}},  // Vertex 4: Bottom-left-front
-			{{1.0f, 0.0f, 1.0f}},  // Vertex 5: Bottom-right-front
-			{{1.0f, 1.0f, 1.0f}},  // Vertex 6: Top-right-front
-			{{0.0f, 1.0f, 1.0f}},  // Vertex 7: Top-left-front
+			{{-0.5f, -0.5f, -0.5f}},  // Vertex 0: Bottom-left-back
+			{{ 0.5f, -0.5f, -0.5f}},  // Vertex 1: Bottom-right-back
+			{{ 0.5f,  0.5f, -0.5f}},  // Vertex 2: Top-right-back
+			{{-0.5f,  0.5f, -0.5f}},  // Vertex 3: Top-left-back
+			{{-0.5f, -0.5f,  0.5f}},  // Vertex 4: Bottom-left-front
+			{{ 0.5f, -0.5f,  0.5f}},  // Vertex 5: Bottom-right-front
+			{{ 0.5f,  0.5f,  0.5f}},  // Vertex 6: Top-right-front
+			{{-0.5f,  0.5f,  0.5f}},  // Vertex 7: Top-left-front
 		};
 		std::vector<uint32_t> indices = {
 			// Bottom face
@@ -71,15 +72,15 @@ struct AABB : public Transform
 
 			// std::cout << visualizer.transform.position.x;
 
-			AABB::mesh.shader->operator[]("u_location") = registry.get<AABB>(entity).
+			AABB::mesh.shader->operator[]("u_location") = registry.get<AABB>(entity).location;
 
 			//shader->operator[]("u_proj") = glm::mat4(1.0);
 
 			//shader->operator[]("u_view"); // FIX MEEEEEE
 			
-				AABB::mesh.shader->operator[]("u_dimensions") = registry.get<AABB>(entity).dimensions;
+			AABB::mesh.shader->operator[]("u_dimensions") = registry.get<AABB>(entity).dimensions;
 
-			glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 
 
 		}

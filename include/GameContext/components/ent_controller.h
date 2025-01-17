@@ -35,6 +35,7 @@ struct ent_controller : public EventListener {
                 //applyMovement();
 
             }
+
         };
 
         on_keyRelease = [this](KeyReleaseEvent& evt) {
