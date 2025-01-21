@@ -51,11 +51,11 @@ struct GameContext
 	Application app;
 
 	// absolutely NEEDS an event handler and UI context. 
-	Controller controller;
+	InputDelegate input_delegate;
 	
 	// Constructor
-	GameContext() : app(event_handler, interpreter), controller(event_handler, app.ui_context, event_handler) {
-		if (controller.IOHandler == nullptr) { controller.init(); }
+	GameContext() : app(event_handler, interpreter), input_delegate(event_handler, app.ui_context, event_handler) {
+		if (input_delegate.IOHandler == nullptr) { input_delegate.init(); }
 		interpreter.add_convar("game_running", running);
 		interpreter.add_command("quit", GameContext::quit);
 		interpreter.add_command("exit", GameContext::quit); // alias
@@ -285,7 +285,7 @@ struct GameContext
 
 			scaled_velocity = player.get<ent_controller>().velocity / 100.0f;
 
-			controller.update();
+			input_delegate.update();
 			begin_ui();
 			draw_ui();
 			std::string string = std::to_string((int)(glm::length(player.get<ent_controller>().velocity) * 100.0f));

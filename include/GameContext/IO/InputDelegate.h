@@ -13,7 +13,7 @@ Added some QOL changes to GUI so that opening the GUI would automatically open s
 Note to self: on pause, set an index to -1, and have each GUI component have its index passed when drawing. The GUI element will set the Context's index pointer to itself, and setting focus. Ideally, each widget should have a priority integer so that it's more controllable and not contingent on ordering
 */
 
-struct Controller
+struct InputDelegate
 {
     // SDL event
     SDL_Event event;
@@ -28,7 +28,7 @@ struct Controller
 
 
     // Constructor
-    Controller(eventHandler& event_handler, UIContext& ui_context, entt::dispatcher& dispatcher)
+    InputDelegate(eventHandler& event_handler, UIContext& ui_context, entt::dispatcher& dispatcher)
         : event_handler(event_handler), ui_context(ui_context), dispatcher(dispatcher)
     {
         if (isImGuiInitialized())

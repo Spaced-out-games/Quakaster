@@ -1,6 +1,6 @@
 #pragma once
 #include <include/GameContext/components/camera.h>
-#include <include/GameContext/IO/controller.h>
+#include <include/GameContext/IO/InputDelegate.h>
 #include <include/thirdparty/entt.hpp>
 #include <math.h>
 
