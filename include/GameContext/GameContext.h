@@ -23,6 +23,7 @@
 //#include <include/GameContext/resources/res_mesh.h>
 #include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/resources/meshComponent.h>
+#include <include/GameContext/components/AABB.h>
 
 static float deltaTime = 0.0f;
 
@@ -50,11 +51,11 @@ struct GameContext
 	Application app;
 
 	// absolutely NEEDS an event handler and UI context. 
-	Controller controller;
+	InputDelegate input_delegate;
 	
 	// Constructor
-	GameContext() : app(event_handler, interpreter), controller(event_handler, app.ui_context, event_handler) {
-		if (controller.IOHandler == nullptr) { controller.init(); }
+	GameContext() : app(event_handler, interpreter), input_delegate(event_handler, app.ui_context, event_handler) {
+		if (input_delegate.IOHandler == nullptr) { input_delegate.init(); }
 		interpreter.add_convar("game_running", running);
 		interpreter.add_command("quit", GameContext::quit);
 		interpreter.add_command("exit", GameContext::quit); // alias
@@ -141,7 +142,7 @@ struct GameContext
 	inline void refresh() { SDL_GL_SwapWindow(app.window.sdl_window); }
 	virtual void init()
 	{
-
+		glLineWidth(4.0f);
 	}
 
 	static void quit(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
@@ -234,8 +235,8 @@ struct GameContext
 		//cube.emplace<Transform>();
 
 		vector_visualizer::init();
-
-
+		AABB::init();
+		cube.emplace<AABB>(player.get<Camera>().position);
 
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 		while (running)
@@ -258,7 +259,8 @@ struct GameContext
 					}
 					else
 					{
-						cam_controller.velocity *= 0.5;
+						cam_controller.velocity *= pow(0.01f, deltaTime);
+
 					}
 
 					//cam_controller.wish_dir = glm::normalize(wish_dir) * speed; // Normalize the direction and apply speed
@@ -279,14 +281,32 @@ struct GameContext
 
 			meshComponent::draw_all(scene.registry, player.get<Camera>());
 			vector_visualizer::draw_all(scene.registry, player.get<Camera>());
-			scaled_velocity = player.get<ent_controller>().velocity / deltaTime;
+			AABB::draw_all(scene.registry, player.get<Camera>());
 
-			controller.update();
+			scaled_velocity = player.get<ent_controller>().velocity / 100.0f;
+
+			input_delegate.update();
 			begin_ui();
 			draw_ui();
 			std::string string = std::to_string((int)(glm::length(player.get<ent_controller>().velocity) * 100.0f));
-			ImGui::Text("Speed");
-			ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
+
+			ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always); // Set position
+			ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Always); // Set size
+
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // Remove border
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // Transparent background
+
+			if (ImGui::Begin("Invisible Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+				ImGui::Text("Speed");
+				ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
+			}
+			ImGui::End();
+
+			ImGui::PopStyleVar(2);
+			ImGui::PopStyleColor();
+
+
 
 			end_ui();
 			

@@ -1,7 +1,7 @@
 #pragma once
 #include <include/GameContext/window/window.h>
 #include <include/GameContext/UI/UIContext.h>
-#include <include/GameContext/IO/controller.h>
+#include <include/GameContext/IO/InputDelegate.h>
 
 struct Application
 {

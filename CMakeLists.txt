@@ -70,8 +70,8 @@ add_executable(Engine_Demo ${SOURCES}
     "include/GameContext/client/Client.h"
     "include/GameContext/UI/UIContext.h"
     "include/GameContext/UI/ConsoleUI.h"
-    "include/GameContext/IO/controller.h"
-    "include/GameContext/IO/controllerEvents.h"
+    "include/GameContext/IO/InputDelegate.h"
+    "include/GameContext/IO/InputEvents.h"
     "include/GameContext/UI/console_message.h"
     
     "include/GameContext/UI/UIBase.h"
@@ -82,7 +82,7 @@ add_executable(Engine_Demo ${SOURCES}
     "include/GameContext/server/interpreter/convar.h"
     "include/GameContext/UI/console_color.h"
     "include/GameContext/components/camera.h"
-    "include/GameContext/components/transform.h" "include/GameContext/components/Framebuffer.h" "include/GameContext/resources/res_shader.h"  "include/GameContext/resources/res_mesh.h" "include/GameContext/graphics/VBO.h" "include/GameContext/graphics/VAO.h" "include/GameContext/components/gravity.h" "include/GameContext/components/ent_controller.h" "include/GameContext/graphics/EBO.h" "include/GameContext/components/physics_components.h" "include/GameContext/resources/res_texture.h" "include/GameContext/utils/vector_visualizer.h" "include/GameContext/resources/meshComponent.h" "include/GameContext/graphics/gl_utils.h")
+    "include/GameContext/components/transform.h" "include/GameContext/components/Framebuffer.h" "include/GameContext/resources/res_shader.h"  "include/GameContext/resources/res_mesh.h" "include/GameContext/graphics/VBO.h" "include/GameContext/graphics/VAO.h" "include/GameContext/components/gravity.h" "include/GameContext/components/ent_controller.h" "include/GameContext/graphics/EBO.h" "include/GameContext/components/physics_components.h" "include/GameContext/resources/res_texture.h" "include/GameContext/utils/vector_visualizer.h" "include/GameContext/resources/meshComponent.h" "include/GameContext/graphics/gl_utils.h" "include/GameContext/components/AABB.h" "include/GameContext/components/IMovementModule.h" "include/GameContext/components/controller.h")
 
 # Link libraries
 target_link_libraries(Engine_Demo

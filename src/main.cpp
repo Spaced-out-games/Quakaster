@@ -8,7 +8,7 @@
 #include <include/GameContext/GameContext.h>
 //#include <glm/glm.hpp>
 
-#include <include/GameContext/IO/controller.h>
+#include <include/GameContext/IO/InputDelegate.h>
 #include <include/GameContext/client/Client.h>
 
 static std::string root_directory = "D:/Quakaster/";
