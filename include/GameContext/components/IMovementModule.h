@@ -8,7 +8,7 @@ extern float deltaTime;
 // or inherited classes simply set default states that are used consistently
 class IMoveSystem
 {
-	virtual void init_default_bindings(std::unordered_map<SDLKeycode, move_fn>& bindings) = 0;
+	static void init_default_bindings(std::unordered_map<SDLKeycode, move_fn>& bindings) = 0;
 	// store movement state
 	bool moving;
 	bool in_air;
@@ -35,7 +35,7 @@ class IMoveSystem
 	float sv_ground_friction_coefficient = 0.5f; // Random ass value, and true meaning is dependent on implementation, perhaps this means slowing the player by 50% per second, or 50% per tick, or while 
 
 	// Reference to the real position of an object
-	glm::vec3& position;
+	Transform& transform
 
 	// Which direction the player wishes to go in
 	glm::vec3 wishdir;
@@ -61,16 +61,16 @@ class IMoveSystem
 
 
 
-		virtual void while_in_air() = 0;
-		virtual void jump() = 0;
-		virtual void land() = 0;
-		virtual void moveLeft() = 0; // Freecam movement looks different than 
-		virtual void moveRight() = 0;
-		virtual void moveForward() = 0;
-		virtual void moveBack() = 0;
-		virtual void croutch() = 0;
-		virtual void uncroutch() = 0; // Exact implementations may vary, maybe in some implementations, hitboxes change size, and in others, they do not.
-		virtual void tick() = 0; // Good for updating things like position in respect to velocity. When the game is eventually optimized, this function will be made into a non-virtual inline function that will be called in parallel per game tick
-		virtual void on_impulse() = 0
+		static void while_in_air() = 0;
+		static void jump() = 0;
+		static void land() = 0;
+		static void moveLeft() = 0;
+		static void moveRight() = 0;
+		static void moveForward() = 0;
+		static void moveBack() = 0;
+		static void croutch() = 0;
+		static void uncroutch() = 0; // Exact implementations may vary, maybe in some implementations, hitboxes change size, and in others, they do not.
+		static void tick() = 0; // Good for updating things like position in respect to velocity. When the game is eventually optimized, this function will be made into a non-static inline function that will be called in parallel per game tick
+		static void on_impulse() = 0
 
 };
