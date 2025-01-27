@@ -42,8 +42,8 @@ struct Renderer
 
 	void init()
 	{
-		disable_face_culling();
-		//set_cull_mode(GL_CW);
+		enable_face_culling();
+		//set_cull_mode(GL_CCW);
 	}
 	
 	static void r_wireframe_fn(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args)
