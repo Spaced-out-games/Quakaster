@@ -51,10 +51,10 @@ struct InputDelegate
     // Update controller input and forward events
     void update()
     {
-        
+        static ConsoleUI* console = ui_context.get_UIElement<ConsoleUI>();
 
         // Only draw if in relative mode
-        ui_context.paused = ui_context.paused;
+        ui_context.free_mouse = ui_context.free_mouse;
         // Ensure ImGui is ready
         if (!IOHandler)
             init();
@@ -72,15 +72,14 @@ struct InputDelegate
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
             {
                 // Toggle the relative mode
-                ui_context.paused = !ui_context.paused; // Toggle the state
+                ui_context.free_mouse = !ui_context.free_mouse; // Toggle the state
 
-                // this will cause errors
-                ConsoleUI* consoleUI = dynamic_cast<ConsoleUI*>(ui_context.elements.at(0));
+                
 
-                if (!ui_context.paused) { consoleUI->last_pause_state = 0; }
+                if (!ui_context.free_mouse && console) { console->last_pause_state = 0; }
 
 
-                SDL_SetRelativeMouseMode(ui_context.paused ? SDL_TRUE : SDL_FALSE); // Set relative mouse mode
+                SDL_SetRelativeMouseMode(ui_context.free_mouse ? SDL_TRUE : SDL_FALSE); // Set relative mouse mode
                 dispatcher.trigger(KeyPressEvent{ event.key.keysym.sym, event.key.keysym.mod });
                 return; // Skip further processing for this event
             }
@@ -89,7 +88,7 @@ struct InputDelegate
             ImGui_ImplSDL2_ProcessEvent(&event);
 
             // Handle events not captured by ImGui
-            if ((!IOHandler->WantCaptureKeyboard || !IOHandler->WantCaptureMouse) && ui_context.paused)
+            if ((!IOHandler->WantCaptureKeyboard || !IOHandler->WantCaptureMouse) && ui_context.free_mouse)
             {
                 switch (event.type)
                 {
@@ -121,7 +120,7 @@ struct InputDelegate
                     break;
 
                 case SDL_MOUSEMOTION:
-                    if (ui_context.paused)
+                    if (ui_context.free_mouse)
                     {
                         // Get mouse motion details
                         lastMouseX = event.motion.x;

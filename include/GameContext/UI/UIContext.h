@@ -14,7 +14,7 @@ struct ConsoleUI;
 struct UIContext
 {
     // InputBase* current_controller;
-    bool paused = 1;
+    bool free_mouse = 1;
     Renderer& renderer;
     Window& window;
     UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window);
@@ -30,14 +30,14 @@ struct UIContext
 
     inline void draw()
     {
-        if (paused)
-        {
-            return;
-        }
+        //if (free_mouse)
+        //{
+        //    return;
+        //}
         // assign to the controller by default
         for (size_t i = 0; i < elements.size(); i++)
         {
-            if (elements[i]->visible)
+            if (elements[i]->visible && !free_mouse || elements[i]->always_visible)
             {
                 elements[i]->draw(this);
             }
@@ -58,6 +58,22 @@ struct UIContext
 
 
     }
+
+    template <typename T>
+    T* get_UIElement() {
+        static_assert(std::is_base_of<UIBase, T>::value, "Attempted to get a type that is not a widget");
+
+        for (auto* element : elements) // Assuming elements is a container of pointers to UIBase
+        {
+            T* castedElement = dynamic_cast<T*>(element);
+            if (castedElement) // Check if the cast was successful
+            {
+                return castedElement;
+            }
+        }
+        return nullptr; // No element of type T found
+    }
+
 
     inline void add_UIElement(UIBase* new_UIelement) { elements.push_back(new_UIelement); }
 
@@ -81,7 +97,8 @@ struct UIContext
     // Pauses to the console UI element
     void pause()
     {
-        paused = !paused;
+        free_mouse = !free_mouse;
+        //paused = !paused;
     }
 };
 
@@ -89,7 +106,6 @@ struct UIContext
 
 UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window) : event_handler(event_handler), interpreter(interpreter), renderer(renderer), window(window)
 {
-    add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });
     
     
     
