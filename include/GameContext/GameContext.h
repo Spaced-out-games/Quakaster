@@ -16,11 +16,9 @@
 // TODO: Implement 'help' and 'echo'
 
 //#include <resources/shaders/default.frag>
-
-
+#include <include/GameContext/UI/SpedometerUI.h>
 #include <include/GameContext/resources/res_texture.h>
 #include <include/GameContext/resources/res_shader.h>
-//#include <include/GameContext/resources/res_mesh.h>
 #include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/resources/meshComponent.h>
 #include <include/GameContext/components/AABB.h>
@@ -30,8 +28,7 @@ static float deltaTime = 0.0f;
 
 struct GameContext
 {
-	// Timing variables
-	
+
 	// Timing variables using std::chrono
 	std::chrono::steady_clock::time_point lastFrameTime;
 	std::chrono::steady_clock::time_point currentFrameTime;
@@ -63,7 +60,6 @@ struct GameContext
 		interpreter.add_convar("bg_color_value", bg_color, false);
 		interpreter.add_command("bg_color", bg_color_fn);
 
-		
 
 	}
 	static void console_log(std::string message,console_color color = console_color::DEFAULT_TEXT)
@@ -140,8 +136,11 @@ struct GameContext
 
 	// Refreshes the frame and displays it to the screen
 	inline void refresh() { SDL_GL_SwapWindow(app.window.sdl_window); }
+
 	virtual void init()
 	{
+		app.ui_context.add_UIElement(new ConsoleUI{ interpreter, event_handler, app.ui_context });
+
 		glLineWidth(4.0f);
 	}
 
@@ -208,8 +207,9 @@ struct GameContext
 		player.get<Camera>().look_at({ 0.0,0.0,0.0 });
 		player.emplace<Transform>();
 		player.emplace<ent_controller>(event_handler, player.get<Camera>());
+		app.ui_context.add_UIElement(new SpedometerUI{ player.get<ent_controller>().velocity });
 
-
+		//player.get<ent_controller>().velocity
 
 		// Create an entity with a mesh
 		//entt::handle{ scene.registry, scene.registry.create() };
@@ -288,23 +288,7 @@ struct GameContext
 			input_delegate.update();
 			begin_ui();
 			draw_ui();
-			std::string string = std::to_string((int)(glm::length(player.get<ent_controller>().velocity) * 100.0f));
 
-			ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always); // Set position
-			ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Always); // Set size
-
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // Remove border
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // Transparent background
-
-			if (ImGui::Begin("Invisible Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-				ImGui::Text("Speed");
-				ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
-			}
-			ImGui::End();
-
-			ImGui::PopStyleVar(2);
-			ImGui::PopStyleColor();
 
 
 
