@@ -6,12 +6,13 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <include/GameContext/components/ent_controller.h>
-#include <include/GameContext/Scene.h>
 #include <include/GameContext/components/camera.h>
 #include <include/GameContext/components/Framebuffer.h>
 #include <include/GameContext/graphics/VAO.h>
 #include <include/GameContext/graphics/VBO.h> // Just in case
 #include <chrono>
+
+#include <include/GameContext/base/Quakaster.h>
 
 // TODO: Implement 'help' and 'echo'
 
@@ -44,7 +45,7 @@ struct GameContext
 	// Interprets console commands
 	ConsoleInterpreter interpreter;
 
-	Scene scene;
+	Quakaster::base::Scene scene;
 
 	//
 	static entt::dispatcher event_handler;
