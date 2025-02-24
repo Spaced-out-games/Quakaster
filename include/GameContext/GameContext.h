@@ -1,38 +1,30 @@
 #pragma once
-#include <include/thirdparty/entt.hpp>
 #include "include/GameContext/window/window.h"
 #include "include/GameContext/client/application.h"
+#include <chrono>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <include/GameContext/components/ent_controller.h>
-#include <include/GameContext/components/camera.h>
-#include <include/GameContext/components/Framebuffer.h>
-#include <include/GameContext/graphics/VAO.h>
-#include <include/GameContext/graphics/VBO.h> // Just in case
-#include <chrono>
 
 #include <include/GameContext/base/Quakaster.h>
 
-// TODO: Implement 'help' and 'echo'
-
-//#include <resources/shaders/default.frag>
-
-
 #include <include/GameContext/resources/res_texture.h>
-#include <include/GameContext/resources/res_shader.h>
-//#include <include/GameContext/resources/res_mesh.h>
 #include <include/GameContext/utils/vector_visualizer.h>
-#include <include/GameContext/resources/meshComponent.h>
 #include <include/GameContext/components/AABB.h>
 
 static float deltaTime = 0.0f;
 
+using namespace Quakaster::components;
+
 
 struct GameContext
 {
-	// Timing variables
 	
+	
+	std::vector<Quakaster::base::ISystem> systems;
+	
+
 	// Timing variables using std::chrono
 	std::chrono::steady_clock::time_point lastFrameTime;
 	std::chrono::steady_clock::time_point currentFrameTime;
@@ -45,10 +37,13 @@ struct GameContext
 	// Interprets console commands
 	ConsoleInterpreter interpreter;
 
+	// The scene
 	Quakaster::base::Scene scene;
 
-	//
+	// Used to dispatch events
 	static entt::dispatcher event_handler;
+
+	// Application
 	Application app;
 
 	// absolutely NEEDS an event handler and UI context. 
@@ -207,8 +202,13 @@ struct GameContext
 		player.emplace<Camera>(player);
 		player.get<Camera>().bind_convars(interpreter);
 		player.get<Camera>().look_at({ 0.0,0.0,0.0 });
-		player.emplace<Transform>();
+		//player.emplace<Transform>();
 		player.emplace<ent_controller>(event_handler, player.get<Camera>());
+
+
+		Quakaster::base::Entity e = scene.create<Quakaster::base::Entity>();
+		
+
 
 
 
@@ -218,7 +218,7 @@ struct GameContext
 		entt::handle cube = { scene.registry, scene.registry.create() };
 
 
-		cube.emplace<meshComponent>(
+		cube.emplace<Quakaster::components::mesh>(
 			vertices,
 			indices,
 			"default_shader",
@@ -236,7 +236,7 @@ struct GameContext
 		//cube.emplace<Transform>();
 
 		vector_visualizer::init();
-		AABB::init();
+		Quakaster::components::AABB::init();
 		cube.emplace<AABB>(player.get<Camera>().position);
 
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
@@ -280,9 +280,9 @@ struct GameContext
 			glClear(GL_COLOR_BUFFER_BIT);
 
 
-			meshComponent::draw_all(scene.registry, player.get<Camera>());
+			components::mesh::draw_all(scene.registry, player.get<Camera>());
 			vector_visualizer::draw_all(scene.registry, player.get<Camera>());
-			AABB::draw_all(scene.registry, player.get<Camera>());
+			Quakaster::components::AABB::draw_all(scene.registry, player.get<Camera>());
 
 			scaled_velocity = player.get<ent_controller>().velocity / 100.0f;
 
@@ -291,22 +291,27 @@ struct GameContext
 			draw_ui();
 			std::string string = std::to_string((int)(glm::length(player.get<ent_controller>().velocity) * 100.0f));
 
-			ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always); // Set position
-			ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Always); // Set size
 
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // Remove border
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // Transparent background
+			/*
+			void draw_speed() {
+				ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always); // Set position
+				ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Always); // Set size
 
-			if (ImGui::Begin("Invisible Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-				ImGui::Text("Speed");
-				ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // Remove border
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
+				ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // Transparent background
+
+				if (ImGui::Begin("Invisible Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
+					ImGui::Text("Speed");
+					ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
+				}
+				ImGui::End();
+
+				ImGui::PopStyleVar(2);
+				ImGui::PopStyleColor();
+
 			}
-			ImGui::End();
-
-			ImGui::PopStyleVar(2);
-			ImGui::PopStyleColor();
-
+			*/
 
 
 			end_ui();
