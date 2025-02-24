@@ -2,11 +2,13 @@
 #include <include/thirdparty/entt.hpp>
 #include <include/GameContext/base/Component.h>
 #include <include/GameContext/base/Tag.h>
+#include <include/GameContext/base/Scene.h>
 
 //using namespace Quakaster::base;
 
 // Forward declaration
 struct Scene;
+
 
 
 namespace Quakaster::base {
@@ -16,7 +18,7 @@ namespace Quakaster::base {
     /// as well as a series of methods that wrap inter-component functionality.
     /// </summary>
     struct Entity {
-    protected:
+    // protected: //Temporarily commented while we make sure the constructors work
         /// <summary>
         /// Grants access to Entity's members to the Scene struct.
         /// </summary>
@@ -27,8 +29,8 @@ namespace Quakaster::base {
         /// </summary>
         /// <param name="id">The entity identifier.</param>
         /// <param name="scene">Reference to the scene that this entity belongs to.</param>
-        /// <param name="tag_t"> an ITag-derived type denoting the entity type of this entity (eg, tag_player for a Player entity) </param>
-        template <typename tag_t = ITag>
+        /// <param name="tag_t"> an Tag-derived type denoting the entity type of this entity (eg, tag_player for a Player entity) </param>
+        template <typename tag_t = Tag>
         Entity(entt::entity id, Scene& scene) : ID(id), scene(scene) {
             scene.registry.emplace<tag_t>(id);
         }
@@ -49,6 +51,34 @@ namespace Quakaster::base {
         Scene& get_scene() { return scene; }
 
 
+        /// <summary>
+        /// Gets a component from this entity
+        /// </summary>
+        /// <typeparam name="T">The type of component you're looking for</typeparam>
+        /// <returns>A reference to the component</returns>
+        template <typename T>
+        inline T& get_component()
+        { return scene.get_component<T>(ID); }
+
+        /// <summary>
+        /// Gets a componne from this entity. Returns nullptr on failure
+        /// </summary>
+        /// <typeparam name="T">The type of component you're looking for</typeparam>
+        /// <returns>A pointer to the component</returns>
+        template <typename T>
+        inline T* try_get_component()
+        { return scene.try_get_component<T>(ID); }
+
+
+
+        /// <summary>
+        /// Adds a component to this entity
+        /// </summary>
+        /// <typeparam name="T">The type of component to append to this entity</typeparam>
+        /// <typeparam name="...Args">parameter type list for the constructor of the component</typeparam>
+        /// <param name="...args">parameter value list for the constructor of the component</param>
+        template <typename T, typename ...Args>
+        inline void add_component(Args&&... args) { scene.add_component<T>(ID, std::forward<Args>(args)...); }
 
     private:
         /// <summary>
