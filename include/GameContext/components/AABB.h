@@ -8,7 +8,12 @@
 #include <include/GameContext/resources/res_shader.h>
 #include <include/GameContext/resources/mesh.h>
 
+
+
 namespace Quakaster::components {
+
+	using namespace Quakaster;
+
 
 	// Code reused almost word-for-word from vector_visualizer
 	struct AABB
@@ -74,10 +79,9 @@ namespace Quakaster::components {
 
 	private:
 		// This will be excluded from mesh::draw_all, since this isn't registered in any entt::registry ; )
-		static Quakaster::components::mesh mesh;
+		static components::mesh mesh;
 	};
-
 	//Shader AABB::shader;
-	Quakaster::components::mesh AABB::mesh;
+	components::mesh AABB::mesh;
 
-} // namespace Quakaster::components
+} // namespace components

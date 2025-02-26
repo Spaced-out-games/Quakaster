@@ -4,7 +4,6 @@
 #include <include/GameContext/base/Tag.h>
 #include <include/GameContext/base/Scene.h>
 
-//using namespace Quakaster::base;
 
 // Forward declaration
 struct Scene;
