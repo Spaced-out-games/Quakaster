@@ -6,83 +6,98 @@
 #include <include/GameContext/UI/console_message.h>
 #include <include/GameContext/server/interpreter/console_function.h>
 #include <include/GameContext/resources/res_shader.h>
+#include <include/GameContext/base/Component.h>
 
 
+using namespace Quakaster::base;
 
+namespace Quakaster::components {
 
-struct Camera: public Transform
-{
-	Camera(entt::handle parent, float fov = 90.0f, float near = 0.1f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 1.0,2.0,5.0 }); }
-	float fov;
-	float near;
-	float far;
-	entt::handle target;
-	
-	static void set_fov(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> tokens)
+	struct Camera : Component, Transform
 	{
-		switch (tokens.size())
+		Camera(entt::handle parent, float fov = 90.0f, float near = 0.1f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 1.0,2.0,5.0 }); }
+
+		float fov;
+		float near;
+		float far;
+		entt::handle target;
+
+
+		// tag to discern which camera is the active camera. 
+		struct target {};
+
+		static void set_fov(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> tokens)
 		{
-		case 0:
-			msg = std::string("fov_desired = ") + std::to_string(interpreter.get_convar<float>("fov"));
-			return;
-		case 1:
-
-
-			if (tokens[0].token_type == TYPE_FLOAT)
+			switch (tokens.size())
 			{
-				interpreter.set_convar<float>("fov", std::get<float>(tokens[0].value));
-				msg = std::string("fov_desired =") + std::to_string(interpreter.get_convar<float>("fov"));
+			case 0:
+				msg = std::string("fov_desired = ") + std::to_string(interpreter.get_convar<float>("fov"));
+				return;
+			case 1:
+
+
+				if (tokens[0].token_type == TYPE_FLOAT)
+				{
+					interpreter.set_convar<float>("fov", std::get<float>(tokens[0].value));
+					msg = std::string("fov_desired =") + std::to_string(interpreter.get_convar<float>("fov"));
+				}
+				else if (tokens[0].token_type == TYPE_INTEGER)
+				{
+					interpreter.set_convar<float>("fov", (float)std::get<int>(tokens[0].value));
+					msg = std::string("fov_desired =") + std::to_string(interpreter.get_convar<float>("fov"));
+				}
+
+
+				return;
+
+			default:
+				break;
 			}
-			else if (tokens[0].token_type == TYPE_INTEGER)
-			{
-				interpreter.set_convar<float>("fov", (float)std::get<int>(tokens[0].value));
-				msg = std::string("fov_desired =") + std::to_string(interpreter.get_convar<float>("fov"));
-			}
-
-
-			return;
-
-		default:
-			break;
 		}
-	}
 
-	glm::mat4 get_projection_matrix()
-	{
-		const float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT; // Replace with actual aspect ratio
-		return glm::perspective(glm::radians(fov), aspect_ratio, near, far);
-	}
-	void set_shader_uniforms(Shader& shader, entt::entity owner = entt::null, entt::registry* registry = nullptr)
-	{
-		if (registry)
+		glm::mat4 get_projection_matrix()
 		{
-			if (registry->all_of<Transform>(owner))
-			{
-				shader->operator[]("u_view") = glm::inverse(get_matrix(owner, *registry));
-			}
-			
+			const float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT; // Replace with actual aspect ratio
+			return glm::perspective(glm::radians(fov), aspect_ratio, near, far);
 		}
-		else
+		void set_shader_uniforms(Shader& shader, entt::entity owner = entt::null, entt::registry* registry = nullptr)
 		{
-			shader->operator[]("u_view") = glm::inverse(get_matrix());// *parent_transform;
+			if (registry)
+			{
+				if (registry->all_of<Transform>(owner))
+				{
+					shader->operator[]("u_view") = glm::inverse(get_matrix());
+
+
+					// Meant to get the relative transform
+					//shader->operator[]("u_view") = glm::inverse(get_matrix(owner, *registry));
+				}
+
+			}
+			else
+			{
+				shader->operator[]("u_view") = glm::inverse(get_matrix());// *parent_transform;
+			}
+			shader->operator[]("u_proj") = get_projection_matrix();
 		}
-		shader->operator[]("u_proj") = get_projection_matrix();
-	}
-	void set_shader_uniforms(res_shader& shader)
-	{
+		void set_shader_uniforms(res_shader& shader)
+		{
 
-		shader["u_view"] = glm::inverse(get_matrix());// *parent_transform;
-		shader["u_proj"] = get_projection_matrix();
-	}
+			shader["u_view"] = glm::inverse(get_matrix());// *parent_transform;
+			shader["u_proj"] = get_projection_matrix();
+		}
 
-
-
-	void bind_convars(ConsoleInterpreter& interpreter)
-	{
-		interpreter.add_convar("fov", fov, false);
-		interpreter.add_command("fov_desired", set_fov);
-	}
-};
+		void bind_convars(ConsoleInterpreter& interpreter)
+		{
+			interpreter.add_convar("fov", fov, false);
+			interpreter.add_command("fov_desired", set_fov);
+		}
 
 
-struct tag_target_camera {};
+
+
+
+	};
+
+
+}

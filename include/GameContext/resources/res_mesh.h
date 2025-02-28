@@ -5,35 +5,63 @@
 #include <include/GameContext/graphics/EBO.h>
 #include <include/thirdparty/entt.hpp>
 
+
+
 /*
 ALERT!!!
 
-This is not a real type. It only acts as a fake container for initializing mesh components in a way that feels like OOP
+TODO: rename this as res_mesh, and update MeshComponent to just be a linked VAO. Also, add a refcounter to this type
 */
 struct Mesh {
+    VAO vao;
+    VBO vbo;
+    EBO ebo;
+
+
     // Mesh constructor that creates and binds VAO, VBO, and EBO
     template <typename vertex_t>
     Mesh(entt::handle& entity, const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, std::string shader_name, std::string vertex_path, std::string fragment_path) {
-        // Create and bind VAO
-        entity.emplace<VAO>();
-        auto& vao = entity.get<VAO>();
+
+        // bind the vao
         vao.bind();
 
-        // Create and bind VBO
-        entity.emplace<VBO>(vertices);
-        auto& vbo = entity.get<VBO>();
+        // initialize and bind the VBO
+        vbo.init(vertices);
         vbo.bind();
 
-        // Create and bind EBO
-        entity.emplace<EBO>();
-        auto& ebo = entity.get<EBO>();
-        ebo.init(indices); // Upload indices to the EBO
+        // initialize the EBO
+        ebo.init(indices);
 
-        // Store the shader in the entity
         entity.emplace<Shader>(shader_name, vertex_path, fragment_path);
 
         // Set vertex attribute pointers using the shader program
-        vertex_t::set_pointers();
+        //vertex_t::set_pointers();
+
+
+
+
+
+
+        // Create and bind VAO
+        //entity.emplace<VAO>();
+        //auto& vao = entity.get<VAO>();
+        //vao.bind();
+
+        // Create and bind VBO
+        //entity.emplace<VBO>(vertices);
+        //auto& vbo = entity.get<VBO>();
+        //vbo.bind();
+
+        // Create and bind EBO
+        //entity.emplace<EBO>();
+        //auto& ebo = entity.get<EBO>();
+        //ebo.init(indices); // Upload indices to the EBO
+
+        // Store the shader in the entity
+        //entity.emplace<Shader>(shader_name, vertex_path, fragment_path);
+
+        // Set vertex attribute pointers using the shader program
+        //vertex_t::set_pointers();
 
         // Unbind VBO, EBO, and VAO
         VBO::unbind();
@@ -46,11 +74,13 @@ struct Mesh {
     // Draw all meshes in the registry
     static void draw_all(entt::registry& registry, Camera& camera) {
         // Iterate over entities with VAO, VBO, EBO, and Shader components
-        auto view = registry.view<VAO, VBO, EBO, Shader>();
+        auto view = registry.view<Mesh, Shader>();
         for (auto entity : view) {
-            auto& vao = view.get<VAO>(entity);
-            auto& vbo = view.get<VBO>(entity);
-            auto& ebo = view.get<EBO>(entity);
+
+            auto& mesh = view.get<Mesh>(entity);
+            auto& vao = mesh.vao;
+            auto& vbo = mesh.vbo;
+            auto& ebo = mesh.ebo;
             auto& shader = view.get<Shader>(entity);
 
 

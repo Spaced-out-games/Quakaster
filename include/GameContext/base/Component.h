@@ -1,5 +1,5 @@
 #pragma once
-#include <include/GameContext/base/Scene.h>
+//#include <include/GameContext/base/Scene.h>
 #include <include/thirdparty/entt.hpp>
 
 
@@ -18,11 +18,11 @@ namespace Quakaster::base {
     struct Component {
     protected:
         // Grants access to Entity and Scene
-        friend struct Entity;
-        friend struct Scene;
+        //friend struct Entity;
+        //friend struct Scene;
 
         // Grants access to entt::registry for constructing components
-        friend class entt::registry;
+        //friend class entt::registry;
 
         Component() {}
 

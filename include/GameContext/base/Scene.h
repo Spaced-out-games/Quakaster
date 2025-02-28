@@ -1,6 +1,7 @@
 #pragma once
 #include <include/GameContext/base/eventHandler.h>
 #include <include/thirdparty/entt.hpp>
+#include <include/GameContext/base/Component.h>
 
 
 namespace Quakaster::base {
@@ -17,17 +18,30 @@ namespace Quakaster::base {
 
 		template <typename T, typename ...Args>
 		inline T& add_component(entt::entity entity, Args&&... args) {
+			static_assert(std::is_base_of_v<Quakaster::base::Component, T>, "T must be a component type.");
 			return registry.emplace<T>(entity, std::forward<Args>(args)...);
 		}
 
 		template <typename ent_t = IEntity, typename ...Args>
-		inline ent_t& create(Args&&... args) {
+		ent_t create(Args&&... args) {
 			// Create a new entity in the registry
 			entt::entity entity = registry.create();
 
-			// Create the entity instance and return a reference to it
-			return registry.emplace<ent_t>(entity, entity, *this, std::forward<Args>(args)...);
+			return {entity, *this, std::forward<Args>(args)... };
 		}
+
+		template <typename T>
+		inline T& get_component(entt::entity entity) {
+			return registry.get<T>(entity);
+		}
+
+		template <typename T>
+		inline T* try_get_component(entt::entity entity) {
+			return registry.try_get<T>(entity);
+		}
+
+		entt::registry& get_registry() { return registry; }
+
 	};
 
 

@@ -6,8 +6,9 @@
 #include <include/thirdparty/entt.hpp>
 #include <include/GameContext/components/transform.h>
 #include <include/GameContext/resources/res_shader.h>
-#include <include/GameContext/resources/meshComponent.h>
+#include <include/GameContext/resources/mesh.h>
 
+using namespace Quakaster;
 
 struct vector_visualizer: public Transform
 {
@@ -38,7 +39,7 @@ struct vector_visualizer: public Transform
 		vector_visualizer::mesh.init(vertices, indices, "vector_visualizer_shader", "resources/shaders/vector_visualizer.vert", "resources/shaders/vector_visualizer.frag");
 	}
 
-	static void draw_all(entt::registry& registry, Camera& camera)
+	static void draw_all(entt::registry& registry, components::Camera& camera)
 	{
 		Shader& shader = vector_visualizer::mesh.shader;
 		mesh.vao.bind();
@@ -72,12 +73,12 @@ struct vector_visualizer: public Transform
 
 		//static Shader shader;
 
-		// This will be excluded from meshComponent::draw_all, since this isn't registered in any entt::registry ; )
-		static meshComponent mesh;
+		// This will be excluded from mesh::draw_all, since this isn't registered in any entt::registry ; )
+		static Quakaster::components::mesh mesh;
 };
 
 
 
 
 //Shader vector_visualizer::shader;
-meshComponent vector_visualizer::mesh;
+Quakaster::components::mesh vector_visualizer::mesh;

@@ -15,34 +15,9 @@ struct Transform {
         glm::mat4 matrix = glm::translate(glm::mat4(1.0f), position);
         return matrix * glm::mat4_cast(rotation);
     }
+    
+    
 
-    glm::mat4 get_matrix(entt::entity entity, entt::registry& scene) const
-    {
-        glm::mat4 parent_transform = scene.get<Transform>(entity).get_matrix();
-        return Transform::get_matrix();
-    }
-
-    glm::mat4 get_matrix(entt::handle owner) const {
-        glm::mat4 matrix = glm::mat4(1.0f); // Initialize the matrix to identity
-
-        // Check if the owner has a Transform component
-        if (owner.all_of<Transform>()) {
-            // Get the root transform
-            Transform& other = owner.get<Transform>();
-
-            // Calculate the world position by combining the current position with the root position
-            glm::vec3 world_position = other.position + position;
-
-            // Create the world transformation matrix
-            matrix = glm::translate(glm::mat4(1.0f), world_position) * glm::mat4_cast(other.rotation * rotation);
-        }
-        else {
-            // If there's no root transform, just return the local transform
-            matrix = glm::translate(glm::mat4(1.0f), position) * glm::mat4_cast(rotation);
-        }
-
-        return matrix; // Return the final world transformation matrix
-    }
 
     // Get the forward vector (negative Z in OpenGL)
     glm::vec3 get_forward_vector() const {
