@@ -91,7 +91,6 @@ add_executable(Engine_Demo ${SOURCES}
         "include/GameContext/components/physics_components.h"
         "include/GameContext/resources/res_texture.h"
         "include/GameContext/utils/vector_visualizer.h"
-        "include/GameContext/resources/meshComponent.h"
         "include/GameContext/graphics/gl_utils.h"
         "include/GameContext/components/AABB.h"
         "include/GameContext/components/IMovementModule.h"
