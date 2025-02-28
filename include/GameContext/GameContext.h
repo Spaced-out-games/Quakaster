@@ -18,10 +18,8 @@
 
 //#include <resources/shaders/default.frag>
 
-
 #include <include/GameContext/resources/res_texture.h>
 #include <include/GameContext/resources/res_shader.h>
-//#include <include/GameContext/resources/res_mesh.h>
 #include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/resources/meshComponent.h>
 #include <include/GameContext/components/AABB.h>
@@ -47,15 +45,16 @@ struct GameContext
 
 	Quakaster::base::Scene scene;
 
-	//
-	static entt::dispatcher event_handler;
+
+	static eventHandler event_handler;
+
 	Application app;
 
 	// absolutely NEEDS an event handler and UI context. 
 	InputDelegate input_delegate;
 	
 	// Constructor
-	GameContext() : app(event_handler, interpreter), input_delegate(event_handler, app.ui_context, event_handler) {
+	GameContext() : app(event_handler, interpreter), input_delegate(app.ui_context, event_handler) {
 		if (input_delegate.IOHandler == nullptr) { input_delegate.init(); }
 		interpreter.add_convar("game_running", running);
 		interpreter.add_command("quit", GameContext::quit);
@@ -203,6 +202,8 @@ struct GameContext
 			0, 5, 4   // Flipped 5 and 4
 		};
 
+
+
 		auto player = entt::handle{ scene.registry, scene.registry.create() };
 		player.emplace<Camera>(player);
 		player.get<Camera>().bind_convars(interpreter);
@@ -320,4 +321,4 @@ struct GameContext
 
 
 
-entt::dispatcher GameContext::event_handler;
+eventHandler GameContext::event_handler;
