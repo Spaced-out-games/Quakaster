@@ -8,6 +8,8 @@
 #include <include/GameContext/UI/UIContext.h> // Include UIContext before implementing methods
 #include <include/GameContext/UI/UIBase.h>
 #include <include/GameContext/UI/console_message.h>
+#include <include/GameContext/base/eventHandler.h>
+
 
 // Size of a single console command
 #define CONSOLE_BUFFER_SIZE 256
@@ -23,7 +25,7 @@ struct ConsoleUI: public UIBase
     // communication network with components
 
     ConsoleInterpreter& interpreter;
-    entt::dispatcher& event_handler;
+    eventHandler& event_handler;
     UIContext& ui_context;
 
 
@@ -74,7 +76,7 @@ struct ConsoleUI: public UIBase
 
 
 
-    ConsoleUI(ConsoleInterpreter& interpreter, entt::dispatcher& event_handler, UIContext& ui_context) :
+    ConsoleUI(ConsoleInterpreter& interpreter, eventHandler& event_handler, UIContext& ui_context) :
         interpreter(interpreter),
         event_handler(event_handler),
         ui_context(ui_context)
