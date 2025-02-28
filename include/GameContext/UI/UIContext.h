@@ -3,20 +3,20 @@
 #include <vector>
 #include <include/GameContext/UI/UIBase.h>
 #include <include/GameContext/server/interpreter/ConsoleInterpreter.h> // For ConsoleInterpreter
-#include <include/GameContext/base/eventHandler.h>
 #include <include/GameContext/window/Renderer.h>
+
+#include <include/common.h>
 
 // Forward declaration of ConsoleUI
 struct ConsoleUI;
 
+using namespace Quakaster;
 
-
-struct UIContext
+struct UIContext: public base::ISystem
 {
-    // InputBase* current_controller;
-    bool paused = 1;
-    Renderer& renderer;
-    Window& window;
+    // -------------------------------------------------------- METHODS -------------------------------------------------------
+
+
     UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window);
     ~UIContext()
     {
@@ -26,10 +26,13 @@ struct UIContext
         }
     }
 
+    void init(base::Scene&) override {
+        
+    }
 
 
-    inline void draw()
-    {
+    // This ignores the Scene that needs passed
+    void tick(base::Scene&) override {
         if (paused)
         {
             return;
@@ -42,25 +45,18 @@ struct UIContext
                 elements[i]->draw(this);
             }
         }
-
-
-
-
-
-        //SDL_PollEvent(&evt);
-
-        
-
-
-
-        // Swap buffers, etc.
-        //SDL_GL_SwapWindow(window.sdl_window);
-
-
     }
+
+    // In this instance, it does pretty much nothing.
+    void destroy(base::Scene&) override {}
+
+    // Pauses to the console UI element
+    void pause() { paused = !paused; }
 
     inline void add_UIElement(UIBase* new_UIelement) { elements.push_back(new_UIelement); }
 
+    
+    // -------------------------------------------------------- MEMBERS -------------------------------------------------------
 
     // For handling events
     eventHandler& event_handler;
@@ -72,17 +68,17 @@ struct UIContext
     // UI Elements
     std::vector<UIBase*> elements;
 
-    // Current element
-    //InputBase* current_element = nullptr;
-
     // Pointer to the console interface
     ConsoleUI* console;
 
-    // Pauses to the console UI element
-    void pause()
-    {
-        paused = !paused;
-    }
+    bool paused = 1;
+    Renderer& renderer;
+    Window& window;
+    
+
+    
+
+    
 };
 
 #include <include/GameContext/UI/ConsoleUI.h>
@@ -90,8 +86,4 @@ struct UIContext
 UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window) : event_handler(event_handler), interpreter(interpreter), renderer(renderer), window(window)
 {
     add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });
-    
-    
-    
-    //elements.emplace_back(console);
 }
