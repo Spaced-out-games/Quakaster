@@ -3,7 +3,7 @@
 #include <vector>
 #include <include/GameContext/UI/UIBase.h>
 #include <include/GameContext/server/interpreter/ConsoleInterpreter.h> // For ConsoleInterpreter
-#include <include/thirdparty/entt.hpp> // For eventHandler
+#include <include/GameContext/base/eventHandler.h>
 #include <include/GameContext/window/Renderer.h>
 
 // Forward declaration of ConsoleUI
