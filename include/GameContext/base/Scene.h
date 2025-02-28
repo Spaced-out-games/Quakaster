@@ -1,13 +1,19 @@
 #pragma once
-//#include "entt.hpp"
+#include <include/GameContext/base/eventHandler.h>
 #include <include/thirdparty/entt.hpp>
+
 
 namespace Quakaster::base {
 
-
+	// TODO: Move functionality from dispatcher into its own wrapped type, then make it a component of Scene.
+	// Since almost all of them use event_handler& already, per the custom #define in entt, it should be pretty easy to simply move it over there
+	// Once that's done, you might want to double, triple check that every component properly follows conventions
+	// Once THAT's done, move to defining entity types and go around, fixing that shit. 
 	struct Scene
 	{
 		entt::registry registry;
+		eventHandler event_handler;
+
 
 		template <typename T, typename ...Args>
 		inline T& add_component(entt::entity entity, Args&&... args) {
