@@ -10,7 +10,7 @@ struct ent_controller : public EventListener {
     std::unordered_map<SDL_Keycode, MoveSystem::move_fn> bindings;
     IMoveSystem& movement_system;
 
-    ent_controller(entt::dispatcher& dispatcher, Transform& transform)
+    ent_controller(eventHandler& dispatcher, Transform& transform)
         : EventListener(dispatcher, ALL_EVENTS), target_transform(transform)
     {
         movement_system.init_default_bindings(bindings);
