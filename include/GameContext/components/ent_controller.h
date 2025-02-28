@@ -1,7 +1,9 @@
 #pragma once
 #include <include/GameContext/components/camera.h>
 #include <include/GameContext/IO/InputDelegate.h>
+#include <include/GameContext/base/eventHandler.h>
 #include <include/thirdparty/entt.hpp>
+
 #include <math.h>
 
 
@@ -18,7 +20,7 @@ struct ent_controller : public EventListener {
     float air_accel = 50.0f; // Air acceleration factor
     float ground_accel = 50.0f; // Ground acceleration factor
 
-    ent_controller(entt::dispatcher& dispatcher, Transform& transform)
+    ent_controller(eventHandler& dispatcher, Transform& transform)
         : EventListener(dispatcher, ALL_EVENTS), target_transform(transform)
     {
         on_keyPress = [this](KeyPressEvent& evt) {
