@@ -100,7 +100,8 @@ add_executable(Engine_Demo ${SOURCES}
         "include/GameContext/base/Serializing.h"
         "include/GameContext/base/Tag.h"
         "include/GameContext/base/Quakaster.h"
-    )
+        "include/common.h"
+)
 
 # Link libraries
 target_link_libraries(Engine_Demo
