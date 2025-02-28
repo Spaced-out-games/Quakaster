@@ -1,4 +1,0 @@
-* Add client-server architecture
-* Finish working on brushes
-* Finish the brush editor (Need to re-write the architecture before doing this)
-* Add BSP compiler
