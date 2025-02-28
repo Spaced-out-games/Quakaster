@@ -2,6 +2,7 @@
 #include <include/GameContext/window/window.h>
 #include <include/GameContext/UI/UIContext.h>
 #include <include/GameContext/IO/InputDelegate.h>
+#include <include/GameContext/base/eventHandler.h>
 
 struct Application
 {
