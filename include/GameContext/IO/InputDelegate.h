@@ -1,6 +1,7 @@
 #pragma once
 #include "InputEvents.h"
-#include <include/thirdparty/entt.hpp>
+#include <include/GameContext/base/eventHandler.h>
+
 #include <include/GameContext/server/interpreter/ConsoleInterpreter.h>
 #include <include/GameContext/UI/UIContext.h>
 #include <include/GameContext/utils/utility_types.h>
@@ -18,9 +19,8 @@ struct InputDelegate
     // SDL event
     SDL_Event event;
     ImGuiIO* IOHandler = nullptr;
-    eventHandler& event_handler;  // Custom event handler
     UIContext& ui_context;        // UI context
-    entt::dispatcher& dispatcher; // Event dispatcher
+    eventHandler& dispatcher; // Event dispatcher
     int lastMouseX = 0;
     int lastMouseY = 0;
 
@@ -28,8 +28,8 @@ struct InputDelegate
 
 
     // Constructor
-    InputDelegate(eventHandler& event_handler, UIContext& ui_context, entt::dispatcher& dispatcher)
-        : event_handler(event_handler), ui_context(ui_context), dispatcher(dispatcher)
+    InputDelegate(UIContext& ui_context, eventHandler& dispatcher)
+        : ui_context(ui_context), dispatcher(dispatcher)
     {
         if (isImGuiInitialized())
         {
@@ -194,7 +194,7 @@ struct EventListener {
 
     std::function<void(WindowEvent&)> on_windowEvent = [](WindowEvent&) {};
 
-    EventListener(entt::dispatcher& dispatcher, event_type_mask mask): mask(mask)
+    EventListener(eventHandler& dispatcher, event_type_mask mask): mask(mask)
     {
         if (mask & event_type_mask::KEY_PRESS) {
             dispatcher.sink<KeyPressEvent>().connect<&EventListener::onKeyPress>(this);
