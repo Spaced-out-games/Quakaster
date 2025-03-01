@@ -34,3 +34,5 @@ namespace Quakaster::base {
     };
 
 }
+
+using Component = Quakaster::base::Component;
