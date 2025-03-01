@@ -17,7 +17,7 @@ struct UIContext: public base::ISystem
     // -------------------------------------------------------- METHODS -------------------------------------------------------
 
 
-    UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window);
+    UIContext(EventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window);
     ~UIContext()
     {
         for (size_t i = 0; i < elements.size(); i++)
@@ -33,14 +33,11 @@ struct UIContext: public base::ISystem
 
     // This ignores the Scene that needs passed
     void tick(base::Scene&) override {
-        if (paused)
-        {
-            return;
-        }
+
         // assign to the controller by default
         for (size_t i = 0; i < elements.size(); i++)
         {
-            if (elements[i]->visible)
+            if ((!paused && elements[i]->visible) || elements[i]->always_visible)
             {
                 elements[i]->draw(this);
             }
@@ -59,7 +56,7 @@ struct UIContext: public base::ISystem
     // -------------------------------------------------------- MEMBERS -------------------------------------------------------
 
     // For handling events
-    eventHandler& event_handler;
+    EventHandler& event_handler;
 
     // for interpreting console commands
     ConsoleInterpreter& interpreter;
@@ -83,7 +80,7 @@ struct UIContext: public base::ISystem
 
 #include <include/GameContext/UI/ConsoleUI.h>
 
-UIContext::UIContext(eventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window) : event_handler(event_handler), interpreter(interpreter), renderer(renderer), window(window)
+UIContext::UIContext(EventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window) : event_handler(event_handler), interpreter(interpreter), renderer(renderer), window(window)
 {
     add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });
 }

@@ -10,16 +10,24 @@
 
 namespace Quakaster::components {
 
-	struct mesh
+	struct Mesh
 	{
 
-		mesh() {
+		Mesh() {
 			default_constructed = 1;
 		}
 
+		~Mesh() {
+			vao.~VAO();
+			vbo.~VBO();
+			ebo.~EBO();
+		}
+
+
+
 
 		template <typename vertex_t>
-		mesh(const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, std::string shader_name, std::string vertex_path, std::string fragment_path, GLenum primitive_type = GL_TRIANGLES) : shader(shader_name, vertex_path, fragment_path)
+		Mesh(const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, std::string shader_name, std::string vertex_path, std::string fragment_path, GLenum primitive_type = GL_TRIANGLES) : shader(shader_name, vertex_path, fragment_path)
 		{
 			//std::cout << "test";
 			init<vertex_t>(vertices, indices, shader_name, vertex_path, fragment_path, primitive_type);
@@ -53,10 +61,10 @@ namespace Quakaster::components {
 
 		static void draw_all(entt::registry& registry, Camera& camera)
 		{
-			auto view = registry.view<mesh>();
+			auto view = registry.view<Mesh>();
 			for (auto entity : view)
 			{
-				auto& mesh_component = registry.get<mesh>(entity);
+				auto& mesh_component = registry.get<Mesh>(entity);
 			
 				auto& vao = mesh_component.vao;
 				auto& vbo = mesh_component.vbo;
@@ -106,3 +114,5 @@ namespace Quakaster::components {
 	};
 
 }
+
+using Mesh = Quakaster::components::Mesh;

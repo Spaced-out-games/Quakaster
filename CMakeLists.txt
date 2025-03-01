@@ -48,7 +48,10 @@ add_definitions(-DSDL_MAIN_HANDLED -DGLEW_STATIC)
 find_package(OpenGL REQUIRED)
 
 # Source Files
-file(GLOB SOURCES ${CMAKE_SOURCE_DIR}/src/*.cpp)
+# list all directories where *.cpp files are located
+file(GLOB SOURCES
+    ${CMAKE_SOURCE_DIR}/src/*.cpp
+)
 
 # Add ImGui sources
 file(GLOB IMGUI_SOURCES
@@ -98,7 +101,7 @@ add_executable(Engine_Demo ${SOURCES}
         # resources
         "include/GameContext/resources/res_texture.h"
         "include/GameContext/resources/res_shader.h"
-        "include/GameContext/resources/res_mesh.h"
+        
 
         # graphics
         "include/GameContext/graphics/gl_utils.h"
@@ -125,7 +128,7 @@ add_executable(Engine_Demo ${SOURCES}
         "include/GameContext/base/Tag.h"
 
 
-)
+ "include/GameContext/entities/ent_cube.h" "include/GameContext/UI/Spedometer.h" "include/GameContext/entities/player.h")
 
 # Link libraries
 target_link_libraries(Engine_Demo

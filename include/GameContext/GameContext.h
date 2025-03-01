@@ -14,17 +14,18 @@
 //#include <resources/shaders/default.frag>
 
 
+#include <include/GameContext/UI/Spedometer.h>
 
-
-
+#include <include/GameContext/entities/ent_cube.h>
 #include <include/GameContext/resources/res_texture.h>
 #include <include/GameContext/resources/res_shader.h>
 #include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/components/AABB.h>
+#include <include/GameContext/entities/player.h>
 
 static float deltaTime = 0.0f;
 
-using namespace Quakaster::components;
+using namespace Quakaster;
 
 
 struct GameContext
@@ -50,7 +51,7 @@ struct GameContext
 	Quakaster::base::Scene scene;
 
 
-	static eventHandler event_handler;
+	static EventHandler event_handler;
 
 	Application app;
 
@@ -166,13 +167,13 @@ struct GameContext
 		lastFrameTime = currentFrameTime; // Update the last frame time
 	}
 	
-
+	
 	// Game loop
 	virtual void run()
 	{
 		init();
 
-
+		#pragma region cube_vertices_init
 		// Initialize the vertices and indices of the cube
 		std::vector<default_vertex_t> vertices = {
 			{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
@@ -204,60 +205,52 @@ struct GameContext
 			0, 1, 5,  // Flipped 1 and 5
 			0, 5, 4   // Flipped 5 and 4
 		};
+		#pragma endregion cube_vertices_init
 
 		glm::vec3 scaled_velocity;
 
 
-		// Create teh player with an ent_controller and a camera
-		auto player = entt::handle{ scene.registry, scene.registry.create() };
-		SECTION(Adds the components to the player) {
 
-			player.emplace<Camera>(player);
+		// Create the player with an ent_controller and a camera
+		#pragma region init_player
+			auto player = entt::handle{ scene.registry, scene.registry.create() };
+			player.emplace<Camera>();
 			player.get<Camera>().bind_convars(interpreter);
 			player.get<Camera>().look_at({ 0.0,0.0,0.0 });
 			player.emplace<ent_controller>(event_handler, player.get<Camera>());
 			player.emplace<vector_visualizer>(scaled_velocity, player.get<Camera>());
-
-		}
+			player.emplace<Quakaster::tags::target_camera>();
+			player.emplace<components::AABB>(player.get<Camera>().position);
+			Camera::set_target(player);
+		#pragma endregion init_player
 		
 
+		ISystem* AABB_renderer = new components::AABB::system();
+		ISystem* vector_renderer = new components::vector_visualizer::system();
 
+		
 
-
-		// Create a cube entity
-		entt::handle cube = { scene.registry, scene.registry.create() };
-		SECTION(Add the components to the cube) {
-			cube.emplace<Quakaster::components::mesh>(
-				vertices,
-				indices,
-				"default_shader",
-				"resources/shaders/default.vert",
-				"resources/shaders/default.frag"
-				);
-			cube.emplace<Transform>();
-			cube.emplace<Texture>("resources/images/atlas.png");
-			cube.emplace<AABB>(player.get<Camera>().position);
-
-		}
 		auto& cam_controller = player.get<ent_controller>();
 
+		ent_cube e(scene);
 
+		e.look_at({ 0.0f,0.0f,1.0f });
 		
 
+		app.ui_context.add_UIElement(new spedometer(player.get<ent_controller>().velocity, player.get<ent_controller>().speed));
 
-		SECTION(initialize the vector visualizer and AABB mesh) {
-			vector_visualizer::init();
-			Quakaster::components::AABB::init();
-		}
-		
+		vector_renderer->init(scene);
+		AABB_renderer->init(scene);
 
-		SECTION(main loop) {
+		glm::vec3 delta = { 0.0f, deltaTime * deltaTime, 0.0f };
+
+
+
 			while (running) {
 
 				update_dt();
+				e.move(delta);
 
-
-				SECTION(applies velocity to the player) {
 					cam_controller.applyMovement();
 					if (!cam_controller.moving) {
 						if (cam_controller.in_air) {
@@ -270,16 +263,15 @@ struct GameContext
 
 
 					player.get<Camera>().move(cam_controller.velocity * deltaTime);
-				}
+
 
 
 				glClear(GL_COLOR_BUFFER_BIT);
 
-				SECTION(draw meshes and AABBs and vector visualizers) {
-					components::mesh::draw_all(scene.registry, player.get<Camera>());
-					vector_visualizer::draw_all(scene.registry, player.get<Camera>());
-					Quakaster::components::AABB::draw_all(scene.registry, player.get<Camera>());
-				}
+					components::Mesh::draw_all(scene.registry, player.get<Camera>());
+					vector_renderer->tick(scene);
+					AABB_renderer->tick(scene);
+
 
 
 				scaled_velocity = player.get<ent_controller>().velocity / 100.0f;
@@ -287,42 +279,23 @@ struct GameContext
 				input_delegate.update();
 
 
-				SECTION(draw UI) {
+
 					begin_ui();
 					draw_ui();
-					SECTION(draws the speedometer) {
-						std::string string = std::to_string((int)(glm::length(player.get<ent_controller>().velocity) * 100.0f));
 
-						ImGui::SetNextWindowPos(ImVec2(100, 100), ImGuiCond_Always); // Set position
-						ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiCond_Always); // Set size
 
-						ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f); // Remove border
-						ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0)); // Remove padding
-						ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // Transparent background
-
-						if (ImGui::Begin("Invisible Window", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse)) {
-							ImGui::Text("Speed");
-							ImGui::ProgressBar(glm::length(player.get<ent_controller>().velocity) / player.get<ent_controller>().speed, ImVec2(-1, 0), string.c_str());
-						}
-						ImGui::End();
-
-						ImGui::PopStyleVar(2);
-						ImGui::PopStyleColor();
-					}
 					end_ui();
-				}
 
 
 				refresh();
 			}
-		}
 		
 	}
 };
 
 
 
-eventHandler GameContext::event_handler;
+EventHandler GameContext::event_handler;
 
 /*
 FYI: Current logic outline:

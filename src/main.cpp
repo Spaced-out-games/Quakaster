@@ -7,7 +7,7 @@
 #include <iostream>
 #include <include/GameContext/GameContext.h>
 //#include <glm/glm.hpp>
-
+#include <include/GameContext/entities/ent_cube.h>
 #include <include/GameContext/IO/InputDelegate.h>
 #include <include/GameContext/client/Client.h>
 

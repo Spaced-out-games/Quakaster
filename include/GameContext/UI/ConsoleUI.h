@@ -25,7 +25,7 @@ struct ConsoleUI: public UIBase
     // communication network with components
 
     ConsoleInterpreter& interpreter;
-    eventHandler& event_handler;
+    EventHandler& event_handler;
     UIContext& ui_context;
 
 
@@ -76,7 +76,7 @@ struct ConsoleUI: public UIBase
 
 
 
-    ConsoleUI(ConsoleInterpreter& interpreter, eventHandler& event_handler, UIContext& ui_context) :
+    ConsoleUI(ConsoleInterpreter& interpreter, EventHandler& event_handler, UIContext& ui_context) :
         interpreter(interpreter),
         event_handler(event_handler),
         ui_context(ui_context)

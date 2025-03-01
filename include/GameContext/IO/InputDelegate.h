@@ -20,7 +20,7 @@ struct InputDelegate
     SDL_Event event;
     ImGuiIO* IOHandler = nullptr;
     UIContext& ui_context;        // UI context
-    eventHandler& dispatcher; // Event dispatcher
+    EventHandler& dispatcher; // Event dispatcher
     int lastMouseX = 0;
     int lastMouseY = 0;
 
@@ -28,7 +28,7 @@ struct InputDelegate
 
 
     // Constructor
-    InputDelegate(UIContext& ui_context, eventHandler& dispatcher)
+    InputDelegate(UIContext& ui_context, EventHandler& dispatcher)
         : ui_context(ui_context), dispatcher(dispatcher)
     {
         if (isImGuiInitialized())
@@ -194,7 +194,7 @@ struct EventListener {
 
     std::function<void(WindowEvent&)> on_windowEvent = [](WindowEvent&) {};
 
-    EventListener(eventHandler& dispatcher, event_type_mask mask): mask(mask)
+    EventListener(EventHandler& dispatcher, event_type_mask mask): mask(mask)
     {
         if (mask & event_type_mask::KEY_PRESS) {
             dispatcher.sink<KeyPressEvent>().connect<&EventListener::onKeyPress>(this);
