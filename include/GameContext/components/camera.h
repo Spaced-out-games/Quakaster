@@ -11,20 +11,60 @@
 
 using namespace Quakaster::base;
 
+namespace Quakaster::tags {
+	struct target_camera : Tag {};
+}
+
+
 namespace Quakaster::components {
 
 	struct Camera : Component, Transform
 	{
-		Camera(entt::handle parent, float fov = 90.0f, float near = 0.1f, float far = 1000.0f) : fov(fov), near(near), far(far), target(parent) { move_to({ 1.0,2.0,5.0 }); }
+		Camera(float fov = 90.0f, float near = 0.1f, float far = 1000.0f) : fov(fov), near(near), far(far) { move_to({ 1.0,2.0,5.0 }); }
+
+		static inline Camera* target_camera = nullptr;
 
 		float fov;
 		float near;
 		float far;
-		entt::handle target;
+		//entt::handle target;
 
+		static void set_target(entt::handle& entity) {
+			entt::registry* registry = entity.registry(); // Get the registry from the entity
+
+			// Remove target_camera tag from all entities
+			auto view = registry->view<tags::target_camera>();
+			for (entt::entity ent_ID : view) {
+				registry->remove<tags::target_camera>(ent_ID);
+			}
+
+			// Add target_camera tag to the specified entity
+			entity.emplace<tags::target_camera>();
+
+			// Update the static pointer to point to the current camera instance
+			target_camera = entity.try_get<Camera>();
+		}
+
+		static void set_target(Entity& entity) {
+			//entt::registry* registry = entity.registry(); // Get the registry from the entity
+			Scene& registry = entity.get_scene();
+
+
+			// Remove target_camera tag from all entities
+			auto view = registry.view<tags::target_camera>();
+			for (entt::entity ent_ID : view) {
+				registry.remove_component<tags::target_camera>(ent_ID);
+			}
+
+			// Add target_camera tag to the specified entity
+			entity.add_component<tags::target_camera>();
+
+			// Update the static pointer to point to the current camera instance
+			target_camera = entity.try_get_component<Camera>();
+		}
 
 		// tag to discern which camera is the active camera. 
-		struct target {};
+		
 
 		static void set_fov(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> tokens)
 		{
@@ -101,3 +141,8 @@ namespace Quakaster::components {
 
 
 }
+
+using Camera = Quakaster::components::Camera;
+
+
+
