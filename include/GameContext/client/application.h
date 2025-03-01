@@ -11,7 +11,7 @@ struct Application
 	UIContext ui_context;
 
 
-	Application(eventHandler& event_handler, ConsoleInterpreter& interpreter) : ui_context( event_handler, interpreter, window.get_renderer(), window), window(interpreter)
+	Application(EventHandler& event_handler, ConsoleInterpreter& interpreter) : ui_context( event_handler, interpreter, window.get_renderer(), window), window(interpreter)
 	{
 	}
 
