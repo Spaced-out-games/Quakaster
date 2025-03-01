@@ -13,3 +13,5 @@ namespace Quakaster::base {
 	};
 }
 
+
+using ISystem = Quakaster::base::ISystem;
