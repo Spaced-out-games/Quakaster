@@ -20,7 +20,7 @@ struct ent_controller : public EventListener {
     float air_accel = 50.0f; // Air acceleration factor
     float ground_accel = 50.0f; // Ground acceleration factor
 
-    ent_controller(eventHandler& dispatcher, Transform& transform)
+    ent_controller(EventHandler& dispatcher, Transform& transform)
         : EventListener(dispatcher, ALL_EVENTS), target_transform(transform)
     {
         on_keyPress = [this](KeyPressEvent& evt) {
