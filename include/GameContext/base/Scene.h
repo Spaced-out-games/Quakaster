@@ -13,22 +13,17 @@ namespace Quakaster::base {
 	struct Scene
 	{
 		entt::registry registry;
-		eventHandler event_handler;
+		EventHandler event_handler;
 
 
 		template <typename T, typename ...Args>
 		inline T& add_component(entt::entity entity, Args&&... args) {
-			static_assert(std::is_base_of_v<Quakaster::base::Component, T>, "T must be a component type.");
+			//static_assert(std::is_base_of_v<Quakaster::base::Component, T>, "T must be a component type.");
 			return registry.emplace<T>(entity, std::forward<Args>(args)...);
 		}
 
-		template <typename ent_t = IEntity, typename ...Args>
-		ent_t create(Args&&... args) {
-			// Create a new entity in the registry
-			entt::entity entity = registry.create();
 
-			return {entity, *this, std::forward<Args>(args)... };
-		}
+
 
 		template <typename T>
 		inline T& get_component(entt::entity entity) {
@@ -40,9 +35,34 @@ namespace Quakaster::base {
 			return registry.try_get<T>(entity);
 		}
 
+		template <typename T>
+		inline bool has(entt::entity entity) {
+			return registry.all_of<T>(entity);
+		}
+
+		template <typename ...Ts>
+		inline bool has_all_of(entt::entity entity) {
+			return registry.all_of<Ts...>(entity);
+		}
+		template <typename ...Ts>
+		inline bool has_one_of(entt::entity entity) {
+			return registry.any_of<Ts...>(entity);
+		}
+		template <typename T>
+		inline void remove_component(entt::entity entity) {
+			registry.remove<T>(entity);
+		}
+
 		entt::registry& get_registry() { return registry; }
+
+		template <typename... Ts>
+		inline auto view() {
+			return registry.view<Ts...>();
+		}
 
 	};
 
 
 }
+
+using Scene = Quakaster::base::Scene;
