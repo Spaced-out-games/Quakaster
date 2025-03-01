@@ -5,8 +5,6 @@
 #include <include/GameContext/base/Scene.h>
 
 
-// Forward declaration
-struct Scene;
 
 
 
@@ -21,7 +19,6 @@ namespace Quakaster::base {
         /// <summary>
         /// Grants access to Entity's members to the Scene struct.
         /// </summary>
-        friend struct Scene;
 
         /// <summary>
         /// Initializes a new instance of the Entity class.
@@ -29,12 +26,9 @@ namespace Quakaster::base {
         /// <param name="id">The entity identifier.</param>
         /// <param name="scene">Reference to the scene that this entity belongs to.</param>
         /// <param name="tag_t"> an Tag-derived type denoting the entity type of this entity (eg, tag_player for a Player entity) </param>
-        template <typename tag_t = Tag>
-        Entity(entt::entity id, Scene& scene) : ID(id), scene(scene) {
-            scene.registry.emplace<tag_t>(id);
+        Entity(Scene& scene) : scene(scene), ID(scene.registry.create()) {
         }
 
-    public:
         /// <summary>
         /// Destructor for Entity. Cleans up resources.
         /// </summary>
@@ -68,7 +62,8 @@ namespace Quakaster::base {
         inline T* try_get_component()
         { return scene.try_get_component<T>(ID); }
 
-
+        template <typename T>
+        inline void remove_component() { scene.remove_component<T>(); }
 
         /// <summary>
         /// Adds a component to this entity
@@ -78,6 +73,25 @@ namespace Quakaster::base {
         /// <param name="...args">parameter value list for the constructor of the component</param>
         template <typename T, typename ...Args>
         inline void add_component(Args&&... args) { scene.add_component<T>(ID, std::forward<Args>(args)...); }
+
+        
+        /// <summary>
+        /// Returns true if the entity has all of the requested components
+        /// </summary>
+        /// <typeparam name="...Ts">List of component types</typeparam>
+        /// <returns>whether the entity has all of the requested components</returns>
+        template <typename ...Ts>
+        inline bool has() { return scene.has_all_of<Ts...>(ID); }
+
+
+        /// <summary>
+        /// Returns true if the entity has at least one of the following components
+        /// </summary>
+        /// <typeparam name="...Ts">List of component types</typeparam>
+        /// <returns>whether the entity has one of the requested components</returns>
+        template <typename ...Ts>
+        inline bool has_one_of() { return scene.has_one_of<Ts...>(ID); }
+
 
     private:
         /// <summary>
@@ -93,4 +107,18 @@ namespace Quakaster::base {
 
     };
 
+
+    /// <summary>
+    /// Auxillary function to determine if a generic entity is another entity type
+    /// </summary>
+    /// <typeparam name="ent_t"></typeparam>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    template <typename ent_t>
+    inline bool is(const Entity& entity) {
+        return entity.has<typename ent_t::tag>();
+    }
+
 }
+
+using Entity = Quakaster::base::Entity;
