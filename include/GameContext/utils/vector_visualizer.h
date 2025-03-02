@@ -14,11 +14,12 @@ namespace Quakaster::components {
 
 	struct vector_visualizer : public Transform
 	{
-		vector_visualizer(glm::vec3& inspected_vector, Transform& transform) : vector(inspected_vector), transform(transform)
+		vector_visualizer(glm::vec3& inspected_vector, Transform& transform, float scalar = 1.0f) : vector(inspected_vector), transform(transform), scalar(scalar)
 		{
 		}
 		glm::vec3& vector;
 		Transform& transform;
+		float scalar;
 
 		struct system : ISystem {
 			void init(Scene& scene) override {
@@ -50,13 +51,14 @@ namespace Quakaster::components {
 				shader->bind();
 
 				//show_uniforms(shader->program_ID);
-
 				auto view = scene.view<vector_visualizer>();
 				for (auto entity : view)
 				{
 					auto& visualizer = scene.get_component<vector_visualizer>(entity);
+					glm::vec3 scaled_vector = visualizer.transform.position * visualizer.scalar;
+
 					// Consider moving this outside of the loop, should improve performance
-					Camera::target_camera->set_shader_uniforms(shader);
+					//Camera::target_camera->set_shader_uniforms(shader);
 
 					// std::cout << visualizer.transform.position.x;
 
@@ -65,7 +67,7 @@ namespace Quakaster::components {
 					//shader->operator[]("u_proj") = glm::mat4(1.0);
 
 					//shader->operator[]("u_view"); // FIX MEEEEEE
-					shader->operator[]("u_vector") = scene.get_component<vector_visualizer>(entity).vector;
+					shader->operator[]("u_vector") = scene.get_component<vector_visualizer>(entity).vector * visualizer.scalar;
 
 					glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
 
