@@ -219,7 +219,7 @@ struct GameContext
 
 
 
-				//input_delegate.update();
+				input_delegate.update();
 
 
 				draw_ui();
