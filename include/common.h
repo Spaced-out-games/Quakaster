@@ -10,7 +10,11 @@
 template <typename return_type, typename... argument_types>
 using func_ptr_t = return_type(*)(argument_types...);
 
-
+// Print a glm::vec3 to the console
+std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
+    os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+    return os;
+}
 
 
 

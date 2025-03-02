@@ -18,6 +18,7 @@ struct Renderer
 		interpreter.add_command("r_sample_mode", Renderer::r_sample_mode_fn);
 		interpreter.add_command("r_wireframe", Renderer::r_wireframe_fn);
 
+		init();
 		// interpreter.add_command("r_wireframe", );
 	}
 	SDL_GLContext gl_context = nullptr;
@@ -38,12 +39,14 @@ struct Renderer
 	{
 		glCullFace(mode); // Cull back faces (default)
 
+
+
 	}
 
 	void init()
 	{
-		disable_face_culling();
-		//set_cull_mode(GL_CW);
+		set_cull_mode();
+		//disable_face_culling();
 	}
 	
 	static void r_wireframe_fn(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args)
@@ -87,7 +90,7 @@ struct Renderer
 			{
 				std::string& key = args[0].snippet;
 				if (key == "GL_LINEAR") { interpreter.set_convar("renderer_sample_mode", GL_LINEAR); msg.message = "set r_sample_mode to GL_LINEAR"; msg.color = console_color::DEFAULT_OKAY; return; }
-				else if (key == "GL_NEAREST") { interpreter.set_convar("renderer_sample_mode", GL_NEAREST); msg.message = "set r_sample_mode to GL_LINEAR"; msg.color = console_color::DEFAULT_OKAY;  return; }
+				else if (key == "GL_NEAREST") { interpreter.set_convar("renderer_sample_mode", GL_NEAREST); msg.message = "set r_sample_mode to GL_NEAREST"; msg.color = console_color::DEFAULT_OKAY;  return; }
 				else { msg.message = "INVALID KEY"; msg.color = console_color::DEFAULT_WARNING; return; }
 
 			}

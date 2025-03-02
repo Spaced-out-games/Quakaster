@@ -6,14 +6,7 @@
 #include <backends/imgui_impl_sdl2.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <include/GameContext/components/ent_controller.h>
-
 #include <include/GameContext/base/Quakaster.h>
-
-// TODO: Implement 'help' and 'echo'
-
-//#include <resources/shaders/default.frag>
-
-
 #include <include/GameContext/UI/Spedometer.h>
 
 #include <include/GameContext/entities/ent_cube.h>
@@ -22,33 +15,36 @@
 #include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/components/AABB.h>
 #include <include/GameContext/entities/ent_player.h>
+#include <include/GameContext/server/server.h>
 
-static float deltaTime = 0.0f;
 
 using namespace Quakaster;
+
+
+// mock server
+static inline Server sv;
+
 
 
 struct GameContext
 {
 	
 	
-	std::vector<Quakaster::base::ISystem> systems;
 	
 
-	// Timing variables using std::chrono
-	std::chrono::steady_clock::time_point lastFrameTime;
-	std::chrono::steady_clock::time_point currentFrameTime;
 
-	glm::vec3 bg_color = { 0.0f,1.0f,1.0f };//{ 0.45f, 0.55f, 0.60f };
+
 	// Whether or not the game is running
-	int running = 1;
+	//int running = 1;
 	
 
 	// Interprets console commands
-	ConsoleInterpreter interpreter;
+	//ConsoleInterpreter interpreter;
+	//Server sv;
+
 
 	// The scene
-	Quakaster::base::Scene scene;
+	//Quakaster::base::Scene scene;
 
 
 	static EventHandler event_handler;
@@ -56,17 +52,18 @@ struct GameContext
 	Application app;
 
 	// absolutely NEEDS an event handler and UI context. 
-	InputDelegate input_delegate;
+	//InputDelegate input_delegate;
 	
 	// Constructor
-	GameContext() : app(event_handler, interpreter), input_delegate(app.ui_context, event_handler) {
-		if (input_delegate.IOHandler == nullptr) { input_delegate.init(); }
-		interpreter.add_convar("game_running", running);
-		interpreter.add_command("quit", GameContext::quit);
-		interpreter.add_command("exit", GameContext::quit); // alias
+	GameContext() : app(event_handler, sv.interpreter)//, input_delegate(app.ui_context, event_handler)
+	{
+		//if (input_delegate.IOHandler == nullptr) { input_delegate.init(); }
+		sv.interpreter.add_convar("game_running", app.status);
+		sv.interpreter.add_command("quit", GameContext::quit);
+		sv.interpreter.add_command("exit", GameContext::quit); // alias
 
-		interpreter.add_convar("bg_color_value", bg_color, false);
-		interpreter.add_command("bg_color", bg_color_fn);
+		sv.interpreter.add_convar("bg_color_value", app.bg_color, false);
+		sv.interpreter.add_command("bg_color", bg_color_fn);
 
 		
 
@@ -131,7 +128,7 @@ struct GameContext
 		ImGui_ImplSDL2_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
-		app.ui_context.tick(scene);
+		app.ui_context.tick(app.cl.scene);
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
@@ -142,7 +139,7 @@ struct GameContext
 	virtual void init()
 	{
 		glLineWidth(4.0f);
-		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
+		glClearColor(app.bg_color.r, app.bg_color.g, app.bg_color.b, 1.00f);
 
 	}
 
@@ -152,14 +149,7 @@ struct GameContext
 		return;
 	}
 
-	// Updates timing information for the current frame
-	inline void update_dt()
-	{
-		currentFrameTime = std::chrono::steady_clock::now(); // Get current time
-		std::chrono::duration<float> elapsed = currentFrameTime - lastFrameTime; // Time elapsed
-		deltaTime = elapsed.count(); // Convert to seconds
-		lastFrameTime = currentFrameTime; // Update the last frame time
-	}
+	
 	
 	
 	// Game loop
@@ -167,10 +157,10 @@ struct GameContext
 	{
 		init();
 		// Create the player
-		Entity player = ent_player(scene, interpreter, event_handler);
+		Entity player = ent_player(app.cl.scene, sv.interpreter, event_handler);
 
 		// Create the floor
-		ent_cube floor(scene);
+		ent_cube floor(app.cl.scene);
 
 
 		ISystem* AABB_renderer = new components::AABB::system();
@@ -178,21 +168,26 @@ struct GameContext
 		ISystem* mesh_renderer = new components::Mesh::system();
 		
 
-		auto& cam_controller = player.get_component<ent_controller>();
+		//auto& cam_controller = player.get_component<ent_controller>();
+
+		InputDelegate dg(event_handler);
+		dg.init(app.cl.scene);
+
+		auto a = EventListener<MouseMoveEvent>(event_handler, [&player](MouseMoveEvent p_evt) {
+			glm::vec3 d = { 0.0,0.001,0.0 };
+		player.get_component<Camera>().move(d);
+		});
+
+		//app.ui_context.add_UIElement(new spedometer(player.get_component<ent_controller>().velocity, player.get_component<ent_controller>().speed));
+
+		vector_renderer->init(app.cl.scene);
+		AABB_renderer->init(app.cl.scene);
 
 
-		
 
-		app.ui_context.add_UIElement(new spedometer(player.get_component<ent_controller>().velocity, player.get_component<ent_controller>().speed));
+			while (app.status) {
 
-		vector_renderer->init(scene);
-		AABB_renderer->init(scene);
-
-
-
-			while (running) {
-
-				update_dt();
+				app.update_dt();
 
 					/* apply friction
 					cam_controller.applyMovement();
@@ -206,20 +201,20 @@ struct GameContext
 					else cam_controller.wish_dir = glm::normalize(cam_controller.wish_dir) * cam_controller.speed;
 					*/
 
-					player.get_component<Camera>().move(cam_controller.velocity * deltaTime);
+					//player.get_component<Camera>().move(cam_controller.velocity * deltaTime);
 
 
 
 				glClear(GL_COLOR_BUFFER_BIT);
 
-					mesh_renderer->tick(scene);
-					vector_renderer->tick(scene);
-					AABB_renderer->tick(scene);
+					mesh_renderer->tick(app.cl.scene);
+					vector_renderer->tick(app.cl.scene);
+					AABB_renderer->tick(app.cl.scene);
+
+					dg.tick(app.cl.scene);
 
 
-
-
-				input_delegate.update();
+				//input_delegate.update();
 
 
 				draw_ui();
