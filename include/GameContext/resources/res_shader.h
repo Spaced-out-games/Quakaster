@@ -6,6 +6,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <include/GameContext/components/camera.h>
 
 class res_shader;
 
@@ -155,14 +156,14 @@ public:
         }
     }
 
-    void bind() const { glUseProgram(program_ID); 
-    
-    
-    
-    
-    
-    
-    std::cout << "bound shader (" << program_ID << ")\n"; }
+    void bind() {
+        glUseProgram(program_ID);
+        if (!Camera::target_camera) return;
+        this->operator[]("u_view") = glm::inverse(Camera::target_camera->get_matrix());
+        this->operator[]("u_proj") = Camera::target_camera->get_projection_matrix();
+
+        //Camera::target_camera->set_shader_uniforms(*this, entity, registry);
+    }
     void unbind() const { glUseProgram(0); }
 
     GLuint get_program_ID() const { return program_ID; }
