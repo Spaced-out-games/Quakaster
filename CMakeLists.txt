@@ -128,7 +128,7 @@ add_executable(Engine_Demo ${SOURCES}
         "include/GameContext/base/Tag.h"
 
 
- "include/GameContext/entities/ent_cube.h" "include/GameContext/UI/Spedometer.h" "include/GameContext/entities/player.h")
+ "include/GameContext/entities/ent_cube.h" "include/GameContext/UI/Spedometer.h" "include/GameContext/entities/ent_player.h" "include/GameContext/components/Scalar.h" "include/GameContext/base/physicsComponent.h")
 
 # Link libraries
 target_link_libraries(Engine_Demo
