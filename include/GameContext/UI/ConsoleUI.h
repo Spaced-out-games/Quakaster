@@ -110,7 +110,7 @@ struct ConsoleUI: public UIBase
         {
             std::cout << "Begin Failed";
             ImGui::End();
-            //last_pause_state = ui_context.paused;
+            //last_pause_state = ui_context.is_paused();
             return;
         }
         else
@@ -162,9 +162,9 @@ struct ConsoleUI: public UIBase
         // Focus the input text box when the window is appearing
         //if (ImGui::IsWindowAppearing()) {
         
-        // last_pause_state = ui_context.paused;
+        // last_pause_state = ui_context.is_paused();
 
-        if (last_pause_state == 0 && ui_context.paused == 0)
+        if (last_pause_state == 0 && ui_context.is_paused() == 0)
         {
             // this is supposed to be called when the console opens
             ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
@@ -186,7 +186,7 @@ struct ConsoleUI: public UIBase
         }
         ImGui::End();
 
-        //last_pause_state = ui_context.paused;
+        //last_pause_state = ui_context.is_paused();
     }
 
 };
