@@ -72,8 +72,6 @@ namespace Quakaster::components {
 				for (auto entity : view)
 				{
 					auto& visualizer = scene.get_component<AABB>(entity);
-					Camera::target_camera->set_shader_uniforms(AABB::mesh.shader);
-
 					AABB::mesh.shader->operator[]("u_location") = visualizer.location;
 					AABB::mesh.shader->operator[]("u_dimensions") = visualizer.dimensions;
 
@@ -86,13 +84,6 @@ namespace Quakaster::components {
 			}
 		};
 
-
-
-
-		//static void init()
-		//{
-			
-		//}
 
 		static void draw_all(Scene& scene)
 		{
