@@ -58,49 +58,55 @@ namespace Quakaster::components {
 			shader.init(shader_name, vertex_path, fragment_path);
 		}
 
-
-		static void draw_all(entt::registry& registry, Camera& camera)
+		struct system : ISystem
 		{
-			auto view = registry.view<Mesh>();
-			for (auto entity : view)
-			{
-				auto& mesh_component = registry.get<Mesh>(entity);
-			
-				auto& vao = mesh_component.vao;
-				auto& vbo = mesh_component.vbo;
-				auto& ebo = mesh_component.ebo;
-				auto& shader = mesh_component.shader;
-
-			
-
-				shader->bind();
-				camera.set_shader_uniforms(shader, entity, &registry);
-
-				if (registry.all_of<Texture>(entity))
+			// No need for a universal initializer
+			void init(Scene&) override {}
+			void tick(Scene& scene) override {
+				auto view = scene.view<Mesh>();
+				for (auto entity : view)
 				{
-					registry.get<Texture>(entity).bind();
+					auto& mesh_component = scene.get_component<Mesh>(entity);
+
+					auto& vao = mesh_component.vao;
+					auto& vbo = mesh_component.vbo;
+					auto& ebo = mesh_component.ebo;
+					auto& shader = mesh_component.shader;
+
+
+
+					shader->bind();
+
+					// Bind texture if it's available, otherwise, unbind it
+					if (scene.has_all_of<Texture>(entity)) { scene.get_component<Texture>(entity).bind(); }
+					else { Texture::unbind(); }
+
+					// set the model matrix if it's available. Might be better to just store a glm::mat4 and have objects simply update the matrix, then it's as easy as loading the matrix. This would make the code much more modular as well
+					if (scene.has_all_of<Transform>(entity)) { shader->operator[]("u_model") = scene.get_component<Transform>(entity).get_matrix(); }
+
+
+					else
+					{
+						shader->operator[]("u_model") = glm::mat4(1.0f);
+					}
+
+					vao.bind();
+
+					glDrawElements(mesh_component.vao.primitive_type, ebo.get_index_count(), GL_UNSIGNED_INT, 0); // Draw using indices
+					std::string context = "";
+					// check_gl_error(context);
+					//VAO::unbind();
+					//EBO::unbind(); // Unbind the EBO after drawing
+
 				}
-
-				if (registry.all_of<Transform>(entity))
-				{
-					shader->operator[]("u_model") = registry.get<Transform>(entity).get_matrix();
-				}
-
-				else
-				{
-					shader->operator[]("u_model") = glm::mat4(1.0f);
-				}
-
-				vao.bind();
-
-				glDrawElements(mesh_component.vao.primitive_type, ebo.get_index_count(), GL_UNSIGNED_INT, 0); // Draw using indices
-				std::string context = "";
-				// check_gl_error(context);
-				//VAO::unbind();
-				//EBO::unbind(); // Unbind the EBO after drawing
+			}
+			// Destroy all meshes in the scene, clean up resources
+			void destroy(Scene& scene) override {
 
 			}
-		}
+		};
+
+
 		void draw(Camera& camera)
 		{
 
