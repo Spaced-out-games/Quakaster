@@ -7,6 +7,7 @@
 #include <include/GameContext/components/transform.h>
 #include <include/GameContext/resources/res_shader.h>
 #include <include/GameContext/resources/mesh.h>
+#include <include/GameContext/components/Scalar.h>
 
 
 
