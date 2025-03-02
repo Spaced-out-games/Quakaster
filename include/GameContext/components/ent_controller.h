@@ -1,14 +1,7 @@
-#pragma once
-#include <include/GameContext/components/camera.h>
-#include <include/GameContext/IO/InputDelegate.h>
-#include <include/GameContext/base/eventHandler.h>
-#include <include/thirdparty/entt.hpp>
-
-#include <math.h>
+#include "ent_controller_new.h"
 
 
-extern float deltaTime;
-
+/*
 struct ent_controller : public EventListener {
     Transform& target_transform;
     glm::vec3 wish_dir;
@@ -190,3 +183,4 @@ struct ent_controller : public EventListener {
     }
 
 };
+*/
