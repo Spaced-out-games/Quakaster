@@ -3,12 +3,18 @@
 #include <include/GameContext/base/Scene.h>
 #include <include/GameContext/UI/UIContext.h>
 
-
+// Minimal client
 struct Client
 {
-	//entt::resource_cache<res_mesh> meshes;
-	//entt::resource_cache<res_texture> meshes;
-	//entt::resource_cache<res_shader> meshes;
-	Quakaster::base::Scene cl_scene;
-	UIContext cl_UI_context;
+	//Client(EventHandler& cl_evt_handler) : delegate(cl_evt_handler) {}
+	// client-side scene
+	Scene scene;
+
+	// Temporary player ID.
+	entt::entity player_ID;
+
+	// Client-side systems
+	std::vector<ISystem*> systems;
+
+	//InputDelegate delegate;
 };
