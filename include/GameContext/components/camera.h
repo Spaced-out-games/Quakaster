@@ -5,7 +5,7 @@
 #include <span>
 #include <include/GameContext/UI/console_message.h>
 #include <include/GameContext/server/interpreter/console_function.h>
-#include <include/GameContext/resources/res_shader.h>
+//#include <include/GameContext/resources/res_shader.h>
 #include <include/GameContext/base/Component.h>
 
 
@@ -100,6 +100,7 @@ namespace Quakaster::components {
 			const float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT; // Replace with actual aspect ratio
 			return glm::perspective(glm::radians(fov), aspect_ratio, near, far);
 		}
+		/*
 		void set_shader_uniforms(Shader& shader, entt::entity owner = entt::null, entt::registry* registry = nullptr)
 		{
 			if (registry)
@@ -120,12 +121,8 @@ namespace Quakaster::components {
 			}
 			shader->operator[]("u_proj") = get_projection_matrix();
 		}
-		void set_shader_uniforms(res_shader& shader)
-		{
+		*/
 
-			shader["u_view"] = glm::inverse(get_matrix());// *parent_transform;
-			shader["u_proj"] = get_projection_matrix();
-		}
 
 		void bind_convars(ConsoleInterpreter& interpreter)
 		{
@@ -144,5 +141,8 @@ namespace Quakaster::components {
 
 using Camera = Quakaster::components::Camera;
 
-
+/*
+			shader->operator[]("u_view") = glm::inverse(get_matrix());
+			shader->operator[]("u_proj") = get_projection_matrix();
+*/
 
