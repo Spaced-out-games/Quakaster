@@ -9,11 +9,16 @@
 namespace Quakaster::entities {
 	struct ent_player: Entity {
 		ent_player(Scene& scene, ConsoleInterpreter& interpreter, EventHandler& event_handler): Entity(scene) {
+			// Add the components
 			add_component<Camera>();
-			get_component<Camera>().bind_convars(interpreter);
 			add_component<ent_controller>(event_handler, get_component<Camera>());
-			add_component<vector_visualizer>(get_component<ent_controller>().velocity, get_component<Camera>());
-			//get_component<Camera>().set_target()
+			add_component<vector_visualizer>(get_component<ent_controller>().velocity, get_component<Camera>(), 0.01f);
+			add_component<AABB>(get_component<Camera>().position);
+			
+			// set up the camera
+			get_component<Camera>().set_target(*this);
+			get_component<Camera>().bind_convars(interpreter);
+
 		}
 	};
 }
