@@ -21,7 +21,7 @@
 #include <include/GameContext/resources/res_shader.h>
 #include <include/GameContext/utils/vector_visualizer.h>
 #include <include/GameContext/components/AABB.h>
-#include <include/GameContext/entities/player.h>
+#include <include/GameContext/entities/ent_player.h>
 
 static float deltaTime = 0.0f;
 
@@ -124,23 +124,17 @@ struct GameContext
 	static void help_fn(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
 
 	}
-	// Prepares for the UI draw call
-	inline void begin_ui()
-	{
+
+
+	// draws the UI
+	inline void draw_ui() {
 		ImGui_ImplSDL2_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui::NewFrame();
-	}
-
-	// draws the UI
-	inline void draw_ui() { app.ui_context.tick(scene); }
-
-	// ends the UI draw call
-	inline void end_ui()
-	{
+		app.ui_context.tick(scene);
 		ImGui::Render();
-		//glClear(GL_COLOR_BUFFER_BIT);
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
 	}
 
 	// Refreshes the frame and displays it to the screen
@@ -172,85 +166,35 @@ struct GameContext
 	virtual void run()
 	{
 		init();
+		// Create the player
+		Entity player = ent_player(scene, interpreter, event_handler);
 
-		#pragma region cube_vertices_init
-		// Initialize the vertices and indices of the cube
-		std::vector<default_vertex_t> vertices = {
-			{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
-			{{100.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
-			{{100.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
-			{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
-			{{0.0f, 0.0f, 100.0f}},  // Vertex 4: Bottom-left-front
-			{{100.0f, 0.0f, 100.0f}},  // Vertex 5: Bottom-right-front
-			{{100.0f, 1.0f, 100.0f}},  // Vertex 6: Top-right-front
-			{{0.0f, 1.0f, 100.0f}},  // Vertex 7: Top-left-front
-		};
-		std::vector<uint32_t> indices = {
-			// Back face
-			0, 2, 1,  // Flipped 2 and 1
-			0, 3, 2,  // Flipped 3 and 2
-			// Front face
-			5, 6, 4,  // Flipped 6 and 4
-			6, 7, 4,  // Flipped 7 and 4
-			// Left face
-			0, 7, 3,  // Flipped 7 and 3
-			0, 4, 7,  // Flipped 4 and 7
-			// Right face
-			1, 6, 5,  // Flipped 6 and 5
-			1, 2, 6,  // Flipped 2 and 6
-			// Top face
-			3, 6, 2,  // Flipped 6 and 2
-			3, 7, 6,  // Flipped 7 and 6
-			// Bottom face
-			0, 1, 5,  // Flipped 1 and 5
-			0, 5, 4   // Flipped 5 and 4
-		};
-		#pragma endregion cube_vertices_init
+		// Create the floor
+		ent_cube floor(scene);
 
-		glm::vec3 scaled_velocity;
-
-
-
-		// Create the player with an ent_controller and a camera
-		#pragma region init_player
-			auto player = entt::handle{ scene.registry, scene.registry.create() };
-			player.emplace<Camera>();
-			player.get<Camera>().bind_convars(interpreter);
-			player.get<Camera>().look_at({ 0.0,0.0,0.0 });
-			player.emplace<ent_controller>(event_handler, player.get<Camera>());
-			player.emplace<vector_visualizer>(scaled_velocity, player.get<Camera>());
-			player.emplace<Quakaster::tags::target_camera>();
-			player.emplace<components::AABB>(player.get<Camera>().position);
-			Camera::set_target(player);
-		#pragma endregion init_player
-		
 
 		ISystem* AABB_renderer = new components::AABB::system();
 		ISystem* vector_renderer = new components::vector_visualizer::system();
+		ISystem* mesh_renderer = new components::Mesh::system();
+		
+
+		auto& cam_controller = player.get_component<ent_controller>();
+
 
 		
 
-		auto& cam_controller = player.get<ent_controller>();
-
-		ent_cube e(scene);
-
-		e.look_at({ 0.0f,0.0f,1.0f });
-		
-
-		app.ui_context.add_UIElement(new spedometer(player.get<ent_controller>().velocity, player.get<ent_controller>().speed));
+		app.ui_context.add_UIElement(new spedometer(player.get_component<ent_controller>().velocity, player.get_component<ent_controller>().speed));
 
 		vector_renderer->init(scene);
 		AABB_renderer->init(scene);
-
-		glm::vec3 delta = { 0.0f, deltaTime * deltaTime, 0.0f };
 
 
 
 			while (running) {
 
 				update_dt();
-				e.move(delta);
 
+					/* apply friction
 					cam_controller.applyMovement();
 					if (!cam_controller.moving) {
 						if (cam_controller.in_air) {
@@ -260,31 +204,25 @@ struct GameContext
 
 					}
 					else cam_controller.wish_dir = glm::normalize(cam_controller.wish_dir) * cam_controller.speed;
+					*/
 
-
-					player.get<Camera>().move(cam_controller.velocity * deltaTime);
+					player.get_component<Camera>().move(cam_controller.velocity * deltaTime);
 
 
 
 				glClear(GL_COLOR_BUFFER_BIT);
 
-					components::Mesh::draw_all(scene.registry, player.get<Camera>());
+					mesh_renderer->tick(scene);
 					vector_renderer->tick(scene);
 					AABB_renderer->tick(scene);
 
 
 
-				scaled_velocity = player.get<ent_controller>().velocity / 100.0f;
 
-				input_delegate.update();
-
+				//input_delegate.update();
 
 
-					begin_ui();
-					draw_ui();
-
-
-					end_ui();
+				draw_ui();
 
 
 				refresh();
