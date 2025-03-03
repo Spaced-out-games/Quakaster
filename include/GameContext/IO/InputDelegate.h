@@ -45,8 +45,8 @@ struct InputDelegate : ISystem {
 	EventHandler& event_handler; // was dispatcher
 
 	IOState KeyboardMouseState; // was lastMouseX, lastMouseY, keyStates
-	bool is_paused = true;
-
+	bool is_paused = false;
+	bool last_pause_state = false;
 
 	bool isImGuiInitialized() const { return ImGui::GetCurrentContext() != nullptr; }
 	void init(Scene& scene) override;
@@ -75,12 +75,17 @@ void InputDelegate::tick(Scene& scene) {
 		// ESC key always intercepts events, because regardless of pause state, it should invert the pause state
 		if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE)
 		{
+			is_paused = !is_paused;
+			if (!is_paused) last_pause_state = 0;
+			SDL_SetRelativeMouseMode(is_paused ? SDL_TRUE : SDL_FALSE);
 			// Fire a pause event
-			event_handler.trigger(PauseEvent{});
+			//event_handler.trigger(PauseEvent{});
 
 			// we are done, so return
 			return;
 		}
+
+		std::cout << is_paused << '\n';
 
 		// Forward it to ImGui
 		ImGui_ImplSDL2_ProcessEvent(&event);

@@ -42,7 +42,7 @@ struct ConsoleUI: public UIBase
     bool scrollToBottom = false;
 
     std::vector<console_message> history;
-    bool last_pause_state = 0;
+    //bool last_pause_state = 0;
 
 
 
@@ -164,11 +164,11 @@ struct ConsoleUI: public UIBase
         
         // last_pause_state = ui_context.is_paused();
 
-        if (last_pause_state == 0 && ui_context.is_paused() == 0)
+        if (ui_context.input_delegate.last_pause_state == 0 && ui_context.is_paused() == 0)
         {
             // this is supposed to be called when the console opens
             ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
-            last_pause_state = 1;
+            ui_context.input_delegate.last_pause_state = 1;
         }
         //}
 
@@ -179,7 +179,7 @@ struct ConsoleUI: public UIBase
             interpreter.execute(inputStr, message);
             if(message.message != "") add_log(message);
             memset(input_buffer, 0, sizeof(input_buffer));
-            last_pause_state = 0;
+            ui_context.input_delegate.last_pause_state = 0;
 
 
 
