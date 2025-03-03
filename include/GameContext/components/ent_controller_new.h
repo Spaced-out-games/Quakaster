@@ -41,7 +41,7 @@ struct MoveState {
 	bool moving = false;
     glm::vec3 wish_dir = {0.0,0.0,0.0};
     glm::vec3 velocity = {0.0,0.0,0.0};
-	float max_speed = 20.0f;
+	float max_speed = 25.0f;
 	float air_accel = 50.0f;
     float ground_accel = 50.0f;
 
@@ -72,6 +72,7 @@ struct test_controller : Controller {
 
             handle_movement(evt.code, ms);
             if (ms.moving) {
+                //entity.get_component<Camera>().position += ms.wish_dir * Application::get_deltaTime() * ms.max_speed;
                 // apply_movement(ms, entity);
             }
         };
@@ -126,6 +127,7 @@ struct test_controller : Controller {
 
     }
 
+    // Updates velocity in accordance to move state
     inline void handle_movement(SDL_Keycode code, MoveState& ms) {
         if (!ms.moving) { ms.wish_dir = { 0.0f, 0.0f, 0.0f }; }
         Transform& transform = entity.get_component<Camera>(); // easier to test immediately
