@@ -26,7 +26,7 @@ static inline Server sv;
 
 
 
-struct GameContext: Application
+struct GameContext : Application
 {
 	// Constructor
 	GameContext() : Application(sv.interpreter)//, input_delegate(ui_context, event_handler)
@@ -42,12 +42,12 @@ struct GameContext: Application
 
 
 
-		
+
 
 	}
-	static void console_log(std::string message,console_color color = console_color::DEFAULT_TEXT)
+	static void console_log(std::string message, console_color color = console_color::DEFAULT_TEXT)
 	{
-		event_handler.trigger(console_message{message, color });
+		event_handler.trigger(console_message{ message, color });
 
 	}
 	static void bg_color_fn(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
@@ -126,7 +126,7 @@ struct GameContext: Application
 		// Initialize the app state
 
 		systems.push_back(new InputDelegate(event_handler));
-		
+
 		systems.push_back(new components::Mesh::system());
 		systems.push_back(new components::AABB::system());
 		systems.push_back(new components::vector_visualizer::system());
@@ -144,7 +144,7 @@ struct GameContext: Application
 		entities.emplace_back(new ent_cube(cl.scene));
 
 
-		
+
 
 		// run everything
 		while (status == 1)
@@ -160,3 +160,4 @@ struct GameContext: Application
 		}
 		return status;
 	}
+}

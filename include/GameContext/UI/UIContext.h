@@ -33,6 +33,10 @@ struct UIContext: public base::ISystem
 
     // This ignores the Scene that needs passed
     void tick(base::Scene&) override {
+        ImGui_ImplSDL2_NewFrame();
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui::NewFrame();
+
 
         // assign to the controller by default
         for (size_t i = 0; i < elements.size(); i++)
@@ -42,6 +46,10 @@ struct UIContext: public base::ISystem
                 elements[i]->draw(this);
             }
         }
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
     }
 
     // In this instance, it does pretty much nothing.
@@ -63,7 +71,7 @@ struct UIContext: public base::ISystem
 
     InputDelegate& input_delegate;
 
-    EventListener<PauseEvent> listener;
+    //EventListener<PauseEvent> listener;
 
     // UI Elements
     std::vector<UIBase*> elements;
@@ -75,7 +83,10 @@ struct UIContext: public base::ISystem
     Renderer& renderer;
     Window& window;
 
-    bool is_paused() { return input_delegate.is_paused; }
+    bool is_paused() {
+        bool b = input_delegate.is_paused;
+        return b;
+    }
 
     
 };
@@ -84,17 +95,7 @@ struct UIContext: public base::ISystem
 
 UIContext::UIContext(EventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window, InputDelegate& input_delegate) : event_handler(event_handler), interpreter(interpreter),
 renderer(renderer),
-window(window), input_delegate(input_delegate),
-listener(event_handler, [this](PauseEvent) {
-    pause();
-    ConsoleUI* consoleUI = dynamic_cast<ConsoleUI*>(elements.at(0));
-    if (!is_paused()) consoleUI->last_pause_state = 0;
-    SDL_SetRelativeMouseMode(is_paused() ? SDL_TRUE : SDL_FALSE);  // Set relative mouse mode
-
-
-
-    
-})
+window(window), input_delegate(input_delegate)
 {
 
     add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });
