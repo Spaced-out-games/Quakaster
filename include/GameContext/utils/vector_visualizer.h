@@ -15,10 +15,10 @@ namespace Quakaster::components {
 
 	struct vector_visualizer : public Transform
 	{
-		vector_visualizer(glm::vec3& inspected_vector, Transform& transform) : vector(inspected_vector), transform(transform)
+		vector_visualizer(const glm::vec3& inspected_vector, Transform& transform) : vector(inspected_vector), transform(transform)
 		{
 		}
-		glm::vec3& vector;
+		const glm::vec3& vector;
 		Transform& transform;
 		
 
