@@ -15,7 +15,6 @@ struct Application
 	Window window;
 
 	// GUI context
-	UIContext ui_context;
 
 	// IP address, player ID, sockets, client-side copy of the scene. also, client-side systems
 	Client cl;
@@ -28,13 +27,29 @@ struct Application
 	std::chrono::steady_clock::time_point lastFrameTime;
 	std::chrono::steady_clock::time_point currentFrameTime;
 
-	InputDelegate input_delegate;
 
 	// Error code or exit
 	int status = 1;
 
+	// Systems to run the simulation
+	std::vector<ISystem*> systems;
 
-	Application(EventHandler& event_handler, ConsoleInterpreter& interpreter) : input_delegate(event_handler), ui_context( event_handler, interpreter, window.get_renderer(), window, input_delegate), window(interpreter)
+	std::vector<Entity*> entities;
+
+
+	static inline EventHandler event_handler;
+
+
+
+
+
+	inline void refresh() { SDL_GL_SwapWindow(window.sdl_window); }
+
+	virtual int run() = 0;
+
+
+
+	Application(ConsoleInterpreter& interpreter) : /*ui_context(event_handler, interpreter, window.get_renderer(), window, input_delegate),*/ window(interpreter)
 	{
 
 	}
@@ -57,3 +72,6 @@ struct Application
 	private:
 		static inline float deltaTime = 0.0f;
 };
+
+
+

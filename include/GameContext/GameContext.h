@@ -26,44 +26,21 @@ static inline Server sv;
 
 
 
-struct GameContext
+struct GameContext: Application
 {
-	
-	
-	
-
-
-
-	// Whether or not the game is running
-	//int running = 1;
-	
-
-	// Interprets console commands
-	//ConsoleInterpreter interpreter;
-	//Server sv;
-
-
-	// The scene
-	//Quakaster::base::Scene scene;
-
-
-	static EventHandler event_handler;
-
-	Application app;
-
-	// absolutely NEEDS an event handler and UI context. 
-	//InputDelegate input_delegate;
-	
 	// Constructor
-	GameContext() : app(event_handler, sv.interpreter)//, input_delegate(app.ui_context, event_handler)
+	GameContext() : Application(sv.interpreter)//, input_delegate(ui_context, event_handler)
 	{
 		//if (input_delegate.IOHandler == nullptr) { input_delegate.init(); }
-		sv.interpreter.add_convar("game_running", app.status);
-		sv.interpreter.add_command("quit", GameContext::quit);
-		sv.interpreter.add_command("exit", GameContext::quit); // alias
+		//sv.interpreter.add_convar("game_running", status);
+		//sv.interpreter.add_command("quit", GameContext::quit);
+		//sv.interpreter.add_command("exit", GameContext::quit); // alias
 
-		sv.interpreter.add_convar("bg_color_value", app.bg_color, false);
-		sv.interpreter.add_command("bg_color", bg_color_fn);
+		//sv.interpreter.add_convar("bg_color_value", bg_color, false);
+		//sv.interpreter.add_command("bg_color", bg_color_fn);
+
+
+
 
 		
 
@@ -122,134 +99,64 @@ struct GameContext
 
 	}
 
-
-	// draws the UI
-	inline void draw_ui() {
-		ImGui_ImplSDL2_NewFrame();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui::NewFrame();
-		app.ui_context.tick(app.cl.scene);
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-	}
-
-	// Refreshes the frame and displays it to the screen
-	inline void refresh() { SDL_GL_SwapWindow(app.window.sdl_window); }
-	virtual void init()
-	{
-		glLineWidth(4.0f);
-		glClearColor(app.bg_color.r, app.bg_color.g, app.bg_color.b, 1.00f);
-
-	}
-
 	static void quit(console_message& msg, ConsoleInterpreter& interpreter, std::span<Token> args) {
 		interpreter.set_convar("game_running", 0);
 		msg.message = "Quiting game...";
 		return;
 	}
+	// draws the UI
+	/*
+	inline void draw_ui() {
+		ImGui_ImplSDL2_NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui::NewFrame();
+		ui_context.tick(cl.scene);
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-	
-	
-	
-	// Game loop
-	virtual void run()
-	{
-		init();
-		// Create the player
-		Entity player = ent_player(app.cl.scene, sv.interpreter, event_handler);
+	}*/
 
-		// Create the floor
-		ent_cube floor(app.cl.scene);
+	// Refreshes the frame and displays it to the screen
+	inline void refresh() { SDL_GL_SwapWindow(window.sdl_window); }
 
 
-		ISystem* AABB_renderer = new components::AABB::system();
-		ISystem* vector_renderer = new components::vector_visualizer::system();
-		ISystem* mesh_renderer = new components::Mesh::system();
+
+
+	int run() override {
+		// Initialize the app state
+
+		systems.push_back(new InputDelegate(event_handler));
+		
+		systems.push_back(new components::Mesh::system());
+		systems.push_back(new components::AABB::system());
+		systems.push_back(new components::vector_visualizer::system());
+		systems.push_back(new UIContext(event_handler, sv.interpreter, window.get_renderer(), window, *dynamic_cast<InputDelegate*>(systems[0])));
+
+		//systems.push_back(&input_delegate);
+
+		glLineWidth(4.0f);
+		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
+		for (auto* system : systems)
+		{
+			system->init(cl.scene);
+		}
+		entities.emplace_back(new ent_player(cl.scene, sv.interpreter, event_handler));
+		entities.emplace_back(new ent_cube(cl.scene));
+
+
 		
 
-		//auto& cam_controller = player.get_component<ent_controller>();
-
-		InputDelegate dg(event_handler);
-		dg.init(app.cl.scene);
-
-		auto a = EventListener<MouseMoveEvent>(event_handler, [&player](MouseMoveEvent p_evt) {
-			glm::vec3 d = { 0.0,0.001,0.0 };
-		player.get_component<Camera>().move(d);
-		});
-
-		//app.ui_context.add_UIElement(new spedometer(player.get_component<ent_controller>().velocity, player.get_component<ent_controller>().speed));
-
-		vector_renderer->init(app.cl.scene);
-		AABB_renderer->init(app.cl.scene);
-
-
-
-			while (app.status) {
-
-				app.update_dt();
-
-					/* apply friction
-					cam_controller.applyMovement();
-					if (!cam_controller.moving) {
-						if (cam_controller.in_air) {
-							//cam_controller.velocity *= 0.85;
-						}
-						else cam_controller.velocity *= pow(0.01f, deltaTime);
-
-					}
-					else cam_controller.wish_dir = glm::normalize(cam_controller.wish_dir) * cam_controller.speed;
-					*/
-
-					//player.get_component<Camera>().move(cam_controller.velocity * deltaTime);
-
-
-
-				glClear(GL_COLOR_BUFFER_BIT);
-
-					mesh_renderer->tick(app.cl.scene);
-					vector_renderer->tick(app.cl.scene);
-					AABB_renderer->tick(app.cl.scene);
-
-					dg.tick(app.cl.scene);
-
-
-				//input_delegate.update();
-
-
-				draw_ui();
-
-
-				refresh();
+		// run everything
+		while (status == 1)
+		{
+			update_dt();
+			glClear(GL_COLOR_BUFFER_BIT);
+			for (auto* system : systems)
+			{
+				system->tick(cl.scene);
 			}
-		
+			entities[0]->get_component<Camera>().position += entities[0]->get_component<MoveState>().velocity * Application::get_deltaTime();
+			refresh();
+		}
+		return status;
 	}
-};
-
-
-
-EventHandler GameContext::event_handler;
-
-/*
-FYI: Current logic outline:
-	call GameContext::init()
-	create the cube vertex data buffers
-	create player and cube entities, attaching components as you go
-	call AABB::init() and vector_visualizer::init()
-
-
-	while running:
-		Apply velocity to player
-
-		Clear the screen (glClear(GL_COLOR_BUFFER_BIT))
-
-		Draw meshes, AABBs, and vector visualizers
-
-		Set scaled_velocity (only used for spedometer)
-
-		Take in input through input_delegate
-
-		Draw UI
-
-
-*/
