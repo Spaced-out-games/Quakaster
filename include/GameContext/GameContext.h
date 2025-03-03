@@ -104,17 +104,7 @@ struct GameContext : Application
 		msg.message = "Quiting game...";
 		return;
 	}
-	// draws the UI
-	/*
-	inline void draw_ui() {
-		ImGui_ImplSDL2_NewFrame();
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui::NewFrame();
-		ui_context.tick(cl.scene);
-		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-	}*/
 
 	// Refreshes the frame and displays it to the screen
 	inline void refresh() { SDL_GL_SwapWindow(window.sdl_window); }
@@ -125,18 +115,18 @@ struct GameContext : Application
 	int run() override {
 		// Initialize the app state
 
-		systems.push_back(new InputDelegate(event_handler));
+		cl.systems.push_back(new InputDelegate(event_handler));
 
-		systems.push_back(new components::Mesh::system());
-		systems.push_back(new components::AABB::system());
-		systems.push_back(new components::vector_visualizer::system());
-		systems.push_back(new UIContext(event_handler, sv.interpreter, window.get_renderer(), window, *dynamic_cast<InputDelegate*>(systems[0])));
+		cl.systems.push_back(new components::Mesh::system());
+		cl.systems.push_back(new components::AABB::system());
+		cl.systems.push_back(new components::vector_visualizer::system());
+		cl.systems.push_back(new UIContext(event_handler, sv.interpreter, window.get_renderer(), window, *dynamic_cast<InputDelegate*>(cl.systems[0])));
 
-		//systems.push_back(&input_delegate);
+		//cl.systems.push_back(&input_delegate);
 
 		glLineWidth(4.0f);
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
-		for (auto* system : systems)
+		for (auto* system : cl.systems)
 		{
 			system->init(cl.scene);
 		}
@@ -151,11 +141,11 @@ struct GameContext : Application
 		{
 			update_dt();
 			glClear(GL_COLOR_BUFFER_BIT);
-			for (auto* system : systems)
+			for (auto* system : cl.systems)
 			{
 				system->tick(cl.scene);
 			}
-			entities[0]->get_component<Camera>().owner_transform.position += entities[0]->get_component<MoveState>().velocity * Application::get_deltaTime();
+			entities[0]->get_component<Camera>().owner_transform.position += entities[0]->get_component<MoveState>().velocity() * Application::get_deltaTime();
 			refresh();
 		}
 		return status;
