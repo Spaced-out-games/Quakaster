@@ -72,7 +72,7 @@ struct test_controller : Controller {
 
             handle_movement(evt.code, ms);
             if (ms.moving) {
-                //entity.get_component<Camera>().position += ms.wish_dir * Application::get_deltaTime() * ms.max_speed;
+                //entity.get_component<Camera>().owner_transform.position += ms.wish_dir * Application::get_deltaTime() * ms.max_speed;
                 // apply_movement(ms, entity);
             }
         };
@@ -110,6 +110,8 @@ struct test_controller : Controller {
                 apply_movement(ms, entity);
 
             }
+
+            std::cout << ms.velocity << '\n';
         };
 
 
@@ -122,7 +124,7 @@ struct test_controller : Controller {
             glm::quat pitchQuat = glm::angleAxis(pitchDelta, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X
             glm::quat yawQuat = glm::angleAxis(yawDelta, glm::vec3(0.0f, 1.0f, 0.0f));     // Rotate around Y
 
-            entity.get_component<Camera>().rotation = glm::normalize(yawQuat * entity.get_component<Camera>().rotation * pitchQuat);
+            entity.get_component<Camera>().owner_transform.rotation = glm::normalize(yawQuat * entity.get_component<Camera>().owner_transform.rotation * pitchQuat);
         };
 
     }
@@ -130,7 +132,7 @@ struct test_controller : Controller {
     // Updates velocity in accordance to move state
     inline void handle_movement(SDL_Keycode code, MoveState& ms) {
         if (!ms.moving) { ms.wish_dir = { 0.0f, 0.0f, 0.0f }; }
-        Transform& transform = entity.get_component<Camera>(); // easier to test immediately
+        Transform& transform = entity.get_component<Camera>().owner_transform; // easier to test immediately
 
         switch (code) {
         case SDLK_a:
@@ -159,7 +161,7 @@ struct test_controller : Controller {
 
     
     inline void apply_movement(MoveState& ms, Entity& entity) {
-        Transform& transform = entity.get_component<Camera>(); // easier to test immediately
+        Transform& transform = entity.get_component<Camera>().owner_transform; // easier to test immediately
         if (ms.moving) {
             if (ms.in_air) {
                 // apply air acceleration

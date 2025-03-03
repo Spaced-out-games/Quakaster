@@ -43,17 +43,17 @@ struct Transform {
     }
 
     // Move the transform to a new position
-    void move_to(const glm::vec3& new_position) {
+    inline void move_to(const glm::vec3& new_position) {
         position = new_position;
     }
 
     // Translate the transform by a delta
-    void move(const glm::vec3& delta_position) {
+    inline void move(const glm::vec3& delta_position) {
         position += delta_position;
     }
 
     // Rotate by delta pitch/yaw in radians
-    void rotate(float deltaPitch, float deltaYaw)
+    inline void rotate(float deltaPitch, float deltaYaw)
     {
         // Update the target transform's rotation using quaternions
         //glm::quat pitchQuat = glm::angleAxis(deltaPitch, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X

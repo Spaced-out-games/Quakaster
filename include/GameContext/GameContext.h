@@ -155,7 +155,7 @@ struct GameContext : Application
 			{
 				system->tick(cl.scene);
 			}
-			entities[0]->get_component<Camera>().position += entities[0]->get_component<MoveState>().velocity * Application::get_deltaTime();
+			entities[0]->get_component<Camera>().owner_transform.position += entities[0]->get_component<MoveState>().velocity * Application::get_deltaTime();
 			refresh();
 		}
 		return status;

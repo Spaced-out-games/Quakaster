@@ -18,15 +18,21 @@ namespace Quakaster::tags {
 
 namespace Quakaster::components {
 
-	struct Camera : Component, Transform
+	struct Camera : Component
 	{
-		Camera(float fov = 90.0f, float near = 0.1f, float far = 1000.0f) : fov(fov), near(near), far(far) { move_to({ 1.0,2.0,5.0 }); }
+		Camera(Transform& owner_transform, float fov = 90.0f, float near = 0.1f, float far = 1000.0f) : fov(fov), near(near), far(far), owner_transform(owner_transform) {
+
+			owner_transform.move_to({ 1.0,2.0,5.0 });
+
+		}
 
 		static inline Camera* target_camera = nullptr;
-
+		bool owns_transform = false;
+		Transform& owner_transform;
 		float fov;
 		float near;
 		float far;
+		glm::vec3 offset = { 0.0,0.0,0.0 }; // Might be better to make this an optional component
 		//entt::handle target;
 
 		static void set_target(entt::handle& entity) {
@@ -100,28 +106,6 @@ namespace Quakaster::components {
 			const float aspect_ratio = (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT; // Replace with actual aspect ratio
 			return glm::perspective(glm::radians(fov), aspect_ratio, near, far);
 		}
-		/*
-		void set_shader_uniforms(Shader& shader, entt::entity owner = entt::null, entt::registry* registry = nullptr)
-		{
-			if (registry)
-			{
-				if (registry->all_of<Transform>(owner))
-				{
-					shader->operator[]("u_view") = glm::inverse(get_matrix());
-
-
-					// Meant to get the relative transform
-					//shader->operator[]("u_view") = glm::inverse(get_matrix(owner, *registry));
-				}
-
-			}
-			else
-			{
-				shader->operator[]("u_view") = glm::inverse(get_matrix());// *parent_transform;
-			}
-			shader->operator[]("u_proj") = get_projection_matrix();
-		}
-		*/
 
 
 		void bind_convars(ConsoleInterpreter& interpreter)
@@ -130,14 +114,17 @@ namespace Quakaster::components {
 			interpreter.add_command("fov_desired", set_fov);
 		}
 
-
-
-
-
+		glm::mat4 get_matrix() const {
+			glm::mat4 matrix = glm::translate(glm::mat4(1.0f), owner_transform.position + offset);
+			return matrix * glm::mat4_cast(owner_transform.rotation);
+		}
 	};
 
 
 }
+
+struct Cam_offset: glm::vec3 {};
+
 
 using Camera = Quakaster::components::Camera;
 
