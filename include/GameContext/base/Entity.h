@@ -32,7 +32,9 @@ namespace Quakaster::base {
         /// <summary>
         /// Destructor for Entity. Cleans up resources.
         /// </summary>
-        virtual ~Entity() = default;
+        virtual ~Entity() {
+            scene.registry.destroy(ID);
+        };
         /// <summary>
     /// Gets the unique identifier for this entity.
     /// </summary>
@@ -93,7 +95,7 @@ namespace Quakaster::base {
         inline bool has_one_of() { return scene.has_one_of<Ts...>(ID); }
 
 
-    //private:
+    private:
         /// <summary>
         /// A reference to the scene this entity belongs to.
         /// </summary>
