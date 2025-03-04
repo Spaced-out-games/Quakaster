@@ -4,26 +4,30 @@ project(Engine_Demo VERSION 1.0 LANGUAGES CXX)
 
 
 
-
+# set the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_PREFIX_PATH "")
 
-# Set default build type if not specified
-#if(NOT CMAKE_BUILD_TYPE)
-
-#endif()
-
 # Undefine _DEBUG to ensure it's not defined in the release build
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    add_definitions(-U_DEBUG)
-endif()
+#if(CMAKE_BUILD_TYPE STREQUAL "Release")
+#    add_definitions(-U_DEBUG)
+#endif()
 
 # Define paths for dependencies
 set(SDL_ROOT "D:/C++ Libraries/SDL2")
 set(GLEW_ROOT "D:/C++ Libraries/glew-2.2.0")
 set(GLM_ROOT "D:/C++ Libraries/glm")
 set(IMGUI_ROOT "D:/C++ Libraries/imgui")
+
+
+# Once you restart, this should work
+# set(SDL_ROOT "$ENV{CPP_LIB}/SDL2")
+# set(GLEW_ROOT "$ENV{CPP_LIB}/glew-2.2.0")
+# set(GLM_ROOT "$ENV{CPP_LIB}/glm")
+# set(IMGUI_ROOT "$ENV{CPP_LIB}/imgui")
+
+
 set(SDL2_DLL ${SDL_ROOT}/lib/x64/SDL2.dll)
 
 # Include Directories
@@ -49,7 +53,7 @@ find_package(OpenGL REQUIRED)
 
 # Source Files
 # list all directories where *.cpp files are located
-file(GLOB SOURCES
+file(GLOB_RECURSE SOURCES
     ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
@@ -61,74 +65,17 @@ file(GLOB IMGUI_SOURCES
 )
 list(APPEND SOURCES ${IMGUI_SOURCES})
 
+# Specify the root include directory
+set(INCLUDE_DIR "${CMAKE_SOURCE_DIR}/include")
+
 # Define executable target
-add_executable(Engine_Demo ${SOURCES} 
+# Use GLOB_RECURSE to find all header files in the include/GameContext directory and its subdirectories
+file(GLOB_RECURSE HEADERS
+    "${INCLUDE_DIR}/*.h"
+)
 
-        # no good place to put these
-        "include/GameContext/GameContext.h"
-        "include/common.h"
-
-        # client
-        "include/GameContext/client/application.h"
-        "include/GameContext/client/Client.h"
-
-        # window
-        "include/GameContext/Window/Renderer.h"
-        "include/GameContext/Window/window.h"
-
-        # input
-        "include/GameContext/IO/InputDelegate.h"
-        "include/GameContext/IO/InputEvents.h"
-
-        # utilities
-        "include/GameContext/utils/vector_visualizer.h"
-        "include/GameContext/utils/utility_types.h"
-        "include/GameContext/utils/Inspector.h"
-
-        # server
-        "include/GameContext/server/interpreter/ConsoleInterpreter.h"
-        "include/GameContext/server/interpreter/InterpreterToken.h"
-        "include/GameContext/server/interpreter/convar.h"
-        "include/GameContext/server/server.h"
-        
-        # UI
-        "include/GameContext/UI/console_message.h"
-        "include/GameContext/UI/console_color.h"
-        "include/GameContext/UI/UIContext.h"
-        "include/GameContext/UI/ConsoleUI.h"
-        "include/GameContext/UI/UIBase.h"
-
-        # resources
-        "include/GameContext/resources/res_texture.h"
-        "include/GameContext/resources/res_shader.h"
-        
-
-        # graphics
-        "include/GameContext/graphics/gl_utils.h"
-        "include/GameContext/graphics/VAO.h"
-        "include/GameContext/graphics/VBO.h"
-        "include/GameContext/graphics/EBO.h"
-
-        # components
-        "include/GameContext/components/physics_components.h"
-        "include/GameContext/components/IMovementModule.h"
-        "include/GameContext/components/ent_controller.h"
-        "include/GameContext/components/Framebuffer.h"
-        "include/GameContext/components/controller.h"
-        "include/GameContext/components/transform.h"
-        "include/GameContext/components/camera.h"
-        "include/GameContext/components/AABB.h"
-
-        # base
-        "include/GameContext/base/Serializing.h"
-        "include/GameContext/base/Quakaster.h"
-        "include/GameContext/base/Component.h"
-        "include/GameContext/base/Entity.h"
-        "include/GameContext/base/Scene.h"
-        "include/GameContext/base/Tag.h"
-
-
- "include/GameContext/entities/ent_cube.h" "include/GameContext/UI/Spedometer.h" "include/GameContext/entities/ent_player.h" "include/GameContext/components/Scalar.h" "include/GameContext/base/physicsComponent.h" "include/GameContext/demo_context.h"  "include/GameContext/components/ent_controller_new.h")
+# Combine source files from GLOB_RECURSE with the gathered headers
+add_executable(Engine_Demo ${SOURCES} ${HEADERS} "include/components/MoveState.h" "include/components/transform.cpp")
 
 # Link libraries
 target_link_libraries(Engine_Demo
