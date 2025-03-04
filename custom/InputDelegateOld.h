@@ -1,10 +1,10 @@
 #pragma once
 #include "InputEvents.h"
-#include <include/GameContext/base/eventHandler.h>
+#include <include/base/eventHandler.h>
 
-#include <include/GameContext/server/interpreter/ConsoleInterpreter.h>
-#include <include/GameContext/UI/UIContext.h>
-#include <include/GameContext/utils/utility_types.h>
+#include <include/server/interpreter/ConsoleInterpreter.h>
+#include <include/UI/UIContext.h>
+#include <include/utils/utility_types.h>
 #include <unordered_map>
 
 /*
