@@ -1,0 +1,39 @@
+#pragma once
+#include <include/base/Entity.h>
+#include <include/components/camera.h>
+#include <include/base/Scene.h>
+#include <include/server/interpreter/ConsoleInterpreter.h>
+#include <include/utils/vector_visualizer.h>
+
+
+namespace Quakaster::entities {
+	struct ent_player: Entity {
+
+		struct tag : public Tag {};
+		/// <summary>
+		/// Creates a player entity
+		/// </summary>
+		/// <param name="scene">The scene to add the player to</param>
+		/// <param name="interpreter">The interpreter to set console commands for</param>
+		/// <param name="event_handler"></param>
+		ent_player(Scene& scene, ConsoleInterpreter& interpreter, EventHandler& event_handler): Entity(scene) {
+
+			// Tag telling us this is a player
+			add_component<ent_player::tag>();
+
+			// Holds the orientation of the player
+			add_component<Transform>();
+			add_component<Camera>(get_component<Transform>());
+			add_component<AABB>(get_component<Transform>().position);
+			add_component<Scalar>(0.02,0.02,0.02);
+			// set up the camera
+			get_component<Camera>().set_target(*this);
+			get_component<Camera>().bind_convars(interpreter);
+			add_component<MoveState>();
+			add_component<test_controller>(event_handler, *this);
+			add_component<vector_visualizer>(get_component<MoveState>().velocity(), get_component<Camera>().owner_transform);
+		}
+	};
+}
+
+using ent_player = Quakaster::entities::ent_player;
