@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <include/thirdparty/entt.hpp>
 #include <iostream>
-#include <include/GameContext/GameContext.h>
+#include <include/GameContext.h>
 ;
 static inline std::string root_directory = "D:/Quakaster/";
 
