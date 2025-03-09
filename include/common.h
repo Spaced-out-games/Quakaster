@@ -1,6 +1,6 @@
 #pragma once
 // Include all the base 
-#include <include/base/Quakaster.h>
+#include <include/base/base.h>
 
 /// Basically an IDE hack. Allows you to basically wrap and name scopes within VS Code, my editor of choice.
 /// It is nothing more than a no-op but tricks Intellisense into thinking it's a funciton when it's not
