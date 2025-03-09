@@ -1,5 +1,7 @@
+// Component.h
+// PURPOSE: Create a base Component type compatable with EnTT.
+
 #pragma once
-//#include <include/base/Scene.h>
 #include <include/thirdparty/entt.hpp>
 
 
@@ -12,16 +14,11 @@ namespace Quakaster::base {
     /// <summary>
     /// Base component type written over EnTT. 
     /// It represents a logical set of data and functions on that data, 
-    /// as well as 'link/bridge' functions that connect two or more components 
-    /// using dependency injection (e.g., controller::move(transform&, vec3)).
+    /// There's not much purpose to this except explicitness
     /// </summary>
     struct Component {
             
             Component() = default;
-
-            /// <summary>
-            /// Virtual destructor for Component. Cleans up resources.
-            /// </summary>
             virtual ~Component() = default;
     };
 
