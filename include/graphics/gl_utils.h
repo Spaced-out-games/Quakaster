@@ -1,5 +1,6 @@
 #pragma once
-#include <GL/glew.h>
+#include "glew_surrogate.h"
+
 
 static void check_gl_error(const std::string& context) {
     GLenum err;
