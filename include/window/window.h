@@ -1,6 +1,6 @@
 #pragma once
 #include <SDL.h>
-#include <GL/glew.h>
+#include "glew_surrogate.h"
 #include <include/thirdparty/glm/glm.hpp>
 #include <imgui.h>
 #include <backends/imgui_impl_sdl2.h>
@@ -18,7 +18,7 @@
 
 class Window {
 public:
-    Window(ConsoleInterpreter& interpreter, int width, int height);
+    Window(int width, int height);
     ~Window();
 
     void swapBuffers();
@@ -33,13 +33,13 @@ public:
     void renderImGui();
     void cleanupImGui();
     void renderToTexture();
-    GLuint renderTexture = 0;
+    
 
     inline Renderer& get_renderer() { return renderer; }
     SDL_Window* sdl_window = nullptr;
-
 private:
     void createFramebuffer();
+    GLuint renderTexture = 0;
     Renderer renderer;
     //SDL_GLContext context = nullptr;
     glm::ivec2 dimensions;
@@ -52,7 +52,7 @@ private:
 };
 
 
-Window::Window(ConsoleInterpreter& interpreter, int width = WINDOW_WIDTH, int height = WINDOW_HEIGHT): renderer(interpreter) {
+Window::Window(int width = WINDOW_WIDTH, int height = WINDOW_HEIGHT) {
     dimensions = { width, height };
 
     // Initialize SDL
