@@ -1,5 +1,5 @@
 #pragma once
-#include <include/base/eventHandler.h>
+#include <include/base/Event.h>
 #include <include/thirdparty/entt.hpp>
 #include <include/base/Component.h>
 
@@ -12,8 +12,7 @@ namespace Quakaster::base {
 	// Once THAT's done, move to defining entity types and go around, fixing that shit. 
 	struct Scene
 	{
-		entt::registry registry;
-		EventHandler event_handler;
+
 
 
 		template <typename T, typename ...Args>
@@ -59,6 +58,10 @@ namespace Quakaster::base {
 		inline auto view() {
 			return registry.view<Ts...>();
 		}
+
+		private:
+			friend Entity;
+			entt::registry registry;
 
 	};
 
