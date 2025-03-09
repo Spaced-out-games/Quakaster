@@ -1,14 +1,11 @@
 #pragma once
 #include <string>
-#include <backends/imgui_impl_sdl2.h>
-#include <backends/imgui_impl_opengl3.h>
-#include "imgui.h"
 #include <include/server/interpreter/ConsoleInterpreter.h>
-#include "console_message.h"
 #include <include/UI/UIContext.h> // Include UIContext before implementing methods
 #include <include/UI/UIBase.h>
 #include <include/UI/console_message.h>
-#include <include/base/eventHandler.h>
+#include <include/base/Event.h>
+#include <include/server/interpreter/Convar.h>
 
 
 // Size of a single console command
@@ -24,8 +21,6 @@ struct ConsoleUI: public UIBase
 {
     // communication network with components
 
-    ConsoleInterpreter& interpreter;
-    EventHandler& event_handler;
     UIContext& ui_context;
 
 
@@ -76,18 +71,17 @@ struct ConsoleUI: public UIBase
 
 
 
-    ConsoleUI(ConsoleInterpreter& interpreter, EventHandler& event_handler, UIContext& ui_context) :
-        interpreter(interpreter),
-        event_handler(event_handler),
+    ConsoleUI(UIContext& ui_context) :
         ui_context(ui_context)
     {
-        event_handler.sink<console_message>().connect<&ConsoleUI::callback>(this);
+        // listen for messages
+        Event::subscribe<console_message, ConsoleUI, &ConsoleUI::callback>(this);
 
 
         add_colors();
     }
     void callback(console_message& msg) {
-        this->add_log(msg);
+        add_log(msg);
     }
 
     void draw(UIContext* ctx) override
@@ -108,9 +102,7 @@ struct ConsoleUI: public UIBase
         // Try to begin ImGui, and if it fails, return early
         if (!ImGui::Begin(title, &visible))
         {
-            std::cout << "Begin Failed";
             ImGui::End();
-            //last_pause_state = ui_context.is_paused();
             return;
         }
         else
@@ -164,22 +156,21 @@ struct ConsoleUI: public UIBase
         
         // last_pause_state = ui_context.is_paused();
 
-        if (ui_context.input_delegate.last_pause_state == 0 && ui_context.is_paused() == 0)
+        if (!ui_context.input_delegate.was_paused() && !ui_context.is_paused())
         {
             // this is supposed to be called when the console opens
             ImGui::SetKeyboardFocusHere(); // Focus the next item (the InputText)
-            ui_context.input_delegate.last_pause_state = 1;
         }
         //}
 
 
         if (ImGui::InputText("Input", input_buffer, IM_ARRAYSIZE(input_buffer), ImGuiInputTextFlags_EnterReturnsTrue)) {
             std::string inputStr(input_buffer);
-            console_message message = { "", console_color::DEFAULT_TEXT };
-            interpreter.execute(inputStr, message);
-            if(message.message != "") add_log(message);
+            //console_message message = { "", console_color::DEFAULT_TEXT };
+            //interpreter.execute(inputStr, message);
+            //if(message.message != "") add_log(message);
+            run_command(inputStr);
             memset(input_buffer, 0, sizeof(input_buffer));
-            ui_context.input_delegate.last_pause_state = 0;
 
 
 
