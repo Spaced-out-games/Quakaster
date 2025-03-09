@@ -1,3 +1,5 @@
+
+/*
 #pragma once
 #include <gl/GL.h>
 #include <string>
@@ -122,3 +124,4 @@ private:
     GLuint colorAttachments[MAX_COLOR_ATTACHMENTS] = { 0 }; // Array of color attachments
     int numColorAttachments; // Number of active color attachments
 };
+*/
