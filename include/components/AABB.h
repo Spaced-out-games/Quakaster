@@ -1,5 +1,5 @@
 #pragma once
-#include <GL/glew.h>
+#include "glew_surrogate.h"
 #include <include/graphics/VAO.h>
 #include <include/graphics/VBO.h>
 #include <include/graphics/EBO.h>
@@ -18,7 +18,7 @@ namespace Quakaster::components {
 	// Code reused almost word-for-word from vector_visualizer
 	struct AABB: Component
 	{
-		AABB(glm::vec3& location) : location(location) {}
+		AABB(const glm::vec3& location) : location(location) {}
 
 
 
@@ -62,15 +62,15 @@ namespace Quakaster::components {
 			void tick(Scene& scene) override {
 				if (!Camera::get_target_camera()) return;
 
-				mesh.vao.bind();
-				AABB::mesh.shader->bind();
+				mesh.bind();
+				AABB::mesh.bind_shader();
 
 				auto view = scene.view<AABB>();
 				for (auto entity : view)
 				{
 					auto& visualizer = scene.get_component<AABB>(entity);
-					AABB::mesh.shader->operator[]("u_location") = visualizer.location;
-					AABB::mesh.shader->operator[]("u_dimensions") = visualizer.dimensions;
+					AABB::mesh["u_location"] = visualizer.location;
+					AABB::mesh["u_dimensions"] = visualizer.dimensions;
 
 					glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
 				}
@@ -85,7 +85,7 @@ namespace Quakaster::components {
 
 	private:
 		static inline Mesh mesh;
-		glm::vec3& location;
+		const glm::vec3& location;
 		glm::vec3 dimensions = { 1.5, 3.0, 1.5 };
 	};
 
