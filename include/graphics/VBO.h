@@ -3,7 +3,8 @@
 #include <vector>
 #include <cassert>
 #include <include/thirdparty/glm/glm.hpp>
-#include <GL/glew.h>
+#include "glew_surrogate.h"
+
 #include <include/graphics/gl_utils.h>
 
 class VBO {
@@ -32,42 +33,56 @@ public:
     template <typename vertex_t>
     void init(const std::vector<vertex_t>& vertices) {
         glGenBuffers(1, &vboID); // Generate a VBO
-        assert(vboID != 0 && "Failed to generate VBO"); // Ensure VBO is generated
-        // std::cerr << "VBO generated with ID: " << vboID << std::endl;
+        #ifdef PRINT_GL_ERROR
+            assert(vboID != 0 && "Failed to generate VBO"); // Ensure VBO is generated
+            std::cerr << "VBO generated with ID: " << vboID << std::endl;
+        #endif
 
         bind(); // Bind the VBO
 
         // Upload vertex data to the GPU
         glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(vertex_t), vertices.data(), GL_STATIC_DRAW);
-        // check_gl_error("glBufferData");
+        
 
         size = vertices.size();
-        // std::cerr << "Uploaded " << size << " vertices to VBO (ID: " << vboID << ")." << std::endl;
+        #ifdef PRINT_GL_ERROR
+            check_gl_error("glBufferData");
+            std::cerr << "Uploaded " << size << " vertices to VBO (ID: " << vboID << ")." << std::endl;
+        #endif
 
         // Set up vertex attribute pointers
-        // std::cerr << "Setting up vertex attribute pointers for VBO (ID: " << vboID << ")." << std::endl;
         vertex_t::set_pointers();
-        // check_gl_error("vertex_t::set_pointers");
+        #ifdef PRINT_GL_ERROR
+            std::cerr << "Setting up vertex attribute pointers for VBO (ID: " << vboID << ")." << std::endl;
+            check_gl_error("vertex_t::set_pointers");
+        #endif
     }
 
 
     ~VBO() {
         if (vboID != 0) {
             glDeleteBuffers(1, &vboID); // Cleanup
-            // std::cerr << "Deleted VBO (ID: " << vboID << ")." << std::endl;
+            #ifdef PRINT_GL_ERROR
+                check_gl_error("~VBO");
+                std::cerr << "Deleted VBO (ID: " << vboID << ")." << std::endl;
+            #endif
         }
     }
 
     void bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, vboID); // Bind the VBO
-        // check_gl_error("glBindBuffer");
-        // std::cerr << "Bound VBO (ID: " << vboID << ")." << std::endl;
+        #ifdef PRINT_GL_ERROR
+            check_gl_error("VBO::bind");
+            std::cerr << "Bound VBO (ID: " << vboID << ")." << std::endl;
+        #endif
     }
 
     static void unbind() {
         glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind any VBO
-        // check_gl_error("glBindBuffer (unbind)");
-        // std::cerr << "Unbound VBO." << std::endl;
+        #ifdef PRINT_GL_ERROR
+            check_gl_error("VBO::unbind");
+            std::cerr << "Unbound VBO." << std::endl;
+        #endif
     }
 
     // Static functions to set up attribute pointers
@@ -75,8 +90,10 @@ public:
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, stride, offset);
-        // check_gl_error("glVertexAttribPointer (vec3)");
-        // std::cerr << "Set vec3 attribute pointer at index " << index << "." << std::endl;
+        #ifdef PRINT_GL_ERROR
+            check_gl_error("VBO::add_vec3_pointer");
+            std::cerr << "Set vec3 attribute pointer at index " << index << "." << std::endl;
+        #endif
     }
 
     static void add_vec2_pointer(GLuint index, GLsizei stride, const void* offset) {
@@ -99,16 +116,20 @@ public:
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribPointer(index, 1, GL_FLOAT, GL_FALSE, stride, offset);
-        // check_gl_error("glVertexAttribPointer (float)");
-        // std::cerr << "Set float attribute pointer at index " << index << "." << std::endl;
+        #ifdef PRINT_GL_ERROR
+            check_gl_error("glVertexAttribPointer (float)");
+            std::cerr << "Set float attribute pointer at index " << index << "." << std::endl;
+        #endif
     }
 
     static void add_int_pointer(GLuint index, GLsizei stride, const void* offset) {
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribIPointer(index, 1, GL_INT, stride, offset);
-        // check_gl_error("glVertexAttribIPointer (int)");
-        // std::cerr << "Set int attribute pointer at index " << index << "." << std::endl;
+        #ifdef PRINT_GL_ERROR
+            check_gl_error("glVertexAttribIPointer (int)");
+            std::cerr << "Set int attribute pointer at index " << index << "." << std::endl;
+        #endif
     }
 
     GLsizei get_vertex_count() const { return size; }
