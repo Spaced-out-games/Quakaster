@@ -1,10 +1,8 @@
 #pragma once
 #include <SDL.h>
-#include <GL/glew.h>
-#include <GL/gl.h>
+#include <glew_surrogate.h>
 #include <filesystem>
 #include <include/thirdparty/entt.hpp>
-#include <iostream>
 #include <include/GameContext.h>
 ;
 static inline std::string root_directory = "D:/Quakaster/";
