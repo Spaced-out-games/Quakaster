@@ -1,9 +1,6 @@
 #pragma once
 #include <string>
-#include <backends/imgui_impl_sdl2.h>
-#include <backends/imgui_impl_opengl3.h>
-#include "imgui.h"
-#include <include/UI/UIContext.h> // Include UIContext before implementing methods
+#include <include/UI/UIContext.h>
 #include <include/UI/UIBase.h>
 
 
