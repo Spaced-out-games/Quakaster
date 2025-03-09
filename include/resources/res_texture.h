@@ -66,9 +66,10 @@ struct Texture
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
-	GLuint tex_ID;
-	GLenum texture_type;
-	int width;
-	int height;
-	int channel_count;
+	private:
+		GLuint tex_ID;
+		GLenum texture_type;
+		int width;
+		int height;
+		int channel_count;
 };
