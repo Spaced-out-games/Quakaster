@@ -6,11 +6,11 @@
 
 
 struct test_controller : Controller, Component {
-    Entity& entity;
+    
 
     inline MoveState& get_move_state() { return entity.get_component<MoveState>(); }
 
-    test_controller(EventHandler& event_handler, Entity& entity) : Controller(event_handler), entity(entity) {
+    test_controller(Entity& entity) : Controller(), entity(entity) {
         on_key_press.on_event = [&](KeyPressEvent evt) {
             auto& ms = get_move_state();
 
@@ -80,7 +80,7 @@ struct test_controller : Controller, Component {
 
             entity.get_component<Camera>().owner_transform.rotation = glm::normalize(yawQuat * entity.get_component<Camera>().owner_transform.rotation * pitchQuat);
         };
-
+        
     }
 
     // Updates velocity in accordance to move state
@@ -189,5 +189,7 @@ struct test_controller : Controller, Component {
 
     }
     
+    private:
+        Entity& entity;
 };
 
