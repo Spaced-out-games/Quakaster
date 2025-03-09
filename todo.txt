@@ -9,7 +9,16 @@
 - make CMake actually include recursively
 
 - get a proper renderer going (pooling)
+	Create a resource manager
+		struct mesh_state {
+			bool cache; // if true, stops auto-deletion of this resource; must be called explicitly
+			int refcount;
+		}
+		std::unordered_map<string, VAO>
+		std::unordered_map<VAO, mesh_state>
 
+	Make 'Mesh' more akin to an opaque handle. Maybe rename to MeshInstance since that's more correct
+		Stores VAO and transform index (uint32_t)
 - Optimize shit
 
 - Redesign the interpreter to just be a hashmap and stringstream (crazy idea, I know)
