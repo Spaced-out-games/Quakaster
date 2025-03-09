@@ -95,10 +95,7 @@ namespace Quakaster::entities {
 		// Additional operation to look at the target
 		inline void look_at(Entity& target) {
 			if (target.has<Transform>()) transform().look_at(target.get_component<Transform>().position);
-			else
-			{
-				__debugbreak();
-			}
+
 		}
 
 	};
