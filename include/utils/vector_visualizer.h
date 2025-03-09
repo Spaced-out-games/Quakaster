@@ -47,9 +47,8 @@ namespace Quakaster::components {
 			void tick(Scene& scene) override {
 				if (!Camera::get_target_camera()) return;
 
-				Shader& shader = vector_visualizer::mesh.shader;
-				mesh.vao.bind();
-				shader->bind();
+				mesh.bind();
+				mesh.bind_shader();
 
 				//show_uniforms(shader->program_ID);
 				auto view = scene.view<vector_visualizer>();
@@ -62,14 +61,14 @@ namespace Quakaster::components {
 
 					// std::cout << visualizer.transform.position.x;
 
-					shader->operator[]("u_model") = glm::translate(glm::mat4(1.0f), visualizer.transform.position + glm::vec3{ 0.0,-0.5f,0.0 });
+					mesh["u_model"] = glm::translate(glm::mat4(1.0f), visualizer.transform.position + glm::vec3{ 0.0,-0.5f,0.0 });
 
 					//shader->operator[]("u_proj") = glm::mat4(1.0);
 
 					//shader->operator[]("u_view"); // FIX MEEEEEE
 
-					if (scene.has<Scalar>(entity)) shader->operator[]("u_vector") = scene.get_component<vector_visualizer>(entity).vector * scene.get_component<Scalar>(entity).scale;
-					else shader->operator[]("u_vector") = scene.get_component<vector_visualizer>(entity).vector;
+					if (scene.has<Scalar>(entity)) mesh["u_vector"] = scene.get_component<vector_visualizer>(entity).vector * scene.get_component<Scalar>(entity);
+					else mesh["u_vector"] = scene.get_component<vector_visualizer>(entity).vector;
 
 
 					glDrawElements(GL_LINES, 8, GL_UNSIGNED_INT, 0);
