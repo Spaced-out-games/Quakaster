@@ -17,7 +17,7 @@ struct UIContext: public base::ISystem
     // -------------------------------------------------------- METHODS -------------------------------------------------------
 
 
-    UIContext(EventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window, InputDelegate& input_delegate);
+    UIContext(Renderer& renderer, Window& window, InputDelegate& input_delegate);
     ~UIContext()
     {
         for (size_t i = 0; i < elements.size(); i++)
@@ -56,18 +56,16 @@ struct UIContext: public base::ISystem
     void destroy(base::Scene&) override {}
 
     // Pauses to the console UI element
-    void pause() { input_delegate.is_paused ^= 1; }
+    void pause() { input_delegate.togglePause(); }
 
     inline void add_UIElement(UIBase* new_UIelement) { elements.push_back(new_UIelement); }
 
     
     // -------------------------------------------------------- MEMBERS -------------------------------------------------------
 
-    // For handling events
-    EventHandler& event_handler;
 
     // for interpreting console commands
-    ConsoleInterpreter& interpreter;
+    //ConsoleInterpreter& interpreter;
 
     InputDelegate& input_delegate;
 
@@ -84,7 +82,7 @@ struct UIContext: public base::ISystem
     Window& window;
 
     bool is_paused() {
-        bool b = input_delegate.is_paused;
+        bool b = input_delegate.is_paused();
         return b;
     }
 
@@ -93,10 +91,9 @@ struct UIContext: public base::ISystem
 
 #include <include/UI/ConsoleUI.h>
 
-UIContext::UIContext(EventHandler& event_handler, ConsoleInterpreter& interpreter, Renderer& renderer, Window& window, InputDelegate& input_delegate) : event_handler(event_handler), interpreter(interpreter),
-renderer(renderer),
+UIContext::UIContext(Renderer& renderer, Window& window, InputDelegate& input_delegate) : renderer(renderer),
 window(window), input_delegate(input_delegate)
 {
 
-    add_UIElement(new ConsoleUI{ interpreter, event_handler, *this });
+    add_UIElement(new ConsoleUI{ *this });
 }
