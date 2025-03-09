@@ -1,12 +1,12 @@
 #pragma once
-#include <GL/glew.h>
+#include "glew_surrogate.h"
 #include <include/graphics/VAO.h>
 #include <include/graphics/VBO.h>
 #include <include/graphics/EBO.h>
 #include <include/thirdparty/entt.hpp>
 #include <include/resources/res_shader.h>
 #include <include/components/camera.h>
-
+#include "mesh_manager.h"
 
 namespace Quakaster::components {
 
@@ -14,7 +14,7 @@ namespace Quakaster::components {
 	{
 
 		Mesh() {
-			default_constructed = 1;
+			//default_constructed = 1;
 		}
 
 		~Mesh() {
@@ -29,7 +29,6 @@ namespace Quakaster::components {
 		template <typename vertex_t>
 		Mesh(const std::vector<vertex_t>& vertices, const std::vector<uint32_t>& indices, std::string shader_name, std::string vertex_path, std::string fragment_path, GLenum primitive_type = GL_TRIANGLES) : shader(shader_name, vertex_path, fragment_path)
 		{
-			//std::cout << "test";
 			init<vertex_t>(vertices, indices, shader_name, vertex_path, fragment_path, primitive_type);
 		}
 
@@ -62,6 +61,8 @@ namespace Quakaster::components {
 		{
 			// No need for a universal initializer
 			void init(Scene&) override {}
+
+			// tick
 			void tick(Scene& scene) override {
 				auto view = scene.view<Mesh>();
 				for (auto entity : view)
@@ -106,17 +107,19 @@ namespace Quakaster::components {
 			}
 		};
 
-
-		void draw(Camera& camera)
-		{
-
+		inline shader_handle operator[](const std::string& uniformName) {
+			return shader->operator[](uniformName);
 		}
 
-		bool default_constructed = 0;
-		VAO vao;
-		VBO vbo;
-		EBO ebo;
-		Shader shader;
+		inline void bind() { vao.bind(); }
+		inline void unbind() { VAO::unbind(); }
+		inline void bind_shader() { shader->bind(); }
+		private:
+			VAO vao;
+			VBO vbo;
+			EBO ebo;
+			Shader shader;
+
 	};
 
 }
