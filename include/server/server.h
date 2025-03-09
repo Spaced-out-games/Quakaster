@@ -6,7 +6,7 @@
 
 struct Server
 {
-	ConsoleInterpreter interpreter;
+	//ConsoleInterpreter interpreter;
 	Scene scene;
 
 };
