@@ -2,6 +2,9 @@
 project(Engine_Demo VERSION 1.0 LANGUAGES CXX)
 
 
+# custom macros
+# add_definitions(-DPRINT_GL_ERROR)
+
 
 
 # set the C++ standard
@@ -75,7 +78,7 @@ file(GLOB_RECURSE HEADERS
 )
 
 # Combine source files from GLOB_RECURSE with the gathered headers
-add_executable(Engine_Demo ${SOURCES} ${HEADERS} "include/components/MoveState.h" "include/components/transform.cpp")
+add_executable(Engine_Demo ${SOURCES} ${HEADERS} )
 
 # Link libraries
 target_link_libraries(Engine_Demo
