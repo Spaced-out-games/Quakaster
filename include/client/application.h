@@ -12,6 +12,9 @@
 struct Application
 {
 public:
+	Application() {
+		check_gl_error("app");
+	}
 	/// <summary>
 	/// Runs the application
 	/// </summary>
@@ -58,7 +61,7 @@ public:
 		// Refreshes the screen
 		inline void refresh() const { SDL_GL_SwapWindow(window.sdl_window); }
 
-		Application() {}
+		
 
 		// Updates timing information for the current frame
 		inline void update_dt()

@@ -52,15 +52,15 @@ namespace Quakaster::entities {
 				0, 5, 4   // Flipped 5 and 4
 			};
 			add_component<ent_cube::tag>();
-			add_component<Mesh>(
-				vertices,
-				indices,
-				"default_shader",
-				"resources/shaders/default.vert",
-				"resources/shaders/default.frag"
-				);
-			add_component<Transform>();
-			add_component<Texture>("resources/images/atlas.png");
+			//add_component<Mesh>(
+		//		vertices,
+		//		indices,
+		//		"default_shader",
+		//		"resources/shaders/default.vert",
+		//		"resources/shaders/default.frag"
+		//		);
+		//	add_component<Transform>();
+		//	add_component<Texture>("resources/images/atlas.png");
 		}
 
 		static inline ent_cube& cast(Entity& ent) {
@@ -77,7 +77,7 @@ namespace Quakaster::entities {
 
 		// getters, setters, actions
 		inline Transform& transform() { return get_component<Transform>(); }
-		inline Mesh& mesh() { return get_component<Mesh>(); }
+		//inline Mesh& mesh() { return get_component<Mesh>(); }
 		inline Texture& texture() { return get_component<Texture>(); }
 
 

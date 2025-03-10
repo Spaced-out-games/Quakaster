@@ -9,7 +9,7 @@ struct Event {
     Event()
         : timestamp(std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch())) {
-        std::cout << timestamp.count() << " microseconds since epoch\n";
+        //std::cout << timestamp.count() << " microseconds since epoch\n";
     }
 
     template <typename T, typename... Args>

@@ -10,7 +10,7 @@
 
 class res_shader;
 
-extern std::string root_directory;
+
 
 class shader_handle {
 public:
@@ -169,7 +169,7 @@ public:
     GLuint get_program_ID() const { return program_ID; }
 
     static std::string load_source(const std::string& source_path) {
-        std::ifstream shader_file(std::string(root_directory + source_path));
+        std::ifstream shader_file(std::string(ROOT_DIRECTORY + source_path));
         if (!shader_file.is_open()) {
             return "";
         }

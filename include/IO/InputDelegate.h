@@ -90,7 +90,7 @@ void InputDelegate::tick(Scene& scene) {
 			return;
 		}
 
-		LOG(is_paused() << '\n');
+		//LOG(is_paused() << '\n');
 
 		// Forward it to ImGui
 		ImGui_ImplSDL2_ProcessEvent(&event);

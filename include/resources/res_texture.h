@@ -7,43 +7,45 @@
 #include <include/thirdparty/stb_image.h>
 #include <include/resources/res_shader.h>
 
-extern std::string root_directory;
 
 
 
 
 struct Texture
 {
-	Texture(std::string path, GLenum texture_type = GL_TEXTURE_2D): texture_type(texture_type)
+	Texture() = default;
+	Texture(std::string path, GLenum texture_type = GL_TEXTURE_2D) { init(path, texture_type); }
+	void init(std::string path, GLenum texture_type = GL_TEXTURE_2D)
 	{
-		glGenTextures(1, &tex_ID);
-		glBindTexture(texture_type, tex_ID);
+		mTextype = texture_type;
+		glGenTextures(1, &mTexID);
+		glBindTexture(texture_type, mTexID);
 		
-		// Wrapping and filtering
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		// Wrapping and filtering. Needs to be more flexible and actually use convars
+		glTexParameteri(mTextype, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(mTextype, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(mTextype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0); // Lowest level
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 4);  // Highest level
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(mTextype, GL_TEXTURE_BASE_LEVEL, 0); // Lowest level
+		glTexParameteri(mTextype, GL_TEXTURE_MAX_LEVEL, 4);  // Highest level
+		glTexParameteri(mTextype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(mTextype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glGenerateMipmap(GL_TEXTURE_2D);
+		glGenerateMipmap(mTextype);
 
 
-		path = root_directory + path;
+		path = std::string(ROOT_DIRECTORY) + path;
 
 		// load into RAM
-		unsigned char* data = stbi_load(path.c_str(), &width, &height, &channel_count, 0);
+		unsigned char* data = stbi_load(path.c_str(), &mWidth, &mHeight, &mChannelCount, 0);
 
 		if (data)
 		{
 			// get the right format
-			GLenum format = (channel_count == 4) ? GL_RGBA : GL_RGB;
+			GLenum format = (mChannelCount == 4) ? GL_RGBA : GL_RGB;
 
 			// Pass data to OpenGL
-			glTexImage2D(texture_type, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(mTextype, 0, format, mWidth, mHeight, 0, format, GL_UNSIGNED_BYTE, data);
 		}
 		else
 		{
@@ -58,7 +60,7 @@ struct Texture
 	}
 	void bind()
 	{
-		glBindTexture(texture_type, tex_ID);
+		glBindTexture(mTextype, mTexID);
 	}
 
 	static void unbind()
@@ -67,9 +69,9 @@ struct Texture
 	}
 
 	private:
-		GLuint tex_ID;
-		GLenum texture_type;
-		int width;
-		int height;
-		int channel_count;
+		GLuint mTexID = 0;
+		GLenum mTextype = GL_TEXTURE_2D;
+		int mWidth = 0;
+		int mHeight = 0;
+		int mChannelCount = 3;
 };

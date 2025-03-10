@@ -18,7 +18,7 @@ namespace Quakaster::entities {
 
 			// Holds the orientation of the player
 			add_component<Transform>();
-			add_component<Camera>(get_component<Transform>(), fov);
+			add_component<Camera>(get_component<Transform>());
 			add_component<AABB>(get_component<Transform>().position);
 			add_component<Scalar>(0.02,0.02,0.02);
 			// set up the camera

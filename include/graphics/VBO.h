@@ -23,12 +23,12 @@ public:
     }
 
     // Deleted copy constructor and copy assignment operator
-    VBO(const VBO&) = delete;
-    VBO& operator=(const VBO&) = delete;
+    //VBO(const VBO&) = delete;
+    //VBO& operator=(const VBO&) = delete;
 
     // Deleted move constructor and move assignment operator
-    VBO(VBO&&) = delete;
-    VBO& operator=(VBO&&) = delete;
+    //VBO(VBO&&) = delete;
+    //VBO& operator=(VBO&&) = delete;
 
     template <typename vertex_t>
     void init(const std::vector<vertex_t>& vertices) {
@@ -51,7 +51,7 @@ public:
         #endif
 
         // Set up vertex attribute pointers
-        vertex_t::set_pointers();
+        //vertex_t::set_pointers(); // this was enabled pre-graphics update
         #ifdef PRINT_GL_ERROR
             std::cerr << "Setting up vertex attribute pointers for VBO (ID: " << vboID << ")." << std::endl;
             check_gl_error("vertex_t::set_pointers");
@@ -86,7 +86,7 @@ public:
     }
 
     // Static functions to set up attribute pointers
-    static void add_vec3_pointer(GLuint index, GLsizei stride, const void* offset) {
+    static void add_vec3_pointer(GLuint& index, GLsizei stride, const void* offset) {
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribPointer(index, 3, GL_FLOAT, GL_FALSE, stride, offset);
@@ -94,9 +94,10 @@ public:
             check_gl_error("VBO::add_vec3_pointer");
             std::cerr << "Set vec3 attribute pointer at index " << index << "." << std::endl;
         #endif
+        index++;
     }
 
-    static void add_vec2_pointer(GLuint index, GLsizei stride, const void* offset) {
+    static void add_vec2_pointer(GLuint& index, GLsizei stride, const void* offset) {
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribPointer(index, 2, GL_FLOAT, GL_FALSE, stride, offset);
@@ -104,15 +105,16 @@ public:
         // std::cerr << "Set vec2 attribute pointer at index " << index << "." << std::endl;
     }
 
-    static void add_vec4_pointer(GLuint index, GLsizei stride, const void* offset) {
+    static void add_vec4_pointer(GLuint& index, GLsizei stride, const void* offset) {
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribPointer(index, 4, GL_FLOAT, GL_FALSE, stride, offset);
         // check_gl_error("glVertexAttribPointer (vec4)");
         // std::cerr << "Set vec4 attribute pointer at index " << index << "." << std::endl;
+        index++;
     }
 
-    static void add_float_pointer(GLuint index, GLsizei stride, const void* offset) {
+    static void add_float_pointer(GLuint& index, GLsizei stride, const void* offset) {
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribPointer(index, 1, GL_FLOAT, GL_FALSE, stride, offset);
@@ -120,9 +122,11 @@ public:
             check_gl_error("glVertexAttribPointer (float)");
             std::cerr << "Set float attribute pointer at index " << index << "." << std::endl;
         #endif
+        index++;
+
     }
 
-    static void add_int_pointer(GLuint index, GLsizei stride, const void* offset) {
+    static void add_int_pointer(GLuint& index, GLsizei stride, const void* offset) {
         glEnableVertexAttribArray(index);
         // check_gl_error("glEnableVertexAttribArray");
         glVertexAttribIPointer(index, 1, GL_INT, stride, offset);
@@ -130,6 +134,8 @@ public:
             check_gl_error("glVertexAttribIPointer (int)");
             std::cerr << "Set int attribute pointer at index " << index << "." << std::endl;
         #endif
+        index++;
+
     }
 
     GLsizei get_vertex_count() const { return size; }
@@ -144,8 +150,8 @@ private:
 struct default_vertex_t {
     glm::vec3 position; // Explicit member for position
 
-    static void set_pointers() {
-        VBO::add_vec3_pointer(0, sizeof(default_vertex_t), (void*)offsetof(default_vertex_t, position));
+    static void set_pointers(GLuint& index) {
+        VBO::add_vec3_pointer(index, sizeof(default_vertex_t), (void*)offsetof(default_vertex_t, position));
         // std::cerr << "Default vertex pointer set for position (vec3)." << std::endl;
     }
 };

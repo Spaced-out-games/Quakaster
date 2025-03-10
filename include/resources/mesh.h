@@ -9,7 +9,7 @@
 #include "mesh_manager.h"
 
 namespace Quakaster::components {
-
+	/*
 	struct Mesh
 	{
 
@@ -121,7 +121,7 @@ namespace Quakaster::components {
 			Shader shader;
 
 	};
-
+	*/
 }
 
-using Mesh = Quakaster::components::Mesh;
+//using Mesh = Quakaster::components::Mesh;

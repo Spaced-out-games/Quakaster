@@ -21,7 +21,7 @@ namespace Quakaster::components {
 		const glm::vec3& vector;
 		Transform& transform;
 		
-
+		/*
 		struct system : ISystem {
 			void init(Scene& scene) override {
 				std::vector<default_vertex_t> vertices = {
@@ -79,7 +79,7 @@ namespace Quakaster::components {
 			void destroy(Scene& scene) override {
 
 			}
-		};
+		};*/
 
 
 
@@ -90,7 +90,7 @@ namespace Quakaster::components {
 		//static Shader shader;
 
 		// This will be excluded from mesh::draw_all, since this isn't registered in any entt::registry ; )
-		static Mesh mesh;
+		//static Mesh mesh;
 	};
 }
 
@@ -98,5 +98,5 @@ using vector_visualizer = Quakaster::components::vector_visualizer;
 
 
 //Shader vector_visualizer::shader;
-Mesh vector_visualizer::mesh;
+//Mesh vector_visualizer::mesh;
 

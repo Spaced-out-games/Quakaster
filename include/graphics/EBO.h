@@ -11,14 +11,14 @@
 class EBO {
 public:
     // Deleted copy constructor and copy assignment operator
-    EBO(const EBO&) = delete;
-    EBO& operator=(const EBO&) = delete;
+    //EBO(const EBO&) = delete;
+    //EBO& operator=(const EBO&) = delete;
 
     // Deleted move constructor and move assignment operator
-    EBO(EBO&&) = delete;
-    EBO& operator=(EBO&&) = delete;
+    //EBO(EBO&&) = delete;
+    //EBO& operator=(EBO&&) = delete;
     
-    EBO() {}
+    EBO() = default;
 
     EBO(const std::vector<uint32_t>& indices) {
         init(indices);

@@ -59,12 +59,12 @@ public:
     }
 
     // Deleted copy constructor and copy assignment operator
-    VAO(const VAO&) = delete;
-    VAO& operator=(const VAO&) = delete;
+    //VAO(const VAO&) = delete;
+    //VAO& operator=(const VAO&) = delete;
 
     // Deleted move constructor and move assignment operator
-    VAO(VAO&&) = delete;
-    VAO& operator=(VAO&&) = delete;
+    //VAO(VAO&&) = delete;
+    //VAO& operator=(VAO&&) = delete;
 
     // Primitive type for drawing (e.g., GL_TRIANGLES, GL_LINES)
     GLenum primitive_type = GL_TRIANGLES;

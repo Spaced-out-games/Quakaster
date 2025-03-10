@@ -23,7 +23,7 @@ namespace Quakaster::components {
 
 
 		
-
+		/*
 		struct system: ISystem {
 			void init(Scene& scene) override {
 				std::vector<default_vertex_t> vertices = {
@@ -81,10 +81,10 @@ namespace Quakaster::components {
 				AABB::mesh.~Mesh();
 			}
 		};
-
+		*/
 
 	private:
-		static inline Mesh mesh;
+		//static inline Mesh mesh;
 		const glm::vec3& location;
 		glm::vec3 dimensions = { 1.5, 3.0, 1.5 };
 	};
