@@ -43,9 +43,6 @@ struct Renderer
 
 	}
 
-	void init()
-	{
-		set_cull_mode();
-	}
+	void init() {}
 	
 };
