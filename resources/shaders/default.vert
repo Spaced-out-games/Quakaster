@@ -1,12 +1,12 @@
 #version 330 core
-layout(location = 0) in vec3 aPos;
+
 uniform mat4 u_view;
 uniform mat4 u_proj;
-layout(location = 3) in vec4 instanceTransform1; // First column of the instance matrix
-layout(location = 4) in vec4 instanceTransform2; // Second column of the instance matrix
-layout(location = 5) in vec4 instanceTransform3; // Third column of the instance matrix
-layout(location = 6) in vec4 instanceTransform4; // Fourth column of the instance matrix
-
+layout(location = 0) in vec4 instanceTransform1; // First column of the instance matrix
+layout(location = 1) in vec4 instanceTransform2; // Second column of the instance matrix
+layout(location = 2) in vec4 instanceTransform3; // Third column of the instance matrix
+layout(location = 3) in vec4 instanceTransform4; // Fourth column of the instance matrix
+layout(location = 4) in vec3 aPos;
 out vec2 TexCoord;
 
 void main() {

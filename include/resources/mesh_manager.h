@@ -103,7 +103,7 @@ struct MeshManager {
 		std::string shader_name,
 		std::string vertex_path,
 		std::string fragment_path,
-		uint32_t num_instances = 5, // allocate matrices for 1024 instances
+		uint32_t num_instances = 5,
 		GLenum primitive_type = GL_TRIANGLES
 	) {
 		// check for the existence of this mesh already existing, but we will skip it for now
@@ -113,62 +113,58 @@ struct MeshManager {
 			return MeshInstance(vao, info.next_instance_index++);
 
 		}
-
-
-		// generate the VAO
-		GLuint vertex_pointer_index = 0;
+		std::vector<glm::mat4> modelMatrices(num_instances, glm::mat4(1.0f));
+		GLuint vertex_pointer_index;
+		// init the vao
 		GLuint vao;
+
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 
-
-		// set up the hash maps and mesh counts
-		info_map[vao] = MeshInfo{}; // default MeshInfo for now
-		MeshInfo& info = info_map[vao];
-		info.vertex_count = vertices.size();
-		info.index_count = indices.size();
+		// set up human-readible associations
 		name_map[name] = vao;
+		info_map[vao].index_count = indices.size();
+		info_map[vao].vertex_count = vertices.size();
+		info_map[vao].primitive_type = primitive_type;
+		info_map[vao].capacity = num_instances;
 
+		// might want to remove these
+		info_map[vao].shader.init(shader_name, vertex_path, fragment_path);
+		info_map[vao].texture = new Texture(std::string("resources/images/atlas.png"));
+		
+		// initialize instance buffer
+		info_map[vao].instance_matrix_buffer.init(modelMatrices);
+		info_map[vao].instance_matrix_buffer.bind();
 
-
-		// identity matrices
-		std::vector<glm::mat4> modelMatrices(num_instances, glm::mat4(1.0f));
-
-		// bind the instance buffer VBO
-		info.instance_matrix_buffer.init(modelMatrices);
-		info.instance_matrix_buffer.bind();
-
-		for (unsigned int i = 0; i < 4; i++) {
-			glVertexAttribPointer(3 + i, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(i * 4 * sizeof(float)));
-			glEnableVertexAttribArray(3 + i);
-			glVertexAttribDivisor(3 + i, 1); // Update per instance
+		// and its pointers
+		for (vertex_pointer_index = 0; vertex_pointer_index < 4; vertex_pointer_index++) {
+			glVertexAttribPointer(vertex_pointer_index, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(vertex_pointer_index * 4 * sizeof(float)));
+			glEnableVertexAttribArray(vertex_pointer_index);
+			glVertexAttribDivisor(vertex_pointer_index, 1); // Update per instance
+			std::cout << vertex_pointer_index;
 		}
 
+		
 
-
-		info.capacity = num_instances;
 
 		// bind vbo
-		info.vbo.init(vertices);
-		info.vbo.bind();
+		info_map[vao].vbo.init(vertices);
+		info_map[vao].vbo.bind();
 
 		// bind ebo
-		info.ebo.init(indices);
-		info.ebo.bind();
+		info_map[vao].ebo.init(indices);
+		info_map[vao].ebo.bind();
 
 
 		vertex_t::set_pointers(vertex_pointer_index); // set the pointers for the custom vertex type
 
 
-		// we are rendering this type of primitive
-		info.primitive_type = primitive_type;
-		info.shader.init(shader_name, vertex_path, fragment_path); // FIX ME LATER, AND ACTUALLY, PERHAPS REMOVE!!!
-		info.texture = new Texture(std::string("resources/images/atlas.png")); // FIX ME LATER, AND ACTUALLY, PERHAPS REMOVE!!!
+
 
 		// unbind the VAO only
 		VAO::unbind();
 
-		return MeshInstance(vao, info.next_instance_index++);
+		return MeshInstance(vao, info_map[vao].next_instance_index++);
 
 
 	}
