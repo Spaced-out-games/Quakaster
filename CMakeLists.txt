@@ -48,8 +48,9 @@ link_directories(
     ${GLEW_ROOT}/lib/Release/x64
 )
 
-# Add definitions
-add_definitions(-DSDL_MAIN_HANDLED -DGLEW_STATIC)
+# Add definitions 
+add_definitions(-DSDL_MAIN_HANDLED -DGLEW_STATIC -DROOT_DIRECTORY="${CMAKE_SOURCE_DIR}/")
+
 
 # Find OpenGL
 find_package(OpenGL REQUIRED)
@@ -58,6 +59,7 @@ find_package(OpenGL REQUIRED)
 # list all directories where *.cpp files are located
 file(GLOB_RECURSE SOURCES
     ${CMAKE_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_SOURCE_DIR}/include/components/*.cpp
 )
 
 # Add ImGui sources
