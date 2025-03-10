@@ -83,7 +83,6 @@ struct GameContext : Application
 
 
 		
-		/*
 		auto a = MeshManager::generate_mesh (
 					"cube",
 					vertices,
@@ -91,7 +90,10 @@ struct GameContext : Application
 					"default_shader",
 					"resources/shaders/default.vert",
 					"resources/shaders/default.frag"
-		);*/
+		);
+
+		MeshManager::submit(a.vao, a.transform_index, glm::translate(glm::mat4(1.1), {0.0,10.0,0.0}));
+		
 
 		// Initialize the app state
 		cl.add_system<InputDelegate>();
@@ -125,6 +127,8 @@ struct GameContext : Application
 			update_dt();
 			glClear(GL_COLOR_BUFFER_BIT);
 			cl.tick_all();
+			draw_all_meshes();
+
 			entities[0]->get_component<Camera>().owner_transform.position += entities[0]->get_component<MoveState>().velocity() * Application::get_deltaTime();
 			refresh();
 		}
