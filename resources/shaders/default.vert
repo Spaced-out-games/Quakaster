@@ -2,12 +2,16 @@
 layout(location = 0) in vec3 aPos;
 uniform mat4 u_view;
 uniform mat4 u_proj;
-uniform mat4 u_model;
-uniform vec3 u_scale = vec3(1.0f,1.0f,5.0f);
+layout(location = 3) in vec4 instanceTransform1; // First column of the instance matrix
+layout(location = 4) in vec4 instanceTransform2; // Second column of the instance matrix
+layout(location = 5) in vec4 instanceTransform3; // Third column of the instance matrix
+layout(location = 6) in vec4 instanceTransform4; // Fourth column of the instance matrix
 
 out vec2 TexCoord;
 
 void main() {
-    gl_Position = u_proj * u_view * u_model *  vec4(u_scale * aPos, 1.0);
+    mat4 instanceMatrix = mat4(instanceTransform1, instanceTransform2, instanceTransform3, instanceTransform4);
+
+    gl_Position = u_proj * u_view * instanceMatrix *  vec4(aPos, 1.0);
     TexCoord = aPos.xz / 10;
 }
