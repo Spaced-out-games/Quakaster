@@ -15,9 +15,13 @@
 struct MeshInfo {
 	MeshInfo() = default;
 
-	// the model info
+	// the model info. VAO is in the hash maps
 	VBO vbo;
 	EBO ebo;
+
+	// make sure to keep a VBO with the matrices on standby
+	VBO instance_matrix_buffer;
+
 
 	// What type of mesh this is
 	GLenum primitive_type = GL_TRIANGLES;
@@ -31,16 +35,15 @@ struct MeshInfo {
 	bool cache = 0;
 
 	// Which index the next instance of this mesh will have in the model matrix array
-	uint32_t next_instance_index = 0; 
+	uint32_t next_instance_index = 0;
 
-	// make sure to keep a VBO with the matrices on standby
-	VBO instance_matrix_buffer;
+
 
 	// the shader // TODO: make it use deffered rendering; make albedo_shader, etc etc eventually
 	Shader shader; //
 
 	// the texture // TODO: make it use deffered rendering; make albedo_texture, etc etc eventually
-	Texture texture; //
+	Texture* texture = nullptr; //
 
 	// self explanatory
 	size_t vertex_count = 0; //
@@ -53,7 +56,7 @@ struct MeshInfo {
 };
 
 struct MeshInstance {
-	
+
 	void bind() const { glBindVertexArray(vao); }
 	static void unbind() { glBindVertexArray(0); }
 
@@ -66,14 +69,14 @@ struct MeshInstance {
 	//MeshInstance(MeshInstance&&) = delete;
 	//MeshInstance& operator(MeshInstance&&) = delete;
 
-	private:
-		// cannot be constructed except by MeshManager
-		friend class MeshManager;
-		MeshInstance() = default;
-		MeshInstance(GLuint vao, uint32_t transform_index) : vao(vao), transform_index(transform_index) {}
+private:
+	// cannot be constructed except by MeshManager
+	friend class MeshManager;
+	MeshInstance() = default;
+	MeshInstance(GLuint vao, uint32_t transform_index) : vao(vao), transform_index(transform_index) {}
 
-		GLuint vao = 0; // no harm no foul copy of it
-		uint32_t transform_index = 0; // okay maybe some foul
+	GLuint vao = 0; // no harm no foul copy of it
+	uint32_t transform_index = 0; // okay maybe some foul
 
 };
 
@@ -84,6 +87,17 @@ struct MeshManager {
 	static inline std::unordered_map<GLuint, MeshInfo> info_map;
 
 
+	static void submit(GLuint vao, size_t instance_index, const glm::mat4& matrix) {
+
+		glBindVertexArray(vao);
+		// get the right vbo
+		GLuint vbo = info_map[vao].instance_VBO;
+
+
+		glBindBuffer(GL_ARRAY_BUFFER, vbo);
+		glBufferSubData(GL_ARRAY_BUFFER, instance_index * sizeof(glm::mat4), sizeof(glm::mat4), &matrix);
+	}
+
 	template <typename vertex_t = default_vertex_t>
 	static MeshInstance generate_mesh(
 		const std::string& name,
@@ -92,11 +106,18 @@ struct MeshManager {
 		std::string shader_name,
 		std::string vertex_path,
 		std::string fragment_path,
-		uint32_t num_instances = 1024, // allocate matrices for 1024 instances
+		uint32_t num_instances = 1, // allocate matrices for 1024 instances
 		GLenum primitive_type = GL_TRIANGLES
 	) {
 		// check for the existence of this mesh already existing, but we will skip it for now
-		check_gl_error("a");
+		if (name_map.find(name) != name_map.end()) {
+			GLuint& vao = name_map[name];
+			MeshInfo& info = info_map[vao];
+			return MeshInstance(vao, info.next_instance_index++);
+
+		}
+
+
 		// generate the VAO
 		GLuint vertex_pointer_index = 0;
 		GLuint vao;
@@ -135,11 +156,11 @@ struct MeshManager {
 
 		info.capacity = num_instances;
 
-
 		// bind vbo
 		info.vbo.init(vertices);
 		info.vbo.bind();
 
+		check_gl_error("e");
 		// bind ebo
 		info.ebo.init(indices);
 		info.ebo.bind();
@@ -148,22 +169,41 @@ struct MeshManager {
 
 		vertex_t::set_pointers(vertex_pointer_index); // set the pointers for the custom vertex type
 
-		
+		check_gl_error("g");
 
 		// we are rendering this type of primitive
 		info.primitive_type = primitive_type;
 		info.shader.init(shader_name, vertex_path, fragment_path); // FIX ME LATER, AND ACTUALLY, PERHAPS REMOVE!!!
-		info.texture.init(std::string("resources/images/atlas.png")); // FIX ME LATER, AND ACTUALLY, PERHAPS REMOVE!!!
+		info.texture = new Texture(std::string("resources/images/atlas.png")); // FIX ME LATER, AND ACTUALLY, PERHAPS REMOVE!!!
 
-
+		check_gl_error("h");
 
 		// unbind the VAO only
 		VAO::unbind();
 
-		
+		check_gl_error("i");
 
 		return MeshInstance(vao, info.next_instance_index++);
+
+
 	}
 
 };
 
+void draw_all_meshes() {
+	for (const auto& pair : MeshManager::info_map) {
+
+		// bind the shader
+		pair.second.shader->bind();
+		// and texture
+		pair.second.texture->bind();
+
+		// don't set u_model this time.
+
+		// Bind the VAO
+		glBindVertexArray(pair.first);
+		// draw em
+		glDrawElementsInstanced(pair.second.primitive_type, pair.second.index_count, GL_UNSIGNED_INT, nullptr, pair.second.next_instance_index);
+
+	}
+}
