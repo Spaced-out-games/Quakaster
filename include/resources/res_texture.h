@@ -63,8 +63,7 @@ struct Texture
 		glBindTexture(mTextype, mTexID);
 	}
 
-	static void unbind()
-	{
+	static void unbind() {
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
