@@ -13,7 +13,6 @@ struct Application
 {
 public:
 	Application() {
-		check_gl_error("app");
 	}
 	/// <summary>
 	/// Runs the application
