@@ -1,10 +1,11 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec2 TexCoord;
+in vec2 TexCoord; // The texture coordinates passed from the vertex shader
 
-uniform sampler2D screenTexture;
+uniform sampler2D texture_0; // Sampler for the texture bound to GL_TEXTURE0
 
 void main() {
-    FragColor = vec4(TexCoord.x,TexCoord.y,1.0f,1.0f);
+    // Sample the texture at the provided texture coordinates
+    FragColor = texture(texture_0, TexCoord); // vec4(1.0,1.0,1.0,1.0);
 }

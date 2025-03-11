@@ -12,6 +12,7 @@ layout(std140) uniform CameraUBO{
     float time;
     float delta_time;
 };*/
+
 layout(std140) uniform Globals {
     mat4 view;
     mat4 projection;

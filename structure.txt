@@ -1,0 +1,19 @@
+GameContext
+   
+    entt::dispatcher
+    Application
+        Window
+            Renderer
+         Server
+             entt::resource_cache
+             ConsoleInterpreter
+             Scene
+                 
+         Client
+             entt::resource_cache
+             Scene(partial copy from server)
+             Console
+             Controller
+                SDL_Event
+         UIContext
+             ConsoleUI

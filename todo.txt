@@ -1,32 +1,34 @@
-- Add graphical components
-	- Texture
-		- Texture2D
-		- Texture3D
-	- Mesh
-		- Primitive2D
-			- Sprite (2D rectangular shape)
-				-Sprite2D 
-				-Sprite3D
-		- Primitive3D
-			- Cube
-			- Sphere
-			- Line
-			- AxisMesh (strictly for debugging)
-		- SkeletalMesh <Skeleton>
+- Make everything const correct
 
-- Skeleton
+- Add .cpp files, move code there
 
-- Add camera (Has a target texture to draw to)
-	- Camera2D (no projection matrix, just a 3x3 view matrix)
-	- Camera3D
-- Add some basic entities (eg, spawner, button)
-- Add event system
-	- Can build off of SDL's
-- Add IO handling
-	- Controller class, takes in an Entity&<Position, Rotation, Camera>
-- Port back all the shit from the old version of the engine
-- Work on a physics system
-	- AABB
-	- Velocity
-	- Position
-	- Rotation doesn't matter in this engine, it's AABB's for christ's sake
+- Compile the engine into a .lib
+
+- use better paths, dipshit
+
+- make CMake actually include recursively
+
+- get a proper renderer going (pooling)
+	Create a resource manager
+		struct mesh_state {
+			bool cache; // if true, stops auto-deletion of this resource; must be called explicitly
+			int refcount;
+		}
+		std::unordered_map<string, VAO>
+		std::unordered_map<VAO, mesh_state>
+
+	Make 'Mesh' more akin to an opaque handle. Maybe rename to MeshInstance since that's more correct
+		Stores VAO and transform index (uint32_t)
+- Optimize shit
+
+- Redesign the interpreter to just be a hashmap and stringstream (crazy idea, I know)
+
+- Create ConVar type
+
+- Create a client-side and server-side copy of these
+
+- Protected server-side convars are not accessible via client console
+
+- Protected client-side convars are not accessible via server console
+
+- Make ent_cube actually use the Transform component and Scalar component (do this through Mesh)
