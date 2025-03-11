@@ -24,13 +24,7 @@ struct GameContext : Application
 	GameContext()
 	{
 
-		//if (input_delegate.IOHandler == nullptr) { input_delegate.init(); }
-		//sv.interpreter.add_convar("game_running", status);
-		//sv.interpreter.add_command("quit", GameContext::quit);
-		//sv.interpreter.add_command("exit", GameContext::quit); // alias
 
-		//sv.interpreter.add_convar("bg_color_value", bg_color, false);
-		//sv.interpreter.add_command("bg_color", bg_color_fn);
 
 
 
@@ -82,19 +76,28 @@ struct GameContext : Application
 		};
 
 
-		
-		auto a = MeshManager::generate_mesh (
-					"cube",
-					vertices,
-					indices,
-					"default_shader",
-					"resources/shaders/default.vert",
-					"resources/shaders/default.frag"
+
+		auto a = MeshManager::generate_mesh(
+			"cube",
+			vertices,
+			indices,
+			"default_shader",
+			"resources/shaders/default.vert",
+			"resources/shaders/default.frag"
 		);
 
-		MeshManager::submit(a.vao, a.transform_index, glm::translate(glm::mat4(1.1), {0.0,10.0,0.0}));
-		
+		auto b = MeshManager::generate_mesh(
+			"cube",
+			vertices,
+			indices,
+			"default_shader",
+			"resources/shaders/default.vert",
+			"resources/shaders/default.frag"
+		);
 
+		//a.submit(glm::translate(glm::mat4(1.0), {0.0, 10.0, 0.0}));
+		
+		//std::cout << MeshManager::info_map[a.vao].last_instance->transform_index;
 		// Initialize the app state
 		cl.add_system<InputDelegate>();
 		//cl.add_system<Mesh::system>();
