@@ -138,6 +138,31 @@ public:
 
     }
 
+    static void add_mat4_pointer(GLuint index, GLsizei stride, const void* offset) {
+        // Enable the first vec4 component of the mat4
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index, 4, GL_FLOAT, GL_FALSE, stride, offset); // First column
+        index++;
+
+        // Enable the second vec4 component of the mat4
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index, 4, GL_FLOAT, GL_FALSE, stride,
+            static_cast<const void*>(static_cast<const char*>(offset) + sizeof(glm::vec4))); // Second column
+        index++;
+
+        // Enable the third vec4 component of the mat4
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index, 4, GL_FLOAT, GL_FALSE, stride,
+            static_cast<const void*>(static_cast<const char*>(offset) + 2 * sizeof(glm::vec4))); // Third column
+        index++;
+
+        // Enable the fourth vec4 component of the mat4
+        glEnableVertexAttribArray(index);
+        glVertexAttribPointer(index, 4, GL_FLOAT, GL_FALSE, stride,
+            static_cast<const void*>(static_cast<const char*>(offset) + 3 * sizeof(glm::vec4))); // Fourth column
+        index++;
+    }
+
     GLsizei get_vertex_count() const { return size; }
 
 private:
@@ -152,6 +177,5 @@ struct default_vertex_t {
 
     static void set_pointers(GLuint& index) {
         VBO::add_vec3_pointer(index, sizeof(default_vertex_t), (void*)offsetof(default_vertex_t, position));
-        // std::cerr << "Default vertex pointer set for position (vec3)." << std::endl;
     }
 };
