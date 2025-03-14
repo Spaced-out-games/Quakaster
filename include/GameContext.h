@@ -9,6 +9,7 @@
 #include <include/entities/ent_player.h>
 #include <include/server/server.h>
 #include <include/base/logging.h>
+#include <include/UI/Spedometer.h>
 
 //#include <include/server/interpreter/Convar.h>
 
@@ -44,95 +45,40 @@ struct GameContext : Application
 
 
 	int run() override {
-		std::vector<default_vertex_t> vertices = {
-				{{0.0f, 0.0f, 0.0f}},  // Vertex 0: Bottom-left-back
-				{{100.0f, 0.0f, 0.0f}},  // Vertex 1: Bottom-right-back
-				{{100.0f, 1.0f, 0.0f}},  // Vertex 2: Top-right-back
-				{{0.0f, 1.0f, 0.0f}},  // Vertex 3: Top-left-back
-				{{0.0f, 0.0f, 100.0f}},  // Vertex 4: Bottom-left-front
-				{{100.0f, 0.0f, 100.0f}},  // Vertex 5: Bottom-right-front
-				{{100.0f, 1.0f, 100.0f}},  // Vertex 6: Top-right-front
-				{{0.0f, 1.0f, 100.0f}},  // Vertex 7: Top-left-front
-		};
-		std::vector<uint32_t> indices = {
-			// Back face
-			0, 2, 1,  // Flipped 2 and 1
-			0, 3, 2,  // Flipped 3 and 2
-			// Front face
-			5, 6, 4,  // Flipped 6 and 4
-			6, 7, 4,  // Flipped 7 and 4
-			// Left face
-			0, 7, 3,  // Flipped 7 and 3
-			0, 4, 7,  // Flipped 4 and 7
-			// Right face
-			1, 6, 5,  // Flipped 6 and 5
-			1, 2, 6,  // Flipped 2 and 6
-			// Top face
-			3, 6, 2,  // Flipped 6 and 2
-			3, 7, 6,  // Flipped 7 and 6
-			// Bottom face
-			0, 1, 5,  // Flipped 1 and 5
-			0, 5, 4   // Flipped 5 and 4
-		};
+		
 
-
-
-		auto a = MeshManager::generate_mesh(
-			"cube",
-			vertices,
-			indices,
-			"default_shader",
-			"resources/shaders/default.vert",
-			"resources/shaders/default.frag"
-		);
-
-		auto b = MeshManager::generate_mesh(
-			"cube",
-			vertices,
-			indices,
-			"default_shader",
-			"resources/shaders/default.vert",
-			"resources/shaders/default.frag"
-		);
-
-		//a.submit(glm::translate(glm::mat4(1.0), {0.0, 10.0, 0.0}));
 		
 		//std::cout << MeshManager::info_map[a.vao].last_instance->transform_index;
 		// Initialize the app state
+		cl.add_system<vector_visualizer::system>();
 		cl.add_system<InputDelegate>();
-		//cl.add_system<Mesh::system>();
-		//cl.add_system<AABB::system>();
-		//cl.add_system<vector_visualizer::system>();
-		cl.add_system<UIContext>(window.get_renderer(), window, *dynamic_cast<InputDelegate*>(cl.get_systems()[0]));
+		cl.add_system<MeshManager::system>();
+		cl.add_system<ent_cube::system>();
+		cl.add_system<AABB_system>();
+		cl.add_system<MoveState_system>();
+
+		UIContext* ui = (UIContext*)cl.add_system<UIContext>(window.get_renderer(), window, *dynamic_cast<InputDelegate*>(cl.get_systems()[1]));
+
+
+
+		cl.init_all();
 
 		DevLog("-----CONSOLE_READY-----", console_color::DEFAULT_OKAY);
 
 
-		//cl.systems.push_back(new components::Mesh::system());
-		//cl.systems.push_back(new components::AABB::system());
-		//cl.systems.push_back(new components::vector_visualizer::system());
-		//cl.systems.push_back(new UIContext(event_handler, sv.interpreter, window.get_renderer(), window, *dynamic_cast<InputDelegate*>(cl.systems[0])));
 
-		//cl.systems.push_back(&input_delegate);
-
-		glLineWidth(4.0f);
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
-		cl.init_all();
 		entities.emplace_back(new ent_player(cl.scene));
-		entities.emplace_back(new ent_cube(cl.scene));
+		entities.emplace_back(new ent_cube(cl.scene, { 0, 0, 0 }, { 100, 1, 100 }));
 
-
-
+		ui->add_UIElement(new spedometer(entities[0]->get<MoveState>().mVelocity, entities[0]->get<MoveState>().max_speed()));
 
 		// run everything
 		while (status == 1)
 		{
 			update_dt();
-			glClear(GL_COLOR_BUFFER_BIT);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			cl.tick_all();
-			draw_all_meshes();
-
-			entities[0]->get_component<Camera>().owner_transform.position += entities[0]->get_component<MoveState>().velocity() * Application::get_deltaTime();
 			refresh();
 		}
 		return status;
