@@ -40,11 +40,11 @@ public:
 
 // Log message to console, logging to a file as you go
 void DevLog(const std::string& content, console_color color = console_color::WHITE) {
-    Event::fire<console_message>(content, color);
+    QKEvent::fire<console_message>(content, color);
     Logger::Write(content);
 }
 
 // Simply write a message to the console
 void DevMsg(const std::string& content, console_color color = console_color::WHITE) {
-    Event::fire<console_message>(content, color);
+    QKEvent::fire<console_message>(content, color);
 }
