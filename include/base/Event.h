@@ -3,10 +3,10 @@
 #include <chrono>
 #include <include/thirdparty/entt.hpp>
 
-struct EventHandler {};
+struct QKEventHandler {};
 
-struct Event {
-    Event()
+struct QKEvent {
+    QKEvent()
         : timestamp(std::chrono::duration_cast<std::chrono::microseconds>(
             std::chrono::system_clock::now().time_since_epoch())) {
         //std::cout << timestamp.count() << " microseconds since epoch\n";
