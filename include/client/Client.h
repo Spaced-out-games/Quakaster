@@ -5,21 +5,30 @@
 #include <include/base/SystemManager.h>
 #include <include/server/interpreter/Convar.h>
 
+
+struct teleport_request {
+	entt::entity target;
+	glm::vec3 new_position;
+};
+
+
 // Minimal client
 struct Client : SystemManager
 {
 	Client() {
-		add_convar("fov_desired", 70.0f);
+
 
 	}
 
 	friend class Application;
 
 	inline void init_system(int index) {
+		
 		SystemManager::init_system(index, scene);
 	}
 
 	inline void init_all() {
+
 		for (ISystem* system : systems) {
 			system->init(scene);
 		}
@@ -38,13 +47,23 @@ struct Client : SystemManager
 	inline void destroy_system(int index) {
 		SystemManager::destroy_system(index, scene);
 	}
-	Scene scene;
+	static inline QKScene scene;
+	
 
 
+
+	entt::entity ID;
 	protected:
 		// client-side scene
 
 		// Temporary player ID.
-		entt::entity player_ID;
 
 };
+
+
+
+//QKEventListener<teleport_request> Client::tp_request(
+	
+//)
+
+
