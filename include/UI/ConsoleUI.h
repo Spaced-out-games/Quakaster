@@ -34,7 +34,7 @@ struct ConsoleUI: public UIBase
     int history_pos = -1;
 
     // whether to automatically scroll to the bottom after entering a command
-    bool scrollToBottom = false;
+    bool scrollToBottom = true;
 
     std::vector<console_message> history;
     //bool last_pause_state = 0;
@@ -75,13 +75,14 @@ struct ConsoleUI: public UIBase
         ui_context(ui_context)
     {
         // listen for messages
-        Event::subscribe<console_message, ConsoleUI, &ConsoleUI::callback>(this);
+        QKEvent::subscribe<console_message, ConsoleUI, &ConsoleUI::callback>(this);
 
 
         add_colors();
     }
     void callback(console_message& msg) {
         add_log(msg);
+        history_pos++;
     }
 
     void draw(UIContext* ctx) override
@@ -144,7 +145,7 @@ struct ConsoleUI: public UIBase
 
         if (scrollToBottom)
             ImGui::SetScrollHereY(1.0f);
-        scrollToBottom = false;
+        //scrollToBottom = false;
 
         ImGui::EndChild();
         ImGui::Separator();
