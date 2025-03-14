@@ -2,34 +2,32 @@
 #include "Controller.h"
 #include "MoveState.h"
 
+Convar sv_autohop("sv_autohop", 0);
 
 
 
-struct test_controller : Controller, Component {
+struct test_controller : Controller, QKComponent {
     
 
-    inline MoveState& get_move_state() { return entity.get_component<MoveState>(); }
+    inline MoveState& get_move_state() { return entity.get<MoveState>(); }
 
-    test_controller(Entity& entity) : Controller(), entity(entity) {
+    test_controller(QKEntity& entity) : Controller(), entity(entity) {
         on_key_press.on_event = [&](KeyPressEvent evt) {
             auto& ms = get_move_state();
 
-
+            
             switch (evt.code) {
                 case SDLK_SPACE:
-                    ms.set_in_air(!ms.in_air());
+                    if (!ms.in_air()) ms.jump();
                     break;
                 default:
                     break;
             }
-
+            
             handle_movement(evt.code, ms);
-            if (ms.moving()) {
-                //entity.get_component<Camera>().owner_transform.position += ms.wish_dir * Application::get_deltaTime() * ms.max_speed;
-                // apply_movement(ms, entity);
-            }
-        };
 
+        };
+        
         
         on_key_release.on_event = [&](KeyReleaseEvent evt) {
             auto& ms = get_move_state();
@@ -58,12 +56,25 @@ struct test_controller : Controller, Component {
 
         on_key_hold.on_event = [&](KeyHoldEvent evt) {
             auto& ms = get_move_state();
+            
+            switch (evt.code) {
+            case SDLK_SPACE:
+                if (!ms.in_air() && sv_autohop.m_Value.m_Int != 0) {
+                    ms.jump();
+                }
+                break;
+            default:
+                break;
+            }
+            
             handle_movement(evt.code, ms);
             if (ms.moving())
             {
                 apply_movement(ms, entity);
 
             }
+
+
 
             std::cout << ms.velocity() << '\n';
         };
@@ -78,7 +89,16 @@ struct test_controller : Controller, Component {
             glm::quat pitchQuat = glm::angleAxis(pitchDelta, glm::vec3(1.0f, 0.0f, 0.0f)); // Rotate around X
             glm::quat yawQuat = glm::angleAxis(yawDelta, glm::vec3(0.0f, 1.0f, 0.0f));     // Rotate around Y
 
-            entity.get_component<Camera>().owner_transform.rotation = glm::normalize(yawQuat * entity.get_component<Camera>().owner_transform.rotation * pitchQuat);
+            entity.get<Camera>().owner_transform.rotation = glm::normalize(yawQuat * entity.get<Camera>().owner_transform.rotation * pitchQuat);
+        };
+
+        on_mouse_click.on_event = [&](MouseClickEvent evt) {
+            auto& ms = get_move_state();
+            if (evt.button == SDL_BUTTON_LEFT)
+            {
+                ms.mVelocity -= entity.get<Camera>().owner_transform.get_forward_vector() * 10.0f;
+            }
+
         };
         
     }
@@ -86,7 +106,7 @@ struct test_controller : Controller, Component {
     // Updates velocity in accordance to move state
     inline void handle_movement(SDL_Keycode code, MoveState& ms) {
         if (!ms.moving()) { ms.set_wish_dir(glm::vec3{ 0.0f, 0.0f, 0.0f }); }
-        Transform& transform = entity.get_component<Camera>().owner_transform; // easier to test immediately
+        Transform& transform = entity.get<Camera>().owner_transform; // easier to test immediately
 
         switch (code) {
         case SDLK_a:
@@ -114,8 +134,8 @@ struct test_controller : Controller, Component {
     }
 
     
-    inline void apply_movement(MoveState& ms, Entity& entity) {
-        Transform& transform = entity.get_component<Camera>().owner_transform; // easier to test immediately
+    inline void apply_movement(MoveState& ms, QKEntity& entity) {
+        Transform& transform = entity.get<Camera>().owner_transform; // easier to test immediately
         if (ms.moving()) {
             if (ms.in_air()) {
                 // apply air acceleration
@@ -190,6 +210,6 @@ struct test_controller : Controller, Component {
     }
     
     private:
-        Entity& entity;
+        QKEntity& entity;
 };
 
