@@ -7,7 +7,7 @@
 
 #define CONVAR_STRING_SIZE 128
 
-using Convar_fn = func_ptr_t<void, std::stringstream&>;
+using Convar_fn =  func_ptr_t<void, std::stringstream&>;
 
 
 enum Convar_type {
@@ -28,15 +28,27 @@ class Server;
 
 
 
-
+// Make the constructor auto-register them
 struct Convar {
-    static inline std::unordered_map<std::string, Convar> convars; // private, ideally
-    ~Convar() = default;
+    static inline std::unordered_map<std::string, Convar*> convars;
     
     template <typename T>
-    Convar(const T& value, bool clientRead = true, bool clientWrite = false, bool serverRead = true, bool serverWrite = true) :
-        m_ClientCanRead(clientRead), m_ClientCanWrite(clientWrite),
-        m_ServerCanRead(serverRead), m_ServerCanWrite(serverWrite) {
+    Convar(std::string name, const T& value, std::string description = "No description given", bool server_side = 0): description(description) {
+
+        if (server_side) {
+            m_ClientCanRead = 1;
+            m_ClientCanWrite = 0;
+            m_ServerCanRead = 1;
+            m_ServerCanWrite = 1;
+            m_Replicated = 1;
+        }
+        else {
+            m_ClientCanRead = 1;
+            m_ClientCanWrite = 1;
+            m_ServerCanRead = 1;
+            m_ServerCanWrite = 1;
+            m_Replicated = 0;
+        }
 
         if constexpr (std::is_same_v<T, int>) {
             m_Type = INTEGER;
@@ -66,11 +78,22 @@ struct Convar {
             // Optionally handle unsupported types
             //static_assert(false, "Unsupported type for Convar");
             __debugbreak();
+
         }
+        convars[name] = this;
     }
-    Convar(bool clientRead = true, bool clientWrite = false, bool serverRead = true, bool serverWrite = true) : m_Type(NONE),
-        m_ClientCanRead(clientRead), m_ClientCanWrite(clientWrite),
-        m_ServerCanRead(serverRead), m_ServerCanWrite(serverWrite) {
+
+    ~Convar() {
+        // Remove the current instance from the convars map
+        // Find the key associated with this Convar instance
+        for (auto it = convars.begin(); it != convars.end(); ) {
+            if (it->second == this) {
+                it = convars.erase(it); // Erase the entry and get the next iterator
+            }
+            else {
+                ++it; // Move to the next entry
+            }
+        }
     }
 
     // Convert to string representation
@@ -132,6 +155,7 @@ struct Convar {
     } m_Value;
 
     Convar_type type() { return m_Type; }
+    std::string description;
 
 protected:
     friend class Client;
@@ -164,11 +188,12 @@ protected:
         unsigned int m_Replicated : 1;
     };
 
-
-private:
+//private:
     Convar_type m_Type;
     // Bitfield for permissions
     
+    
+
     
 
     template <typename T>
@@ -208,19 +233,12 @@ private:
     
 };
 
-template <typename T, typename ...Args>
-void add_convar(const std::string& name, const T& value, Args ...args) {
 
-    if (Convar::convars.find(name) != Convar::convars.end()) {
-        throw std::runtime_error("Convar already exists");
-    }
-    Convar::convars[name] = Convar(value, std::forward<Args>(args)...);
-}
 
 static Convar& get_convar(const std::string& name) {
     if (Convar::convars.find(name) != Convar::convars.end()) {
-        if (Convar::convars[name].can_client_read()) {
-            return Convar::convars[name];
+        if (Convar::convars[name]->can_client_read()) {
+            return *Convar::convars[name];
 
         }
         else {
@@ -255,6 +273,7 @@ void run_command(const std::string& command) {
     std::string command_name;
     ss >> command_name;
 
+    
 
     // look up the convar
     if (Convar::convars.find(command_name) != Convar::convars.end()) {
@@ -279,6 +298,7 @@ void run_command(const std::string& command) {
                     console_variable.m_Value.m_Float = temp_fl;
                     new_value = std::to_string(temp_fl);
                 }
+
                 break;
             case STRING:
                 // just memcpy
@@ -302,7 +322,7 @@ void run_command(const std::string& command) {
                 break;
             case FUNCTION: // just pass the ostream
                 console_variable.m_Value.m_Function(ss);
-                DevMsg(std::string("Ran ") + command_name);
+                //DevMsg(std::string("Ran ") + command_name);
                 return; // prevent it from hitting the DevMsg call below
             default:
                 break;
@@ -314,3 +334,41 @@ void run_command(const std::string& command) {
         DevMsg(std::string("Convar \"") + command_name + std::string("\" does not exist."), console_color::RED);
     }
 }
+
+// out - of the box functions and convars
+static void exit_impl(std::stringstream&) {
+    exit(1);
+}
+
+
+Convar Exit("exit", &exit_impl, "Closes the game");
+
+
+static void echo_impl(std::stringstream& ss) {
+    std::string convar;
+    ss >> convar;
+    if (Convar::convars.find(convar) != Convar::convars.end()) {
+        DevMsg(ss.str());
+        DevMsg(Convar::convars[convar]->to_string());
+    }
+    //DevMsg()
+}
+
+Convar echo("echo", &echo_impl, "Tells you the current value of a convar");
+
+static void help_fn(std::stringstream& ss) {
+    std::string message;
+    for (auto& [name, convar_ptr] : Convar::convars) {
+        message = name;
+        int num_spaces = 20 - name.size();
+        while (num_spaces > 0)
+        {
+            message += ' ';
+            num_spaces--;
+        }
+        message += "|\t" + convar_ptr->description;
+        DevMsg(message);
+    }
+}
+
+Convar help("help", &help_fn, "Displays every convar and their description");
