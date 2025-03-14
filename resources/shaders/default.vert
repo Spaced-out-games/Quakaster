@@ -12,6 +12,8 @@ out vec2 TexCoord;
 void main() {
     mat4 instanceMatrix = mat4(instanceTransform1, instanceTransform2, instanceTransform3, instanceTransform4);
 
-    gl_Position = u_proj * u_view * instanceMatrix *  vec4(aPos, 1.0);
-    TexCoord = aPos.xz / 10;
+    vec4 worldPos = instanceMatrix * vec4(aPos, 1.0);
+    gl_Position = u_proj * u_view * worldPos;
+
+    TexCoord = worldPos.xz / 10; // Extract texture coordinates after applying transformation
 }
