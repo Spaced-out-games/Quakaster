@@ -10,9 +10,8 @@
 // Forward declaration of ConsoleUI
 struct ConsoleUI;
 
-using namespace Quakaster;
 
-struct UIContext: public base::ISystem
+struct UIContext: ISystem
 {
     // -------------------------------------------------------- METHODS -------------------------------------------------------
 
@@ -26,13 +25,13 @@ struct UIContext: public base::ISystem
         }
     }
 
-    void init(base::Scene&) override {
+    void init(QKScene&) override {
         
     }
 
 
-    // This ignores the Scene that needs passed
-    void tick(base::Scene&) override {
+    // This ignores the QKScene that needs passed
+    void tick(QKScene&) override {
         ImGui_ImplSDL2_NewFrame();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui::NewFrame();
@@ -53,7 +52,7 @@ struct UIContext: public base::ISystem
     }
 
     // In this instance, it does pretty much nothing.
-    void destroy(base::Scene&) override {}
+    void destroy(QKScene&) override {}
 
     // Pauses to the console UI element
     void pause() { input_delegate.togglePause(); }
