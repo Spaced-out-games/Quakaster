@@ -7,11 +7,11 @@ GameContext
          Server
              entt::resource_cache
              ConsoleInterpreter
-             Scene
+             QKScene
                  
          Client
              entt::resource_cache
-             Scene(partial copy from server)
+             QKScene(partial copy from server)
              Console
              Controller
                 SDL_Event
