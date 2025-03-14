@@ -21,6 +21,8 @@ struct MeshInstance {
 	friend class MeshManager;
 	MeshInstance() = default;
 	MeshInstance(GLuint vao, uint32_t transform_index) : vao(vao), transform_index(transform_index) {}
+	MeshInstance(const std::string& name) { *this = MeshManager::get_mesh(name); }
+
 
 	GLuint vao = 0; // no harm no foul copy of it
 	uint32_t transform_index = 0; // okay maybe some foul
