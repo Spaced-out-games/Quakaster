@@ -6,44 +6,42 @@
 #include <include/utils/vector_visualizer.h>
 
 
-namespace Quakaster::entities {
-	struct ent_player: Entity {
 
-		struct tag : public Tag {};
-		// Creates a player entity
-		ent_player(Scene& scene): Entity(scene) {
+struct ent_player: QKActor {
 
-			// Tag telling us this is a player
-			add_component<ent_player::tag>();
+	struct tag : public Tag {};
+	// Creates a player entity
+	ent_player(QKScene& scene): QKActor(scene) {
 
-			// Holds the orientation of the player
-			add_component<Transform>();
-			add_component<Camera>(get_component<Transform>());
-			add_component<AABB>(get_component<Transform>().position);
-			add_component<Scalar>(0.02,0.02,0.02);
-			// set up the camera
-			get_component<Camera>().set_target(*this);
-			add_component<MoveState>();
-			add_component<test_controller>(*this);
-			add_component<vector_visualizer>(get_component<MoveState>().velocity(), get_component<Camera>().owner_transform);
-		}
+		// Tag telling us this is a player
+		add<ent_player::tag>();
 
-		// gets the Transform
-		inline Transform& transform() { return get_component<Transform>(); }
+		// Holds the orientation of the player
+		add<Transform>();
+		add<Camera>(get<Transform>());
+		add<AABB>(1.0,3.0,1.0);
+
+		add<Scalar>(0.02,0.02,0.02);
+		// set up the camera
+		get<Camera>().set_target(*this);
+		add<MoveState>();
+		add<test_controller>(*this);
+		add<vector_visualizer>();
+	}
+
+	// gets the Transform
+	inline Transform& transform() { return get<Transform>(); }
 		
-		// Get the Camera
-		inline Camera& camera() { return get_component<Camera>(); }
+	// Get the Camera
+	inline Camera& camera() { return get<Camera>(); }
 		
-		// gets the axis-aligned bounding box
-		inline AABB& aabb() { return get_component<AABB>(); }
+	// gets the axis-aligned bounding box
+	inline AABB& aabb() { return get<AABB>(); }
 
-		// gets the scalar for use by the vector_visualizer
-		inline Scalar& scalar() { return get_component<Scalar>(); }
+	// gets the scalar for use by the vector_visualizer
+	inline Scalar& scalar() { return get<Scalar>(); }
 
-		// gets the move state for use by the physics simulation and input
+	// gets the move state for use by the physics simulation and input
 
 
-	};
-}
-
-using ent_player = Quakaster::entities::ent_player;
+};
