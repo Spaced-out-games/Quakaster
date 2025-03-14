@@ -13,6 +13,7 @@ struct Application
 {
 public:
 	Application() {
+		lastFrameTime = std::chrono::steady_clock::now();
 	}
 	/// <summary>
 	/// Runs the application
@@ -24,8 +25,8 @@ public:
 	/// Gets the time since the last frame
 	/// </summary>
 	/// <returns></returns>
-	static const float& get_deltaTime() { return deltaTime; }
-	static const float& get_elapsedTime() { return elapsedTime; }
+	static const double& get_deltaTime() { return deltaTime; }
+	static const double& get_elapsedTime() { return elapsedTime; }
 
 
 
@@ -49,7 +50,7 @@ public:
 		int status = 1;
 
 		// list of entities, might want to remove. Mostly for keeping things in 
-		std::vector<Entity*> entities;
+		std::vector<QKEntity*> entities;
 
 
 		// Content window
@@ -66,7 +67,7 @@ public:
 		inline void update_dt()
 		{
 			currentFrameTime = std::chrono::steady_clock::now(); // Get current time
-			std::chrono::duration<float> elapsed = currentFrameTime - lastFrameTime; // Time elapsed
+			std::chrono::duration<double> elapsed = currentFrameTime - lastFrameTime; // Time elapsed
 			deltaTime = elapsed.count(); // Convert to seconds
 			elapsedTime += deltaTime;
 			lastFrameTime = currentFrameTime; // Update the last frame time
@@ -78,8 +79,8 @@ public:
 
 
 	private:
-		static inline float deltaTime = 0.0f;
-		static inline float elapsedTime = 0.0f;
+		static inline double deltaTime = 0.0f;
+		static inline double elapsedTime = 0.0f;
 };
 
 
