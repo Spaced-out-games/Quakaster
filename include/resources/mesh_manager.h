@@ -64,7 +64,7 @@ struct MeshManager {
 	static void submit(GLuint vao, size_t instance_index, const glm::mat4& matrix);
 
 	template <typename vertex_t = default_vertex_t, typename instance_t = glm::mat4>
-	static inline MeshInstance generate_mesh(
+	static inline void generate_mesh(
 		const std::string& name,
 		const std::vector<vertex_t>& vertices,
 		const std::vector<uint32_t>& indices,
@@ -74,6 +74,32 @@ struct MeshManager {
 		uint32_t num_instances = 2,
 		GLenum primitive_type = GL_TRIANGLES
 	);
+
+	static inline MeshInstance get_mesh(const std::string& name);
+
+
+
+	struct system : ISystem {
+		virtual void init(QKScene& scene) {}
+		virtual void tick(QKScene&) {
+			for (const auto& pair : MeshManager::info_map) {
+
+				// bind the shader
+				pair.second.shader->bind();
+				// and texture
+				if(pair.second.texture) pair.second.texture->bind();
+
+
+				// Bind the VAO
+				glBindVertexArray(pair.first);
+				// draw em
+				glDrawElementsInstanced(pair.second.primitive_type, pair.second.index_count, GL_UNSIGNED_INT, nullptr, pair.second.next_instance_index);
+
+			}
+		}
+		// TODO: delete all meshes
+		virtual void destroy(QKScene& scene) {};
+	};
 
 };
 
@@ -91,7 +117,7 @@ void MeshManager::submit(GLuint vao, size_t instance_index, const glm::mat4& mat
 
 
 template <typename vertex_t = default_vertex_t, typename instance_t = glm::mat4>
-static inline MeshInstance MeshManager::generate_mesh(
+static inline void MeshManager::generate_mesh(
 	const std::string& name,
 	const std::vector<vertex_t>& vertices,
 	const std::vector<uint32_t>& indices,
@@ -103,12 +129,7 @@ static inline MeshInstance MeshManager::generate_mesh(
 ) {
 	// check for the existence of this mesh already existing, but we will skip it for now
 	if (name_map.find(name) != name_map.end()) {
-		GLuint& vao = name_map[name];
-		MeshInfo& info = info_map[vao];
-		MeshInstance instance(vao, info.next_instance_index++);
-		//info.last_instance = &instance;
-		return instance;
-
+		return;
 	}
 	std::vector<instance_t> modelMatrices(num_instances);
 
@@ -175,9 +196,6 @@ static inline MeshInstance MeshManager::generate_mesh(
 
 	// unbind the VAO only
 	VAO::unbind();
-	MeshInstance instance(vao, info_map[vao].next_instance_index++);
-	//info_map[vao].last_instance = &instance;
-	return instance;
 
 
 }
@@ -196,24 +214,15 @@ glm::mat4 MeshManager::get_matrix(GLuint vao, size_t instance_index) {
 
 	return matrix;
 }
-
-
-// totally unrelated -------------------------------------------------------------------------------------
-
-void draw_all_meshes() {
-	for (const auto& pair : MeshManager::info_map) {
-
-		// bind the shader
-		pair.second.shader->bind();
-		// and texture
-		pair.second.texture->bind();
-
-		// don't set u_model this time.
-
-		// Bind the VAO
-		glBindVertexArray(pair.first);
-		// draw em
-		glDrawElementsInstanced(pair.second.primitive_type, pair.second.index_count, GL_UNSIGNED_INT, nullptr, pair.second.next_instance_index);
+inline MeshInstance MeshManager::get_mesh(const std::string& name) {
+	// check for the existence of this mesh already existing, but we will skip it for now
+	if (name_map.find(name) != name_map.end()) {
+		GLuint& vao = name_map[name];
+		MeshInfo& info = info_map[vao];
+		MeshInstance instance(vao, info.next_instance_index++);
+		//info.last_instance = &instance;
+		return instance;
 
 	}
+	throw std::runtime_error("Mesh does not exist here"); // shorthand, for now
 }
