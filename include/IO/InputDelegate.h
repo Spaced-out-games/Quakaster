@@ -9,6 +9,9 @@
 #include <unordered_map>
 #include <include/common.h>
 
+
+
+
 struct IOState {
 	glm::ivec2 last_mouse;
 	glm::ivec2 rel_mouse;
@@ -16,12 +19,12 @@ struct IOState {
 };
 
 template <typename event_t>
-struct EventListener {
+struct QKEventListener {
 	std::function<void(event_t)> on_event;
 
-	EventListener(std::function<void(event_t)> on_event = [](event_t) {}) : on_event(on_event)
+	QKEventListener(std::function<void(event_t)> on_event = [](event_t) {}) : on_event(on_event)
 	{
-		Event::dispatcher.sink<event_t>().connect<&EventListener::onEvent>(this);
+		QKEvent::dispatcher.sink<event_t>().connect<&QKEventListener::onEvent>(this);
 	}
 
 private:
@@ -35,9 +38,9 @@ private:
 struct InputDelegate : ISystem {
 
 	bool isImGuiInitialized() const { return ImGui::GetCurrentContext() != nullptr; }
-	void init(Scene& scene) override;
-	void tick(Scene& scene) override;
-	void destroy(Scene& scene) override {};
+	void init(QKScene& scene) override;
+	void tick(QKScene& scene) override;
+	void destroy(QKScene& scene) override {};
 	inline void togglePause() { m_IsPaused ^= 1; }
 	inline bool& is_paused() { return m_IsPaused; }
 	inline bool& was_paused() { return last_pause_state; }
@@ -61,12 +64,12 @@ struct InputDelegate : ISystem {
 
 
 
-void InputDelegate::init(Scene& scene) {
+void InputDelegate::init(QKScene& scene) {
 	ImGuiState = &ImGui::GetIO();
 	SDL_SetRelativeMouseMode(is_paused() ? SDL_TRUE : SDL_FALSE); // make sure it's synced
 }
 
-void InputDelegate::tick(Scene& scene) {
+void InputDelegate::tick(QKScene& scene) {
 
 	// Make sure ImGui is ready to go, exit if not
 	if (!ImGuiState) init(scene);
@@ -84,7 +87,7 @@ void InputDelegate::tick(Scene& scene) {
 			//if (!is_paused()) last_pause_state = 0;
 			SDL_SetRelativeMouseMode(is_paused() ? SDL_TRUE : SDL_FALSE);
 			// Fire a pause event
-			// Event::fire(PauseEvent{});
+			// QKEvent::fire(PauseEvent{});
 
 			// we are done, so return
 			return;
@@ -101,28 +104,32 @@ void InputDelegate::tick(Scene& scene) {
 			switch (event.type)
 			{
 			case SDL_KEYDOWN:
-				Event::fire<KeyPressEvent>(event.key.keysym.sym, event.key.keysym.mod);
-				KeyboardMouseState.key_states[static_cast<int>(event.key.keysym.sym)] = 1;
+				if (KeyboardMouseState.key_states[static_cast<int>(event.key.keysym.sym)] == 0)
+				{
+
+					QKEvent::fire<KeyPressEvent>(event.key.keysym.sym, event.key.keysym.mod);
+					KeyboardMouseState.key_states[static_cast<int>(event.key.keysym.sym)] = 1;
+				}
 				break;
 			case SDL_KEYUP:
-				Event::fire<KeyReleaseEvent>(event.key.keysym.sym, event.key.keysym.mod);
+				QKEvent::fire<KeyReleaseEvent>(event.key.keysym.sym, event.key.keysym.mod);
 				// Removes the key from the hash map so it's not iterated over anymore
 				KeyboardMouseState.key_states.erase(static_cast<int>(event.key.keysym.sym)); 
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				Event::fire<MouseClickEvent>(event.button.button, event.button.x, event.button.y, true);
+				if(event.type == SDL_MOUSEBUTTONDOWN) QKEvent::fire<MouseClickEvent>(event.button.button, event.button.x, event.button.y, true);
 				break;
 			case SDL_MOUSEBUTTONUP:
-				Event::fire<MouseClickEvent>(event.button.button, event.button.x, event.button.y, false);
+				QKEvent::fire<MouseClickEvent>(event.button.button, event.button.x, event.button.y, false);
 				break;
 			case SDL_WINDOWEVENT:
-				Event::fire<WindowEvent>(event.window.event);
+				QKEvent::fire<WindowEvent>(event.window.event);
 				break;
 			case SDL_MOUSEMOTION:
 				// Get mouse motion details
 				KeyboardMouseState.last_mouse = { event.motion.x, event.motion.y };
 				KeyboardMouseState.rel_mouse = { event.motion.xrel, event.motion.yrel };
-				Event::fire<MouseMoveEvent>(KeyboardMouseState.last_mouse, KeyboardMouseState.rel_mouse);
+				QKEvent::fire<MouseMoveEvent>(KeyboardMouseState.last_mouse, KeyboardMouseState.rel_mouse);
 
 				break;
 
@@ -142,7 +149,7 @@ void InputDelegate::tick(Scene& scene) {
 				if (isPressed)
 				{
 					// Trigger a repeat event for the pressed key
-					Event::fire<KeyHoldEvent>(key);
+					QKEvent::fire<KeyHoldEvent>(key);
 				}
 			}
 		}
