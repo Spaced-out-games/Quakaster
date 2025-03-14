@@ -7,6 +7,5 @@
 struct Server
 {
 	//ConsoleInterpreter interpreter;
-	Scene scene;
-
+	QKScene scene;
 };
