@@ -43,6 +43,11 @@ struct Renderer
 
 	}
 
-	void init() {}
+	void init() {
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glLineWidth(4.0f);
+	}
 	
 };
