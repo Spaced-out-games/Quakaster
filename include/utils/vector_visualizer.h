@@ -47,7 +47,7 @@ struct vector_visualizer
 
 				glm::vec3 scalar = { 1.0,1.0,1.0 };
 
-				if (scene.has<Scalar>(entity)) scalar = scene.get <Scalar>(entity);
+				if (scene.has<Scalar>(entity)) scalar = scene.get<Scalar>(entity);
 
 				if (scene.has<MoveState>(entity)) transform = glm::scale(transform, scene.get<MoveState>(entity).velocity() * scalar);
 

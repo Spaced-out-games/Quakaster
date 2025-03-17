@@ -162,7 +162,7 @@ static inline void MeshManager::generate_mesh(
 
 	// might want to remove these
 	info_map[vao].shader.init(shader_name, vertex_path, fragment_path);
-	info_map[vao].texture = new Texture(std::string("resources/images/atlas.png"));
+	info_map[vao].texture = new Texture(std::string("resources/images/seamlessTextures/100_1382_seamless.JPG"));
 
 	// initialize instance buffer
 	info_map[vao].instance_matrix_buffer.init(modelMatrices);

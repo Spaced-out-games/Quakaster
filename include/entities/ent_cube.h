@@ -65,14 +65,13 @@ struct ent_cube : QKEntity {
 
 	//static void init()
 
-	ent_cube(QKScene& scene, glm::vec3 position = { 0,0,0 }, glm::vec3 scale = { 1,1,1 }) : QKEntity(scene) {
-		add<Transform>();
-		get<Transform>().position = position;
+	ent_cube(QKScene& scene, glm::mat4 matrix) : QKEntity(scene) {
+		//add<Transform>();
 
 		add<MeshInstance>("cube");
-		get<MeshInstance>().submit(Matrix{}.scale(scale));
+		get<MeshInstance>().submit(matrix);
 			
-		add<AABB>(scale.x, scale.y, scale.z);
+		//add<AABB>(scale.x, scale.y, scale.z);
 		add<ent_cube::tag>();
 
 	}

@@ -4,7 +4,7 @@
 #include <include/UI/UIContext.h>
 #include <include/base/SystemManager.h>
 #include <include/server/interpreter/Convar.h>
-
+#include <include/client/application.h>
 
 struct teleport_request {
 	entt::entity target;
@@ -34,6 +34,7 @@ struct Client : SystemManager
 		}
 	}
 	inline void tick_all() {
+
 		for (ISystem* system : systems) {
 			system->tick(scene);
 		}

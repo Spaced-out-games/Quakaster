@@ -1,15 +1,18 @@
 #pragma once
 #include <include/server/interpreter/convar.h>
 #include <include/components/transform.h>
-
+#include <include/bsp/bsp_plane.h>
 
 //add_convar()
 
+// Once we are ready, just make them replicated convars. These might be player-specific, so it's best that they be there on a per-client basis
 Convar sv_movespeed("sv_movespeed", 10.0f);
 Convar sv_airaccel("sv_airaccel", 25.0f);
 Convar sv_groundaccel("sv_groundaccel", 50.0f);
 Convar sv_gravity("sv_gravity", 20.0f);
 Convar sv_jumpheight("sv_jumpheight", 5.0f);
+Convar sv_airfriction("sv_airfriction", -1.0f);
+Convar sv_friction("sv_friction", 8.0f);
 
 
 
@@ -56,15 +59,13 @@ public:
     inline void set_downward_velocity(float downward_velocity) { mVelocity.y = downward_velocity; }
     #pragma endregion getters
 
-    float airFriction = 1.0;
-    float groundFriction = 0.998;
+
     glm::vec3 mVelocity = { 0.0,0.0,0.0 };
 
-    float friction()
+    float friction(float dt)
     {
-        //return 1.0;
-        if (in_air()) { return airFriction; }
-        return groundFriction;
+        if (in_air()) { return 1.0 - (sv_airfriction.as<float>() * dt); }
+        return 1.0 - (sv_friction.as<float>() * dt);
     }
 
     void jump() {
@@ -77,38 +78,6 @@ public:
 #include <include/base/Scene.h>
 
 
-// Applies physics to every entity that needs it
-struct MoveState_system: ISystem {
-    void init(QKScene&) override {}
-    void destroy(QKScene&) override {}
 
 
-    void tick(QKScene& scene) override {
-        auto view = scene.view<MoveState, Transform>();
-        float dt = (float)Application::get_deltaTime();
-        for (auto entity : view) {
-            MoveState& ms = scene.get<MoveState>(entity);
-            Transform& tf = scene.get<Transform>(entity);
 
-            // Update downward velocity based on gravity
-            ms.set_downward_velocity(ms.get_downward_velocity() - (ms.gravity() * (float)Application::get_deltaTime()));
-
-            // Update position based on velocity
-            tf.position += ms.velocity() * (float)Application::get_deltaTime();
-
-            // Check for collision with the ground
-            if (tf.position.y < 2.f) {
-                ms.set_in_air(false);
-                ms.set_downward_velocity(0); // Reset downward velocity
-                tf.position.y = 2.f; // Set position to ground level
-            }
-            else {
-                ms.set_in_air(true);
-            }
-            ms.scale_velocity_horizontal(ms.friction());
-
-        }
-    }
-
-
-};

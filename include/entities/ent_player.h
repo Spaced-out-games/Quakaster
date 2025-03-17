@@ -4,6 +4,7 @@
 #include <include/base/Scene.h>
 #include <include/server/interpreter/ConsoleInterpreter.h>
 #include <include/utils/vector_visualizer.h>
+#include <include/utils/raycast_line.h>
 
 
 
@@ -25,8 +26,8 @@ struct ent_player: QKActor {
 		// set up the camera
 		get<Camera>().set_target(*this);
 		add<MoveState>();
-		add<test_controller>(*this);
-		add<vector_visualizer>();
+		add<QMovement>(*this);
+		//add<vector_visualizer>();
 	}
 
 	// gets the Transform

@@ -103,7 +103,6 @@ struct Convar {
         case FLOAT: return std::to_string(m_Value.m_Float);
         case STRING: return std::string(m_Value.m_String);
         case GLUINT: return std::to_string(m_Value.m_GLuint);
-        case GLENUM: return std::to_string(m_Value.m_GLenum);
         default: return "Unknown";
         }
     }
@@ -130,10 +129,6 @@ struct Convar {
             if (m_Type != GLUINT) throw std::runtime_error("Type mismatch: Expected GLuint");
             return m_Value.m_GLuint;
         }
-        else if constexpr (std::is_same_v<T, GLenum>) {
-            if (m_Type != GLENUM) throw std::runtime_error("Type mismatch: Expected GLenum");
-            return m_Value.m_GLenum;
-        }
         else if constexpr (std::is_same_v<T, char[128]>) {
             if (m_Type != STRING) throw std::runtime_error("Type mismatch: Expected string");
             return m_Value.m_String;
@@ -150,7 +145,6 @@ struct Convar {
         float m_Float;
         char m_String[CONVAR_STRING_SIZE]; // Fixed-size string storage
         GLuint m_GLuint;
-        GLenum m_GLenum;
         Convar_fn m_Function;
     } m_Value;
 
@@ -211,10 +205,6 @@ protected:
         else if constexpr (std::is_same_v<T, GLuint>) {
             m_Type = GLUINT;
             m_Value.m_GLuint = value;
-        }
-        else if constexpr (std::is_same_v<T, GLenum>) {
-            m_Type = GLENUM;
-            m_Value.m_GLenum = value;
         }
         else if constexpr (std::is_same_v<T, std::string>) {
             m_Type = STRING;

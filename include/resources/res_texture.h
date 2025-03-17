@@ -8,7 +8,7 @@
 #include <include/resources/res_shader.h>
 
 
-
+Convar cl_sample_mode("cl_sample_mode", (GLuint)GL_NEAREST);
 
 
 struct Texture
@@ -24,12 +24,12 @@ struct Texture
 		// Wrapping and filtering. Needs to be more flexible and actually use convars
 		glTexParameteri(mTextype, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(mTextype, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(mTextype, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(mTextype, GL_TEXTURE_MIN_FILTER, cl_sample_mode.as<GLuint>());
 
 		glTexParameteri(mTextype, GL_TEXTURE_BASE_LEVEL, 0); // Lowest level
 		glTexParameteri(mTextype, GL_TEXTURE_MAX_LEVEL, 4);  // Highest level
-		glTexParameteri(mTextype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(mTextype, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(mTextype, GL_TEXTURE_MAG_FILTER, cl_sample_mode.as<GLuint>());
+		glTexParameteri(mTextype, GL_TEXTURE_MAG_FILTER, cl_sample_mode.as<GLuint>());
 
 		glGenerateMipmap(mTextype);
 

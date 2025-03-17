@@ -6,6 +6,7 @@
 #include <include/client/Client.h>
 #include <include/base/System.h>
 
+Convar cl_framerate("cl_framerate", 120.0f); // just a float so that 1/cl_framerate is cheaper
 
 
 
@@ -15,6 +16,13 @@ public:
 	Application() {
 		lastFrameTime = std::chrono::steady_clock::now();
 	}
+
+	std::chrono::steady_clock::time_point get_next_frametime() {
+		return lastFrameTime + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+			std::chrono::duration<double>(1.0 / cl_framerate.as<float>())
+			);
+	}
+
 	/// <summary>
 	/// Runs the application
 	/// </summary>
