@@ -5,7 +5,7 @@
 #include <include/UI/console_message.h>
 #include <include/base/Component.h>
 
-Convar fov_desired("fov_desired", 70.0f);
+Convar fov_desired("fov_desired", 90.0f);
 Convar cl_near("cl_near", 0.1f);
 Convar cl_far("cl_far", 100000.0f);
 
