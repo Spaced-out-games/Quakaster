@@ -11,7 +11,7 @@ Convar sv_airaccel("sv_airaccel", 25.0f);
 Convar sv_groundaccel("sv_groundaccel", 50.0f);
 Convar sv_gravity("sv_gravity", 20.0f);
 Convar sv_jumpheight("sv_jumpheight", 5.0f);
-Convar sv_airfriction("sv_airfriction", -1.0f);
+Convar sv_airfriction("sv_airfriction", 0.0f);
 Convar sv_friction("sv_friction", 8.0f);
 
 
