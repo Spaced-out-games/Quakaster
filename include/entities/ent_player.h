@@ -26,7 +26,7 @@ struct ent_player: QKActor {
 		// set up the camera
 		get<Camera>().set_target(*this);
 		add<MoveState>();
-		add<QMovement>(*this);
+		add<Freecam>(*this);
 		//add<vector_visualizer>();
 	}
 
