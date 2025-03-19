@@ -80,7 +80,7 @@ file(GLOB_RECURSE HEADERS
 )
 
 # Combine source files from GLOB_RECURSE with the gathered headers
-add_executable(Engine_Demo ${SOURCES} ${HEADERS} )
+add_executable(Engine_Demo ${SOURCES} ${HEADERS}  "include/components/Freecam.h")
 
 # Link libraries
 target_link_libraries(Engine_Demo
