@@ -76,6 +76,8 @@ StyleCopReport.xml
 *.ilk
 *.meta
 *.obj
+# Make sure to commit 3D models
+!**/resources/**/*.obj
 *.iobj
 *.pch
 *.pdb
