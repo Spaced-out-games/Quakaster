@@ -1,7 +1,14 @@
 #pragma once
 #include "../../glmplus.h"
 
+
+struct Triangle {
+    glm::vec3 points[3];
+};
+
 struct BSP_plane {
+    BSP_plane(glm::vec3 normal, float distance) : normal(normal), distance(distance) {}
+    BSP_plane(Triangle t);
     glm::vec3 normal;  // Plane normal
     float distance;    // Signed distance from origin
 
@@ -19,4 +26,23 @@ struct BSP_plane {
         float t = (distance - glm::dot(normal, start)) / denom;
         return start + t * direction;
     }
+
+    std::vector<BSP_plane> create_planes(MeshLoadResult geometry);
+    std::vector<BSP_plane> create_planes(std::vector<Triangle> geometry);
+    std::vector<BSP_plane> create_planes(std::vector<glm::vec3> points, std::vector<unsigned int> indices);
 };
+
+
+
+
+BSP_plane::BSP_plane(Triangle t) {
+    glm::vec3 edge_1 = t.points[1] - t.points[0];
+    glm::vec3 edge_2 = t.points[2] - t.points[0];
+    normal = glm::normalize(glm::cross(edge_1, edge_2));
+
+    distance = glm::dot(normal, t.points[0]);
+}
+
+std::vector<BSP_plane> BSP_plane::create_planes(std::vector<glm::vec3> points, std::vector<unsigned int> indices) {
+
+}
