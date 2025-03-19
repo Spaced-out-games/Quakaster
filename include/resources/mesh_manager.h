@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <GL/glew.h>
 #include <include/resources/res_shader.h>
+#define TINYOBJLOADER_IMPLEMENTATION
+
 #include <include/thirdparty/tiny_obj_loader.h>
 struct MeshInfo {
 	MeshInfo() = default;
@@ -54,6 +56,10 @@ struct MeshInfo {
 
 struct MeshInstance;
 
+struct MeshLoadResult {
+	std::vector<glm::vec3> points;
+	std::vector<unsigned int> indices;
+};
 
 struct MeshManager {
 	// these will be made private at a later date
@@ -76,7 +82,12 @@ struct MeshManager {
 	);
 
 	static inline MeshInstance get_mesh(const std::string& name);
+	static inline tinyobj::ObjReader reader;
+	static inline tinyobj::ObjReaderConfig config;
 
+	static MeshLoadResult load_mesh(std::string path);
+
+	static void load(std::string path);
 
 
 	struct system : ISystem {
@@ -162,7 +173,7 @@ static inline void MeshManager::generate_mesh(
 
 	// might want to remove these
 	info_map[vao].shader.init(shader_name, vertex_path, fragment_path);
-	info_map[vao].texture = new Texture(std::string("resources/images/seamlessTextures/100_1382_seamless.JPG"));
+	info_map[vao].texture = new Texture(std::string("resources/images/seamlessTextures/100_1174_seamless.JPG"));
 
 	// initialize instance buffer
 	info_map[vao].instance_matrix_buffer.init(modelMatrices);
@@ -188,11 +199,17 @@ static inline void MeshManager::generate_mesh(
 	info_map[vao].ebo.init(indices);
 	info_map[vao].ebo.bind();
 
+	if constexpr (std::is_same_v<vertex_t, glm::vec3>) {
+		VBO::add_vec3_pointer(vertex_pointer_index, sizeof(glm::vec3), 0);
+	}
+	else {
+		vertex_t::set_pointers(vertex_pointer_index); // set the pointers for the custom vertex type
 
-	vertex_t::set_pointers(vertex_pointer_index); // set the pointers for the custom vertex type
+	}
 
 
 
+	//if constexpr (std::is_same_v<
 
 	// unbind the VAO only
 	VAO::unbind();
@@ -225,4 +242,53 @@ inline MeshInstance MeshManager::get_mesh(const std::string& name) {
 
 	}
 	throw std::runtime_error("Mesh does not exist here"); // shorthand, for now
+}
+
+MeshLoadResult MeshManager::load_mesh(std::string path) {
+
+	MeshLoadResult mesh_result;
+
+
+	DevMsg("Loading file...");
+	if (!reader.ParseFromFile(path, config)) {
+		std::string message = "tinyobj failed to load " + path;
+		DevMsg(message); // log the error
+
+	}
+
+
+	// Retrieve the model data
+	const auto& attrib = reader.GetAttrib();
+	const auto& shapes = reader.GetShapes();
+	const auto& materials = reader.GetMaterials();
+	
+	std::vector<glm::vec3> vertices;
+	for (size_t v = 0; v < attrib.vertices.size(); v += 3) {
+		mesh_result.points.push_back({ attrib.vertices[v] , attrib.vertices[v + 1], attrib.vertices[v + 2] });
+
+	}
+
+
+	for (const auto& shape : shapes) {
+		size_t index_offset = 0;
+		for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++) {
+			size_t num_verts = size_t(shape.mesh.num_face_vertices[f]);
+			for (size_t v = 0; v < num_verts; v++) {
+				unsigned int idx = shape.mesh.indices[index_offset + v].vertex_index;
+				mesh_result.indices.push_back(idx);
+			}
+			index_offset += num_verts;
+		}
+	}
+
+
+	return mesh_result;
+
+}
+
+void MeshManager::load(std::string path) {
+	MeshLoadResult result = load_mesh(path);
+	generate_mesh(path, result.points, result.indices, "default_shader",
+		"resources/shaders/default.vert",
+		"resources/shaders/default.frag");
 }
