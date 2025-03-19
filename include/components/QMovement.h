@@ -1,9 +1,9 @@
 #pragma once
 #include "Controller.h"
 #include "MoveState.h"
-
+#include "Freecam.h"
 Convar sv_autohop("sv_autohop", 1);
-
+Convar noclip("noclip", 0);
 
 
 struct QMovement : Controller, QKComponent {
@@ -18,7 +18,7 @@ struct QMovement : Controller, QKComponent {
         static inline BSP_plane ground_plane = { glm::normalize(glm::vec3(0, 1, 0)), 0.0f }; // Defines the ground plane at Y = 0
 
         void tick(QKScene& scene) override {
-            auto view = scene.view<MoveState, Transform>();
+            auto view = scene.view<MoveState, Transform, QMovement>();
             float dt = static_cast<float>(Application::get_deltaTime());
 
             for (auto entity : view) {
