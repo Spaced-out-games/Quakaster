@@ -2,6 +2,7 @@
 #include "../../glmplus.h"
 
 
+
 struct Triangle {
     glm::vec3 points[3];
 };
@@ -27,7 +28,7 @@ struct BSP_plane {
         return start + t * direction;
     }
 
-    std::vector<BSP_plane> create_planes(MeshLoadResult geometry);
+    //std::vector<BSP_plane> create_planes(MeshLoadResult geometry);
     std::vector<BSP_plane> create_planes(std::vector<Triangle> geometry);
     std::vector<BSP_plane> create_planes(std::vector<glm::vec3> points, std::vector<unsigned int> indices);
 };
@@ -44,5 +45,5 @@ BSP_plane::BSP_plane(Triangle t) {
 }
 
 std::vector<BSP_plane> BSP_plane::create_planes(std::vector<glm::vec3> points, std::vector<unsigned int> indices) {
-
+    return std::vector<BSP_plane>();
 }
