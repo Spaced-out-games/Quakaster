@@ -59,6 +59,8 @@ struct GameContext : Application
 		cl.add_system<AABB_system>();
 		cl.add_system<RaycastMesh::system>();
 		cl.add_system<QMovement::system>();
+		cl.add_system<Freecam::system>();
+
 		
 
 
@@ -83,15 +85,19 @@ struct GameContext : Application
 
 
 
-		MeshInstance floor("cube");
+		//MeshInstance floor("cube");
 
+		MeshManager::load("D:/Quakaster/resources/levels/E1M1.obj");
 
+		MeshInstance level("D:/Quakaster/resources/levels/E1M1.obj");
+
+		level.submit(Matrix{}.translate(0, 10, 0));
 
 		ui->add_UIElement(new spedometer(entities[0]->get<MoveState>().mVelocity, entities[0]->get<MoveState>().max_speed()));
 
-		floor.submit(
-			glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 1.0,0.0,0.0 }), { 100,1,100 })
-		);
+		//floor.submit(
+		//	glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 1.0,0.0,0.0 }), { 100,1,100 })
+		//);
 
 		// run everything
 		while (status == 1)
