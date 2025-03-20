@@ -70,7 +70,7 @@ typedef struct bsp_plane
 
     // Utility function for determining which side a point is on versus a plane. 0: behind, 1: in front
     bool get_partition_side(glm::vec3 point) {
-        return (glm::dot(normal, point) - distance) > 0;
+        return (glm::dot(normal, point) - distance) < 0;
     }
 
     // Utility to convert the normal / distance pair into a position in 3D space
@@ -78,91 +78,74 @@ typedef struct bsp_plane
         return normal * distance;
     }
 
-    // Utility function to get the model matrix. Useful for debugging
-    glm::mat4 get_model_matrix() {
-        glm::vec3 planeCenter = get_position() + offset;
-        glm::mat4 rotationMatrix = glm::mat4(1.0f);
-        glm::vec3 right = glm::normalize(glm::cross(normal, glm::vec3(0.0f, 1.0f, 0.0f)));
-        glm::vec3 up = glm::normalize(glm::cross(right, normal));
-
-        rotationMatrix[0] = glm::vec4(right, 0.0f);
-        rotationMatrix[1] = glm::vec4(up, 0.0f);
-        rotationMatrix[2] = glm::vec4(-normal, 0.0f);
-        rotationMatrix[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-
-        glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), planeCenter);
-        glm::mat4 transform = translationMatrix * rotationMatrix;
-
-        return glm::scale(transform, glm::vec3(distance, distance, 1) * scale);
-    }
 };
 
 
 // Defines a node in a BSP tree
 typedef struct bsp_node
 {
-	// Default constructor
-	bsp_node() : plane(BSP_LEAF_NODE), front(BSP_LEAF_NODE), back(BSP_LEAF_NODE) {};
-	bsp_node(plane_ptr_t plane) : plane(plane), front(BSP_LEAF_NODE | BSP_HULL_NODE), back(BSP_LEAF_NODE | BSP_HULL_NODE) {};
+    // Default constructor
+    bsp_node() : plane(BSP_LEAF_NODE), front(BSP_LEAF_NODE), back(BSP_LEAF_NODE) {};
+    bsp_node(plane_ptr_t plane) : plane(plane), front(BSP_LEAF_NODE | BSP_HULL_NODE), back(BSP_LEAF_NODE | BSP_HULL_NODE) {};
 
-	// Creates a node with two child nodes
-	bsp_node(plane_ptr_t plane, node_ptr_t front, node_ptr_t back) : plane(plane), front(front), back(back) {};
-	// Creates a leaf node
-	bsp_node(plane_ptr_t plane, node_content_t contents) : plane(plane)
-	{
-		// If in debug mode, assert that the contents are negative
-		//#ifdef _DEBUG
-		//runtime_assert(contents > 0, "ERROR: invalid leaf contents. Use a negative value. ");
-		//#endif
-		front = contents;
-		back = BSP_LEAF_NODE | BSP_HULL_NODE;
-	}
+    // Creates a node with two child nodes
+    bsp_node(plane_ptr_t plane, node_ptr_t front, node_ptr_t back) : plane(plane), front(front), back(back) {};
+    // Creates a leaf node
+    bsp_node(plane_ptr_t plane, node_content_t contents) : plane(plane)
+    {
+        // If in debug mode, assert that the contents are negative
+        //#ifdef _DEBUG
+        //runtime_assert(contents > 0, "ERROR: invalid leaf contents. Use a negative value. ");
+        //#endif
+        front = contents;
+        back = BSP_LEAF_NODE | BSP_HULL_NODE;
+    }
 
 
-	// Gets the front node
-	node_ptr_t get_front()
-	{
-		return front;
-	}
-	// Gets the back node
-	node_ptr_t get_back()
-	{
-		return back;
-	}
-	// Gets the contents.
-	node_ptr_t get_contents()
-	{
-		return front;
-	}
-	// gets the plane pointer
-	plane_ptr_t get_plane()
-	{
-		return plane;
-	}
-	// Whether or not the node is solid and a leaf
-	bool isSolid()
-	{
-		return (front < 0) && (front & BSP_HULL_NODE);
-	}
-	// Returns 1 if the node is a leaf
-	bool isLeaf()
-	{
-		return (front < 0);
-	}
+    // Gets the front node
+    node_ptr_t get_front()
+    {
+        return front;
+    }
+    // Gets the back node
+    node_ptr_t get_back()
+    {
+        return back;
+    }
+    // Gets the contents.
+    node_ptr_t get_contents()
+    {
+        return front;
+    }
+    // gets the plane pointer
+    plane_ptr_t get_plane()
+    {
+        return plane;
+    }
+    // Whether or not the node is solid and a leaf
+    bool isSolid()
+    {
+        return (front < 0) && (front & BSP_HULL_NODE);
+    }
+    // Returns 1 if the node is a leaf
+    bool isLeaf()
+    {
+        return (front < 0);
+    }
 
-	//private: // commented until I do some more boilerplate
-	// A pointer to a partitioning plane
-	plane_ptr_t plane;
-	// Pointer to the front plane (or contents)
-	node_ptr_t front;
-	// Pointer to the back plane
-	node_ptr_t back;
+    //private: // commented until I do some more boilerplate
+    // A pointer to a partitioning plane
+    plane_ptr_t plane;
+    // Pointer to the front plane (or contents)
+    node_ptr_t front;
+    // Pointer to the back plane
+    node_ptr_t back;
 };
 typedef struct hit_result
 {
-	glm::vec3 location;
-	glm::vec3 normal;
-	node_ptr_t node;
+    glm::vec3 location;
+    glm::vec3 normal;
+    node_ptr_t node;
 };
 
 typedef struct bsp_tree {
@@ -278,7 +261,7 @@ typedef struct bsp_tree {
         bsp_plane& node_plane = get_node_plane(node_index);
 
         float dist = glm::dot(plane.normal, node_plane.get_position()) - node_plane.distance;
-        if (dist > 0) {
+        if (dist < 0) {
             if (node.front >= 0) {
                 insert(node.front, plane_index);
             }
@@ -310,7 +293,7 @@ typedef struct bsp_tree {
 
 
     /*
-    // Tree printing 
+    // Tree printing
     void print(node_ptr_t node_index, int depth = 0, bool isLeft = true) {
         for (int i = 0; i < depth; i++) {
             std::cout << "    ";
@@ -393,7 +376,7 @@ typedef struct bsp_tree {
 
 
 
-
+// test planes
 
 std::vector<bsp_plane> create_cube_planes(float halfSize) {
     return {
