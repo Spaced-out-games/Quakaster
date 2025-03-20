@@ -3,7 +3,7 @@
 #include <vector>
 #include <numeric>
 #include <functional>
-
+/*
 struct Triangle {
     glm::vec3 points[3];
 };
@@ -203,3 +203,5 @@ std::vector<BSP_plane> CreateCubePlanes() {
 
     return planes;
 }
+
+*/

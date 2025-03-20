@@ -10,7 +10,7 @@
 #include <include/server/server.h>
 #include <include/base/logging.h>
 #include <include/UI/Spedometer.h>
-#include <include/bsp/bsp_plane.h>
+#include <old_bsp/bsp.h>
 
 
 
@@ -89,9 +89,9 @@ struct GameContext : Application
 
 		MeshManager::load("D:/Quakaster/resources/levels/E1M1.obj");
 
-		MeshInstance level("D:/Quakaster/resources/levels/E1M1.obj");
+		//MeshInstance level("D:/Quakaster/resources/levels/E1M1.obj");
 
-		level.submit(Matrix{}.translate(0, 10, 0));
+		//level.submit(Matrix{}.translate(0, 10, 0));
 
 		ui->add_UIElement(new spedometer(entities[0]->get<MoveState>().mVelocity, entities[0]->get<MoveState>().max_speed()));
 
@@ -99,9 +99,15 @@ struct GameContext : Application
 		//	glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 1.0,0.0,0.0 }), { 100,1,100 })
 		//);
 
-		MeshLoadResult result = MeshManager::load_mesh("D:/Quakaster/resources/models/cube.obj");
+		MeshLoadResult result = MeshManager::load_mesh("D:/Quakaster/resources/levels/E1M1.obj");//MeshManager::load_mesh("D:/Quakaster/resources/models/cube.obj");
 
-		BSP_Tree tree(CreateCubePlanes());
+		//bsp_tree tree(create_cube_planes(0.5f));
+
+		bsp_tree tree(bsp_plane::create_planes(result.points, result.indices));
+
+		tree.build();
+		
+
 
 		// run everything
 		while (status == 1)
@@ -123,9 +129,19 @@ struct GameContext : Application
 				)
 			);
 			*/
+			plane_ptr_t TEST_PLANE = 0;
 
-			if (tree.IsPointInBSP(player->get<Transform>().position)) {
-				__debugbreak();
+			bool collision = tree.get_plane(TEST_PLANE).get_partition_side(player->get<Transform>().position);
+			glm::mat4 transformation = tree.planes[TEST_PLANE].getMatrix();
+			cube->get<MeshInstance>().submit(
+				transformation
+			);
+
+
+			if (collision) {
+				DevMsg("collision with plane");
+//				std::cout << player->get<Transform>().position;
+				//__debugbreak();
 			}
 
 			refresh();

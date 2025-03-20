@@ -15,7 +15,7 @@ struct QMovement : Controller, QKComponent {
         void init(QKScene&) override {}
         void destroy(QKScene&) override {}
 
-        static inline BSP_plane ground_plane = { glm::normalize(glm::vec3(0, 1, 0)), 0.0f }; // Defines the ground plane at Y = 0
+        //static inline BSP_plane ground_plane = { glm::normalize(glm::vec3(0, 1, 0)), 0.0f }; // Defines the ground plane at Y = 0
 
         void tick(QKScene& scene) override {
             auto view = scene.view<MoveState, Transform, QMovement>();
@@ -32,7 +32,7 @@ struct QMovement : Controller, QKComponent {
                 tf.position += ms.velocity() * dt;
 
                 // Check collision with BSP plane
-                float distance_from_plane = glm::dot(ground_plane.normal, tf.position) - ground_plane.distance;
+                /*float distance_from_plane = glm::dot(ground_plane.normal, tf.position) - ground_plane.distance;
 
                 if (distance_from_plane < 2.0f) {  // 2.0f accounts for player height
                     ms.set_in_air(false);
@@ -42,7 +42,7 @@ struct QMovement : Controller, QKComponent {
                 else {
                     ms.set_in_air(true);
                 }
-
+                */
                 // Apply horizontal friction
                 ms.scale_velocity_horizontal(ms.friction(dt));
             }

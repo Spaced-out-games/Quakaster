@@ -44,7 +44,9 @@ using node_content_t = node_ptr_t;
 // Pointer to a plane in the BSP. All indices are positive
 using plane_ptr_t = uint32_t;
 
-//#include "shapes.h"
+struct Triangle {
+    glm::vec3 points[3];
+};
 
 // Defines a partitioning plane in 3D space
 typedef struct bsp_plane
@@ -52,8 +54,13 @@ typedef struct bsp_plane
     // Creates a BSP plane from a normal vector and a distance from the origin
     bsp_plane(glm::vec3 normal, float distance) : normal(glm::normalize(normal)), distance(distance) {}
 
-    bsp_plane(glm::vec3 normal, float distance, glm::vec3 offset, glm::vec3 scale)
-        : normal(glm::normalize(normal)), distance(distance), scale(scale), offset(offset) {}
+    // Triangle to BSP_plane conversion
+    bsp_plane(Triangle t) {
+        glm::vec3 edge_1 = t.points[1] - t.points[0];
+        glm::vec3 edge_2 = t.points[2] - t.points[0];
+        normal = glm::normalize(glm::cross(edge_1, edge_2));
+        distance = glm::dot(normal, t.points[0]);
+    }
 
 
 
@@ -63,10 +70,28 @@ typedef struct bsp_plane
     // Signed distance from the origin
     float distance;
 
-    #ifdef _DEBUG
-    glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
-    glm::vec3 offset = { 0,0,0 };
-    #endif
+    glm::vec3 getPlaneCenterPoint() const {
+        return normal * distance;
+    }
+
+    glm::mat4 getMatrix() const {
+        glm::vec3 planeCenter = getPlaneCenterPoint();
+        glm::mat4 rotationMatrix = glm::mat4(1.0f);
+        glm::vec3 right = glm::normalize(glm::cross(normal, glm::vec3(0.0f, 1.0f, 0.0f)));
+        glm::vec3 up = glm::normalize(glm::cross(right, normal));
+
+        //rotationMatrix[0] = glm::vec4(right, 0.0f);
+        //rotationMatrix[1] = glm::vec4(up, 0.0f);
+        //rotationMatrix[2] = glm::vec4(-normal, 0.0f);
+        //rotationMatrix[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
+        glm::mat4 translationMatrix = glm::translate(glm::mat4(1.0f), planeCenter);
+        glm::mat4 transform = translationMatrix * rotationMatrix;
+
+        return transform;
+    }
+
+    
 
     // Utility function for determining which side a point is on versus a plane. 0: behind, 1: in front
     bool get_partition_side(glm::vec3 point) {
@@ -78,7 +103,26 @@ typedef struct bsp_plane
         return normal * distance;
     }
 
+    static std::vector<bsp_plane> create_planes(std::vector<glm::vec3> points, std::vector<unsigned int> indices);
+
 };
+
+// Create BSP_planes from vertices and indices
+std::vector<bsp_plane> bsp_plane::create_planes(std::vector<glm::vec3> points, std::vector<unsigned int> indices) {
+    std::vector<bsp_plane> planes;
+    planes.reserve(indices.size() / 3);
+
+    Triangle tri;
+
+    for (size_t i = 0; i < indices.size(); i += 3) {
+        tri.points[0] = points[indices[i + 0]];
+        tri.points[1] = points[indices[i + 1]];
+        tri.points[2] = points[indices[i + 2]];
+        planes.emplace_back(tri);
+    }
+
+    return planes;
+}
 
 
 // Defines a node in a BSP tree
