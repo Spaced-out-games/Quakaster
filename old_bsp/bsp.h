@@ -5,7 +5,7 @@
 #include <random>
 #include <array>
 #include <vector>
-#include <glm/glm.hpp>
+#include <include/thirdparty/glm/glm.hpp>
 //#include "debug_utils.h"
 //#include "mesh_types.h"
 
@@ -27,7 +27,16 @@ constexpr node_ptr_t BSP_DRAW_NODE = 0b01000000000000000000000000000000;
 // Bit mask to receive the content of the node
 constexpr node_ptr_t BSP_NODE_CONTENT = 0b00000111111111111111111111111111;
 
-
+struct Ray {
+    glm::vec3 origin;
+    glm::vec3 direction;
+    Ray(glm::vec3 origin, glm::vec3 direction) : origin(origin), direction(direction) {}
+    Ray() : origin({ 0, 0, 0 }), direction({ 0, 0, 0 }) {}
+};
+struct Line {
+    glm::vec3 start;
+    glm::vec3 end;
+};
 
 // Needs to be a negative value
 using node_content_t = node_ptr_t;
@@ -102,9 +111,9 @@ typedef struct bsp_node
 	bsp_node(plane_ptr_t plane, node_content_t contents) : plane(plane)
 	{
 		// If in debug mode, assert that the contents are negative
-		#ifdef _DEBUG
-		runtime_assert(contents > 0, "ERROR: invalid leaf contents. Use a negative value. ");
-		#endif
+		//#ifdef _DEBUG
+		//runtime_assert(contents > 0, "ERROR: invalid leaf contents. Use a negative value. ");
+		//#endif
 		front = contents;
 		back = BSP_LEAF_NODE | BSP_HULL_NODE;
 	}
@@ -381,3 +390,24 @@ typedef struct bsp_tree {
     node_ptr_t root_index = BSP_LEAF_NODE;
 
 } bsp_tree;
+
+
+
+
+
+std::vector<bsp_plane> create_cube_planes(float halfSize) {
+    return {
+        // +X plane
+        bsp_plane(glm::vec3(1, 0, 0), halfSize),
+        // -X plane
+        bsp_plane(glm::vec3(-1, 0, 0), halfSize),
+        // +Y plane
+        bsp_plane(glm::vec3(0, 1, 0), halfSize),
+        // -Y plane
+        bsp_plane(glm::vec3(0, -1, 0), halfSize),
+        // +Z plane
+        bsp_plane(glm::vec3(0, 0, 1), halfSize),
+        // -Z plane
+        bsp_plane(glm::vec3(0, 0, -1), halfSize),
+    };
+}
