@@ -99,6 +99,10 @@ struct GameContext : Application
 		//	glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 1.0,0.0,0.0 }), { 100,1,100 })
 		//);
 
+		MeshLoadResult result = MeshManager::load_mesh("D:/Quakaster/resources/models/cube.obj");
+
+		BSP_Tree tree(CreateCubePlanes());
+
 		// run everything
 		while (status == 1)
 		{
@@ -109,7 +113,7 @@ struct GameContext : Application
 
 			//auto a = Application::get_next_frametime();
 
-
+			/*
 			cube->get<MeshInstance>().submit(
 				Matrix{}.translate(
 					QMovement::system::ground_plane.get_point_of_intersection(
@@ -118,7 +122,11 @@ struct GameContext : Application
 					) + glm::vec3{0,0.5,0}
 				)
 			);
-			
+			*/
+
+			if (tree.IsPointInBSP(player->get<Transform>().position)) {
+				__debugbreak();
+			}
 
 			refresh();
 		}
