@@ -5,6 +5,11 @@
 #include <include/thirdparty/entt.hpp>
 #include <include/GameContext.h>
 
+// just to make the compiler bitch at me
+#include <old_bsp/bsp.h>
+
+
+
 int main() {
     Application* context = new GameContext;
 	
