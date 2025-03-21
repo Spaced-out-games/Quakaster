@@ -103,6 +103,7 @@ struct ConsoleUI: public UIBase
         // Try to begin ImGui, and if it fails, return early
         if (!ImGui::Begin(title, &visible))
         {
+            // Maybe add a toggle so that minimizing the widget allows you to continue with game input
             ImGui::End();
             return;
         }
