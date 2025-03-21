@@ -78,20 +78,10 @@ struct GameContext : Application
 
 		glClearColor(bg_color.r, bg_color.g, bg_color.b, 1.00f);
 		entities.emplace_back(new ent_player(cl.scene));
-		entities.emplace_back(new ent_cube(cl.scene,glm::mat4(1.0)));
+		//entities.emplace_back(new ent_cube(cl.scene,glm::mat4(1.0)));
 
 		QKEntity* player = entities[0];
-		QKEntity* cube = entities[1];
-
-
-
-		//MeshInstance floor("cube");
-
-		MeshManager::load("D:/Quakaster/resources/levels/E1M1.obj");
-
-		//MeshInstance level("D:/Quakaster/resources/levels/E1M1.obj");
-
-		//level.submit(Matrix{}.translate(0, 10, 0));
+		//QKEntity* cube = entities[1];
 
 		ui->add_UIElement(new spedometer(entities[0]->get<MoveState>().mVelocity, entities[0]->get<MoveState>().max_speed()));
 
@@ -99,9 +89,16 @@ struct GameContext : Application
 		//	glm::scale(glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), { 1.0,0.0,0.0 }), { 100,1,100 })
 		//);
 
-		MeshLoadResult result = MeshManager::load_mesh("D:/Quakaster/resources/levels/E1M1.obj");//MeshManager::load_mesh("D:/Quakaster/resources/models/cube.obj");
+		std::string path = "D:/Quakaster/resources/levels/simpletestlvl.obj";
 
+		//MeshLoadResult result = MeshManager::load_mesh("D:/Quakaster/resources/levels/E1M1.obj");
+		MeshLoadResult result = MeshManager::load_mesh(path);
+		MeshManager::load(path);
+
+		MeshInstance cube(path);
 		//bsp_tree tree(create_cube_planes(0.5f));
+
+
 
 		bsp_tree tree(bsp_plane::create_planes(result.points, result.indices));
 
@@ -117,25 +114,16 @@ struct GameContext : Application
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			cl.tick_all();
 
-			//auto a = Application::get_next_frametime();
 
-			/*
-			cube->get<MeshInstance>().submit(
-				Matrix{}.translate(
-					QMovement::system::ground_plane.get_point_of_intersection(
-						player->get<Transform>().position,
-						player->get<Transform>().get_forward_vector()
-					) + glm::vec3{0,0.5,0}
-				)
-			);
-			*/
 			plane_ptr_t TEST_PLANE = 0;
 
-			bool collision = tree.get_plane(TEST_PLANE).get_partition_side(player->get<Transform>().position);
-			glm::mat4 transformation = tree.planes[TEST_PLANE].getMatrix();
-			cube->get<MeshInstance>().submit(
-				transformation
-			);
+			//bool collision = tree.get_plane(TEST_PLANE).get_partition_side(player->get<Transform>().position);
+
+			bool collision = tree.isSolid(player->get<Transform>().position);
+			//glm::mat4 transformation = tree.planes[TEST_PLANE].getMatrix();
+			//cube->get<MeshInstance>().submit(
+			//	transformation
+			//);
 
 
 			if (collision) {
