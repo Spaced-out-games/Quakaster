@@ -10,7 +10,7 @@
 #include <include/server/server.h>
 #include <include/base/logging.h>
 #include <include/UI/Spedometer.h>
-#include <old_bsp/bsp.h>
+//#include <old_bsp/bsp.h>
 
 
 
@@ -100,11 +100,11 @@ struct GameContext : Application
 
 
 
-		bsp_tree tree(bsp_plane::create_planes(result.points, result.indices));
+		//bsp_tree tree(bsp_plane::create_planes(result.points, result.indices));
 
-		tree.build();
+		//tree.build();
 		
-
+		bool collision = false;
 
 		// run everything
 		while (status == 1)
@@ -115,11 +115,10 @@ struct GameContext : Application
 			cl.tick_all();
 
 
-			plane_ptr_t TEST_PLANE = 0;
 
-			//bool collision = tree.get_plane(TEST_PLANE).get_partition_side(player->get<Transform>().position);
+			//collision = tree.get_plane(TEST_PLANE).get_partition_side(player->get<Transform>().position);
 
-			bool collision = tree.isSolid(player->get<Transform>().position);
+			//bool collision = tree.isSolid(player->get<Transform>().position);
 			//glm::mat4 transformation = tree.planes[TEST_PLANE].getMatrix();
 			//cube->get<MeshInstance>().submit(
 			//	transformation
