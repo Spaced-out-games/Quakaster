@@ -6,7 +6,7 @@
 #include <include/GameContext.h>
 
 // just to make the compiler bitch at me
-#include <old_bsp/bsp.h>
+//#include <old_bsp/bsp.h>
 
 
 
