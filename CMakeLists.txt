@@ -21,7 +21,7 @@ set(CMAKE_PREFIX_PATH "")
 set(SDL_ROOT "D:/C++ Libraries/SDL2")
 set(GLEW_ROOT "D:/C++ Libraries/glew-2.2.0")
 set(GLM_ROOT "D:/C++ Libraries/glm")
-set(IMGUI_ROOT "D:/C++ Libraries/imgui")
+set(IMGUI_ROOT "D:/C++ Libraries/imgui/imgui")
 
 
 # Once you restart, this should work

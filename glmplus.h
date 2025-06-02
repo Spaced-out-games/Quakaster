@@ -170,3 +170,19 @@ struct Matrix {
         return mat;
     }
 };
+
+// Linearly interpolates between start and end
+template <typename T>
+T lerp(const T& start, const T& end, float t) {
+    return start + t * (end - start);
+}
+
+// Returns the time between A and B that is required to get P.
+template <typename T>
+float inverse_lerp(const T& A, const T& B, const T& P) {
+    // Ensure the denominator is not zero
+    if (A == B) {
+        throw std::invalid_argument("A and B cannot be the same point.");
+    }
+    return (P - A) / (B - A);
+}
