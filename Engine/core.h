@@ -1,4 +1,4 @@
-// Engine/lib.h
+// Engine/core.h
 #pragma once
 #ifdef QK_SHARED
 #ifdef QK_EXPORT
@@ -10,8 +10,4 @@
 #define QK_API  // static — no decoration needed
 #endif
 
-
-
-
-int QK_API foo(int, int);
-
+int QK_API foo(int x, int y);
