@@ -8,6 +8,6 @@ if(NOT CLIENT_SOURCES)
     return()
 endif()
 
-add_executable(Client ${CLIENT_SOURCES})
+add_executable(Client ${CLIENT_SOURCES} "ClientApplication.h" "ClientApplication.cpp")
 
 target_link_libraries(Client PRIVATE Engine)
