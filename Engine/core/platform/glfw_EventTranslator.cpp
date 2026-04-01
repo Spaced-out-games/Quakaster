@@ -10,6 +10,7 @@
 #include "../core/Window.h"
 #include <algorithm>
 #include "../utility/time.h"
+#include <string.h>
 
 using namespace qk;
 
@@ -296,7 +297,9 @@ namespace qk::io {
 		for (int i = 0; i < pathcount; i++)
 		{
 			char* dst = pool + (QK_MAX_STRING_SIZE * i);
-			strcpy_s(dst, QK_MAX_STRING_SIZE, paths[i]);
+			//strcpy(dst, QK_MAX_STRING_SIZE, paths[i]);
+			strncpy(dst, paths[i], QK_MAX_STRING_SIZE - 1);
+			dst[QK_MAX_STRING_SIZE - 1] = '\0';
 		}
 
 		ev.paths() = pool;

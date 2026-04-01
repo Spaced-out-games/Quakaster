@@ -5,7 +5,7 @@
 namespace qk {
 
     static void glfw_error_callback(int error, const char* description) {
-        __debugbreak();
+        //QK_DEBUG_BREAK();
         spdlog::error("GLFW Error {}: {}", error, description);
     }
 
@@ -18,7 +18,8 @@ namespace qk {
 
         spdlog::info("Initialized glfw");
 
-
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        
         return true;
     }
     void shutdown() {

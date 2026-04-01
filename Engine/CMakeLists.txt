@@ -1,5 +1,10 @@
 # Quakaster/Engine/CMakeLists.txt
 # Collect engine sources (add files here as you create them)
+
+set(NVRHI_WITH_VULKAN ON)
+set(NVRHI_WITH_DX11 OFF)
+set(NVRHI_WITH_DX12 OFF)
+
 set(ENGINE_SOURCES
     # engine core
     core/core/Application.cpp
@@ -53,6 +58,10 @@ else()
     target_compile_definitions(Engine PUBLIC QK_STATIC)
 endif()
 
+find_package(Vulkan REQUIRED)
+
+add_subdirectory(external/NVRHI)
+
 target_link_libraries(Engine
     PUBLIC
         EnTT::EnTT
@@ -61,6 +70,10 @@ target_link_libraries(Engine
         imgui
         pfr
         stb_image
+        Vulkan::Vulkan # todo: make private. For testing!!!
+
+        nvrhi
+        nvrhi_vk
     PRIVATE
         glfw
         enet

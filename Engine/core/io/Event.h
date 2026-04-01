@@ -34,7 +34,7 @@ namespace qk::io {
 		cat_continuous  = 1 << 12,
 		cat_error		= 1 << 13,
 		cat_text		= 1 << 14,
-		cat_custom		= 1 << 31,
+		cat_custom		= 1 << 30,
 
 		cat_kbmouse = cat_mouse | cat_keyboard,
 

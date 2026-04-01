@@ -81,7 +81,7 @@ namespace qk::core {
 			return;
 		}
 
-		// Now m_Window is valid — safe to set user pointer and callbacks
+		// Now m_Window is valid ï¿½ safe to set user pointer and callbacks
 		glfwSetWindowUserPointer(m_Window, this);
 
 		// Window events
