@@ -12,6 +12,64 @@ namespace qk::gfx::vk {
 		VkDevice				 Device			= VK_NULL_HANDLE;
 	};
 
+	DeviceInfo get_device_info(VkPhysicalDevice device) {
+		VkPhysicalDeviceProperties properties{};
+		VkPhysicalDeviceFeatures features{};
+
+		vkGetPhysicalDeviceProperties(device, &properties);
+		vkGetPhysicalDeviceFeatures(device, &features);
+
+		DeviceInfo info{};
+
+		// Map Vulkan features to your bitmask
+		uint32_t featureBits = 0;
+		if (features.geometryShader)        featureBits |= static_cast<uint32_t>(EDeviceFeatureSet::GEOMETRY_SHADER);
+		if (features.tessellationShader)   featureBits |= static_cast<uint32_t>(EDeviceFeatureSet::TESSELLATION_SHADER);
+
+		// For ray tracing, check extension features (requires VK_KHR_ray_tracing_pipeline)
+		VkPhysicalDeviceRayTracingPipelineFeaturesKHR rtFeatures{};
+		rtFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+		VkPhysicalDeviceFeatures2 features2{};
+		features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+		features2.pNext = &rtFeatures;
+		vkGetPhysicalDeviceFeatures2(device, &features2);
+		if (rtFeatures.rayTracingPipeline) featureBits |= static_cast<uint32_t>(EDeviceFeatureSet::RAY_TRACING);
+
+		info.device_features = static_cast<EDeviceFeatureSet>(featureBits);
+
+		// Map device type
+		switch (properties.deviceType) {
+		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			info.device_type = EDeviceType::INTEGRATED_DEVICE;
+			break;
+		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+		case VK_PHYSICAL_DEVICE_TYPE_CPU:
+			info.device_type = EDeviceType::DISCRETE_DEVICE;
+			break;
+		default:
+			info.device_type = EDeviceType::INTEGRATED_DEVICE;
+			break;
+		}
+
+		info.device_vendor = properties.vendorID;
+		info.device_id = properties.deviceID;
+		info.device_vram = 0;
+
+		// Query memory (VRAM)
+		uint32_t memCount = 0;
+		vkGetPhysicalDeviceMemoryProperties(device, nullptr); // need array
+		VkPhysicalDeviceMemoryProperties memProps;
+		vkGetPhysicalDeviceMemoryProperties(device, &memProps);
+		for (uint32_t i = 0; i < memProps.memoryHeapCount; ++i) {
+			if (memProps.memoryHeaps[i].flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) {
+				info.device_vram += memProps.memoryHeaps[i].size;
+			}
+		}
+
+		return info;
+	}
+
 
 	VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
 		VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -52,7 +110,7 @@ namespace qk::gfx::vk {
 		return VK_FALSE;
 	}
 
-	bool Builder::check_extension_support() const {
+	bool Initializer::check_extension_support() const {
 
 		// auto - populate mandatory extensions
 		uint32_t num_extensions = 0;
@@ -73,7 +131,7 @@ namespace qk::gfx::vk {
 
 	}
 
-	bool Builder::check_layer_support() const {
+	bool Initializer::check_layer_support() const {
 
 		bool result = true;
 		uint32_t layerCount;
@@ -102,7 +160,7 @@ namespace qk::gfx::vk {
 		return result;
 	}
 
-	void Builder::add_debug_manager(VkInstance instance) const {
+	void Initializer::add_debug_manager(VkInstance instance) const {
 		VkResult code = VK_SUCCESS;
 		VkDebugUtilsMessengerCreateInfoEXT messenger_createInfo{
 
@@ -135,12 +193,12 @@ namespace qk::gfx::vk {
 
 
 
-	Builder& Builder::set_device_heuristic(DeviceHeuristic heuristic) {
+	Initializer& Initializer::set_device_heuristic(DeviceHeuristic heuristic) {
 		m_DeviceHeuristic = heuristic;
 	}
 
 
-	Builder::Builder() {
+	Initializer::Initializer() {
 		m_Info = new BuildInfo();
 		uint32_t glfw_extension_count = 0;
 		const char** glfw_extensions;
@@ -159,35 +217,38 @@ namespace qk::gfx::vk {
 
 	}
 
-	Builder::~Builder() {
+	Initializer::~Initializer() {
 		delete m_Info;
 	}
 
 
-	Builder& Builder::set_application_details(const std::string& app_name, uint32_t app_version) {
+	Initializer& Initializer::set_application_details(const std::string& app_name, uint32_t app_version) {
 		m_ApplicationName = app_name;
 		m_ApplicationVersion = app_version;
 		return *this;
 	}
 
-	Builder& Builder::set_API_version(uint32_t api_version) {
+	Initializer& Initializer::set_API_version(uint32_t api_version) {
 		m_APIVersion = api_version;
 		return *this;
 	}
 
-	Builder& Builder::add_extension(const char* extension) {
+	Initializer& Initializer::add_extension(const char* extension) {
 		m_Extensions.push_back(extension);
 		return *this;
 	}
 
-	Builder& Builder::add_layer(const char* layer) {
+	Initializer& Initializer::add_layer(const char* layer) {
 		m_Layers.push_back(layer);
 		return *this;
 	}
 
-	Builder& Builder::devices(std::vector<uint32_t>& device_map) {
+	const std::vector<uint32_t> Initializer::device_map() {
 
-		// get all the devices
+		if (!m_Info->Instance) {
+			spdlog::warn("Tried to call Initializer::device_map() before building a VkInstance; returning \{\}");
+			return {};
+		}
 		uint32_t num_devices = 0;
 		vkEnumeratePhysicalDevices(m_Info->Instance, &num_devices, nullptr);
 		if (num_devices == 0) {
@@ -197,19 +258,38 @@ namespace qk::gfx::vk {
 		std::vector<VkPhysicalDevice> candidates(num_devices);
 		vkEnumeratePhysicalDevices(m_Info->Instance, &num_devices, candidates.data());
 
-		// filter obviously unsuitable
+		std::vector<DeviceInfo> infos;
+		infos.reserve(num_devices);
+		for (VkPhysicalDevice dev : candidates) {
+			infos.push_back(get_device_info(dev));
+		}
 
-		return *this;
+		std::vector<std::pair<size_t, uint32_t>> scored; // <score, index>
+		for (uint32_t i = 0; i < infos.size(); ++i) {
+			size_t score = m_DeviceHeuristic ? m_DeviceHeuristic(infos[i]) : 0;
+			scored.emplace_back(score, i);
+		}
+
+		std::sort(scored.begin(), scored.end(),
+			[](const auto& a, const auto& b) { return a.first > b.first; });
+
+		std::vector<uint32_t> sorted_indices;
+		sorted_indices.reserve(scored.size());
+		for (const auto& pair : scored) {
+			sorted_indices.push_back(pair.second);
+		}
+
+		return sorted_indices;
 	}
 
-	Builder& Builder::use_device(uint32_t device_id) {
+	Initializer& Initializer::use_device(uint32_t device_id) {
 
 		m_DeviceID = device_id;
 
 		return *this;
 	}
 
-	Builder& Builder::build_instance() {
+	Initializer& Initializer::build_instance() {
 		// -------------------------------------------- INSTANCE CREATION -------------------------------------------- //
 		VkResult code = VK_SUCCESS;
 
@@ -240,7 +320,7 @@ namespace qk::gfx::vk {
 			throw std::runtime_error("vkCreateInstance() failure!");
 		}
 
-		add_debug_manager(&m_Info->Instance);
+		add_debug_manager(m_Info->Instance);
 	}
 
 
@@ -248,17 +328,10 @@ namespace qk::gfx::vk {
 
 
 
-	nvrhi::DeviceHandle Builder::build_device() const {
+	Device Initializer::build_device() const {
 
-
-
-		// --------------------------------------------- DEBUG MESSENGER --------------------------------------------- //
-		add_debug_manager(&m_Info->Instance);
-
-
-
-
-		return nullptr;
+		// placeholder
+		return {};
 	}
 
 

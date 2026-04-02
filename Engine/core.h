@@ -1,4 +1,11 @@
 // Engine/core.h
+
+#define QK_MAKE_VERSION(major, minor, patch) \
+    ((((uint32_t)(major)) << 22U) | (((uint32_t)(minor)) << 12U) | ((uint32_t)(patch)))
+
+// pre-release
+#define QK_VERSION QK_MAKE_VERSION(0,0,0)
+
 #pragma once
 #ifdef QK_SHARED
 #ifdef QK_EXPORT

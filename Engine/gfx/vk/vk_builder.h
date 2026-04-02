@@ -7,27 +7,46 @@
 #ifdef _DEBUG
 	#define QK_GFX_USE_VALIDATION_LAYERS
 #endif
+
+typedef struct VkPhysicalDevice_T* VkPhysicalDevice;
 typedef struct VkInstance_T* VkInstance;
+typedef struct VkDevice_T* VkDevice;
 
 namespace qk::gfx::vk {
 
 
-	enum PhysicalDeviceFeatureSet {
-		GEOMETRY_SHADER = 1,
 
+	enum class EDeviceFeatureSet: uint32_t {
+		GEOMETRY_SHADER = 1 << 0,
+		TESSELLATION_SHADER = 1 << 1,
+		RAY_TRACING = 1 << 2,
 	};
 
+	enum class EDeviceType: uint8_t {
+		INTEGRATED_DEVICE,
+		DISCRETE_DEVICE
+	};
 
-	struct PhysicalDeviceInfo
+	// plan: since nvrhi can handle validation layers for us, we can *probably* cut that out and let nvhri handle it,which lets us remove BuildInfo!!!
+	// Armed with a heuristic, we just select [0] for the PhysicalDevice
+	// merge queue family requirements into FeatureSet
+	// 
+	// Need to check up LogicalDevice and VkQueue patterns first...
+	// maybe combine the device handle and the validation layer in a whole Device
+
+	struct DeviceInfo
 	{
-		uint32_t vendorID;
-		uint32_t deviceID;
-		uint32_t type; // e.g., discrete, integrated, virtual
-		uint64_t vram; // total memory in bytes
+		EDeviceFeatureSet	device_features;
+		EDeviceType			device_type;
+		uint32_t			device_vendor;
+		uint32_t			device_id;
+		uint64_t			device_vram; // total memory in bytes
 	};
 
 	// defined in implementation
 	struct BuildInfo;
+
+	struct QK_API Device;
 
 
 	/* Helper that generates:
@@ -36,9 +55,9 @@ namespace qk::gfx::vk {
 
 		TODO: consider hooking debugCallback up to Quakaster's event system?
 	*/
-	struct QK_API Builder {
+	struct QK_API Initializer {
 		public:
-			using DeviceHeuristic = bool(*)(const PhysicalDeviceInfo&, const PhysicalDeviceInfo&);
+			using DeviceHeuristic = size_t(*)(const DeviceInfo&);
 		private:
 
 		BuildInfo* m_Info = nullptr;
@@ -67,27 +86,30 @@ namespace qk::gfx::vk {
 		
 		public:
 
-		Builder();
+		Initializer();
+		~Initializer();
 
-		Builder& set_device_heuristic(DeviceHeuristic heuristic);
+		Initializer& set_device_heuristic(DeviceHeuristic heuristic);
 
-		Builder& set_application_details(const std::string& app_name, uint32_t app_version);
+		Initializer& set_application_details(const std::string& app_name, uint32_t app_version);
 
-		Builder& set_API_version(uint32_t api_version);
+		Initializer& set_API_version(uint32_t api_version);
 
-		Builder& add_extension(const char* extension);
+		Initializer& add_extension(const char* extension);
 
-		Builder& add_layer(const char* layer);
+		Initializer& add_layer(const char* layer);
 
-		// don't forget to check for nullptr on the heuristic
-		Builder& devices(std::vector<uint32_t>& device_map);
+		// Uses the heuristic function to map indices to the sorted end-product. For example, if device 2 is 'best' vec[0] = 2. This keeps the end-user from seeing Vulkan internals.
+		const std::vector <uint32_t> device_map();
 
-		Builder& build_instance();
+		Initializer& build_instance();
 		
-		Builder& use_device(uint32_t device_id);
+		Initializer& use_device(uint32_t device_id);
 
 
 
-		nvrhi::DeviceHandle build_device() const;
+		Device build_device() const;
 	};
+	// for now; move to 
+	struct QK_API Device {};
 }

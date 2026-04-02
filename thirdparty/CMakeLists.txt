@@ -17,7 +17,7 @@ add_library(pfr INTERFACE)
 target_include_directories(pfr INTERFACE pfr/include)
 
 # stb_image (header-only, needs one .cpp to house the implementation)
-add_library(stb_image STATIC "stb/stb_image.c")
+add_library(stb_image STATIC "stb/stb_image.cpp")
 target_include_directories(stb_image PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 
