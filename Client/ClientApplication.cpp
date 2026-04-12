@@ -4,12 +4,30 @@
 #include <nvrhi/nvrhi.h>
 #include <nvrhi/vulkan.h>
 
+// todo: create a deletion stack so that cleanup() is more or less empty
+//LifetimeManager
+
+
 void ClientApplication::init(int argc, char** argv) {
-	VkApplicationInfo app_info{};
-	std::cout << "Hello, Quakaster Client!" << std::endl;
-	std::cout << "VkApplicationInfo struct size: " << sizeof(app_info) << " bytes\n";
-	std::cout << "DeviceHandle struct size: " << sizeof(nvrhi::DeviceHandle) << " bytes\n";
-	exit(0); // temp
+	using enum qk::gfx::EDebugMessageSeverity;
+	using enum qk::gfx::EDebugMessageType;
+
+
+
+	// build the device
+	qk::gfx::DeviceDescBuilder builder;
+	gpu = builder.appinfo("Quakaster Demo", 0)
+					.version(VK_API_VERSION_1_1)
+					// in a complete DeviceBuilder we'd do more operations here
+					.build();
+
+	// attach a debug messenger.
+	gpu_messenger = gfx::AttachDebugMessenger(gpu, ALL_SEVERITIES, ALL_TYPES);
+
+	// resource management
+	dtor_queue.push([this]() { window.destroy(); qk::shutdown(); });
+	dtor_queue.push([this]() { gpu_messenger.destroy(gpu);  });
+
 
 	// set up event queues...
 	//Application::init(argc, argv);
@@ -24,11 +42,10 @@ void ClientApplication::init(int argc, char** argv) {
 
 void ClientApplication::run() {
 	window.pollEvents();
-	window.swap_buffers();
+	//window.swap_buffers();
 	set_status(window.should_close());
 }
 
-void ClientApplication::close() {
-	window.destroy();
-	qk::shutdown();
+void ClientApplication::shutdown() {
+	dtor_queue.flush();
 }
