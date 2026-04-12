@@ -31,7 +31,10 @@ set(ENGINE_SOURCES
     core/utility/time.cpp
 
     core.cpp
- "gfx/vk/vk_builder.h" "gfx/vk/vk_builder.cpp")
+    gfx/vk/DeviceBuilder.cpp
+    gfx/vk/Device.cpp
+    gfx/vk/DebugMessenger.cpp
+)
 
 message(STATUS "[Engine] sources: ${ENGINE_SOURCES}")
 
