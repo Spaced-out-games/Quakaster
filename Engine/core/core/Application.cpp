@@ -27,5 +27,5 @@ namespace qk::core {
 		spdlog::info("Application initialized at {:#x}", (uintptr_t)this);
 	}
 
-	void Application::close() {}
+	void Application::shutdown() {}
 }

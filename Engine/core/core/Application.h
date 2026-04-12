@@ -21,7 +21,7 @@ namespace qk::core {
 		// Runs repetitively until m_Status != 0
 		virtual void run() = 0;
 		// Handles resource cleanup
-		virtual void close();
+		virtual void shutdown();
 		// Gets the status code of the Application
 		int status();
 
