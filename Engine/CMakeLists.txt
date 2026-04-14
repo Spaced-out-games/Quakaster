@@ -56,7 +56,7 @@ target_include_directories(Engine
 
 # ── QK_STATIC / QK_SHARED define ─────────────────────────────────────────────
 if(BUILD_SHARED_LIBS)
-    target_compile_definitions(Engine PRIVATE QK_EXPORT PUBLIC QK_SHARED)
+    target_compile_definitions(Engine PRIVATE QK_EXPORT PUBLIC QK_SHARED PUBLIC QK_USE_GLFW)
 else()
     target_compile_definitions(Engine PUBLIC QK_STATIC)
 endif()
