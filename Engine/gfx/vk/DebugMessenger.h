@@ -27,7 +27,7 @@ namespace qk::gfx {
 
 	public:
 		DebugMessenger() = default;
-		DebugMessenger(VkDebugUtilsMessengerEXT messenger) { m_Messenger = messenger; }
+		DebugMessenger(VkDebugUtilsMessengerEXT messenger);
 		void destroy(const Device& paired_device);
 
 	};

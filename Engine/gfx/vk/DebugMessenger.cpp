@@ -52,6 +52,8 @@ namespace qk::gfx {
 		DestroyDebugUtilsMessengerEXT(paired_device.instance(), m_Messenger, nullptr);
 	}
 
+	DebugMessenger::DebugMessenger(VkDebugUtilsMessengerEXT messenger) { m_Messenger = messenger; }
+
 	DebugMessenger AttachDebugMessenger(const Device& target, EDebugMessageSeverity severity,
 		EDebugMessageType type, void* custom) {
 		VkInstance instance = target.instance();
