@@ -44,6 +44,34 @@ namespace qk::gfx {
 		return (value & flag) == flag;
 	}
 
+	enum class EQueueFeatureSet : uint32_t {
+		GRAPHICS,
+		TRANSFER,
+		COMPUTE,
+	};
+
+	constexpr inline EQueueFeatureSet operator|(EQueueFeatureSet a, EQueueFeatureSet b) {
+		return static_cast<EQueueFeatureSet>(
+			static_cast<uint32_t>(a) | static_cast<uint32_t>(b)
+			);
+	}
+
+
+	constexpr inline EQueueFeatureSet operator&(EQueueFeatureSet a, EQueueFeatureSet b) {
+		return static_cast<EQueueFeatureSet>(
+			static_cast<uint32_t>(a) & static_cast<uint32_t>(b)
+			);
+	}
+
+	constexpr inline EQueueFeatureSet& operator|=(EQueueFeatureSet& a, EQueueFeatureSet b) {
+		a = a | b;
+		return a;
+	}
+
+	constexpr inline bool has(EQueueFeatureSet value, EQueueFeatureSet flag) {
+		return (value & flag) == flag;
+	}
+
 
 	// Device vendor
 	enum class EDeviceVendor : uint32_t {
