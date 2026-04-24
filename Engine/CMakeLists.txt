@@ -70,7 +70,8 @@ target_link_libraries(Engine
         EnTT::EnTT
         glm::glm-header-only
         spdlog::spdlog
-        imgui
+        imgui_core
+        imgui_backend_gl
         pfr
         stb_image
         Vulkan::Vulkan # todo: make private. For testing!!!

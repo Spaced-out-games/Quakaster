@@ -4,7 +4,7 @@
 /// ************************************************************************************************** 
 
 #include "Image.h"
-#include "stb/stb_image.h"
+#include "stb_image.h"
 #include <cassert>
 namespace qk::resource {
 
