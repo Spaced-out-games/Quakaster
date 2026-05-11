@@ -1,5 +1,7 @@
 #include "System.h"
-#include "time.h"
+#include "../utility/time.h"
+
+using qk::utility::now;
 
 namespace qk {
 	void System::set_tick_interval_ns(uint64_t interval_ns) {
@@ -15,14 +17,14 @@ namespace qk {
 	}
 
 	bool System::ready() {
-		return m_Implementation && (utility::now() >= m_NextTick_ns);
+		return m_Implementation && (now() >= m_NextTick_ns);
 	}
 
 
 
 	void System::operator()() {
 
-		if (!m_Implementation | !ready()) return;
+		if (!m_Implementation || !ready()) return;
 		m_NextTick_ns += m_TickInterval_ns;
 		m_Implementation();
 

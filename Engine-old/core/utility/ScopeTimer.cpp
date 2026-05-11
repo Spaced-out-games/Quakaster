@@ -7,7 +7,7 @@
 #include "spdlog/spdlog.h"
 #include "time.h"
 
-namespace qk::util {
+namespace qk::utility {
 	ScopeTimer::~ScopeTimer() {
 		if (m_Target) (*m_Target += now() - m_StartTime);
 	}

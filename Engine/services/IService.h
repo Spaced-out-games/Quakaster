@@ -5,7 +5,8 @@
 #pragma once
 #include <stdint.h>
 #include "core.h"
-namespace qk::utility {
+
+namespace qk::service {
 	struct QK_API IService {
 
 	protected:

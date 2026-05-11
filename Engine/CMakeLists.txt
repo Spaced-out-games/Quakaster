@@ -5,25 +5,55 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ENGINE_SOURCES
+
+    # vendor
+    ../vendor/stb_image.cpp
+
+    # platform
 	platform/Application.cpp
     platform/Quakaster.cpp
     platform/Window.h
+
+    # Platform-specific
+    platform/Window_glfw_impl.cpp
+
     
+    # io
     io/DefaultEvents.cpp
     io/Event.cpp
     io/EventQueue.cpp
     io/Layer.cpp
     io/LayerStack.cpp
+
+    # utility
     utility/time.cpp
+    utility/ScopeTimer.cpp
 
 
-
-    # Platform-specific files
-    platform/Window_glfw_impl.cpp
-
+    # media
     media/Image.cpp
-    ../vendor/stb_image.cpp
- "gui/GUILayer.cpp" "utility/ScopeTimer.cpp" "utility/IService.cpp" "utility/System.cpp")
+
+    # gui
+    gui/GUILayer.cpp
+    
+    # entities
+
+    # components
+    components/CCamera.cpp
+
+    # systems
+    systems/System.cpp
+
+
+    # services
+    services/IService.cpp
+    services/ConvarService.cpp
+
+    # scripting
+    scripting/Convar.cpp
+    scripting/ConvarRegistry.cpp
+
+ "services/GraphNodeService.cpp")
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})

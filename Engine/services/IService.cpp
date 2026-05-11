@@ -6,7 +6,8 @@
 #include "IService.h"
 #include "spdlog/spdlog.h"
 
-namespace qk::utility {
+namespace qk::service {
+
 	size_t IService::uptime_ns() { return m_Uptime_ns; }
 
 	size_t* IService::uptime_ptr() { return &m_Uptime_ns; }

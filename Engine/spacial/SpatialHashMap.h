@@ -1,0 +1,49 @@
+#pragma once
+#include "core.h"
+#include <unordered_map>
+#include <vector>
+#include <glm/vec3.hpp>
+
+namespace qk::spacial {
+
+
+	using SpacialGridCell = glm::ivec3;
+
+	struct SpacialGridCellHash {
+		size_t operator()(const SpacialGridCell& v) const noexcept {
+
+			size_t h1 = std::hash<int>()(v.x);
+			size_t h2 = std::hash<int>()(v.y);
+			size_t h3 = std::hash<int>()(v.z);
+
+			// decent hash combine
+			return h1 ^ (h2 << 1) ^ (h3 << 2);
+		}
+	};
+
+
+	template <class value_t, size_t grid_size>
+	struct SpatialHashGrid3D {
+
+
+		std::unordered_map<SpacialGridCell, std::vector<value_t>, SpacialGridCellHash> m_Grid;
+
+
+		SpacialGridCell cell(const glm::vec3& position) {
+			return {
+				static_cast<int>(std::floor(position.x / grid_size)),
+				static_cast<int>(std::floor(position.y / grid_size)),
+				static_cast<int>(std::floor(position.z / grid_size))
+			};
+		}
+
+		void insert(const glm::vec3& pos, const value_t& value) {
+			m_Grid[cell(pos)].push_back(value);
+		}
+
+
+
+
+	};
+
+}
