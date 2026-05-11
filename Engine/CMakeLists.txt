@@ -23,7 +23,7 @@ set(ENGINE_SOURCES
 
     media/Image.cpp
     ../vendor/stb_image.cpp
- "gui/GUILayer.cpp")
+ "gui/GUILayer.cpp" "utility/ScopeTimer.cpp" "utility/IService.cpp" "utility/System.cpp")
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})
@@ -35,6 +35,7 @@ target_link_libraries(${PROJECT_NAME}
         qk_core
         qk_rhi
         glm::glm # consider making a wrapper. Probably don't need to, though
+        EnTT::EnTT
     PRIVATE
         spdlog::spdlog
         glfw

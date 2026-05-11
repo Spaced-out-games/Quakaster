@@ -7,6 +7,6 @@
 #include <stdint.h>
 #include "core.h"
 
-namespace qk::util {
+namespace qk::utility {
 	QK_API uint64_t now();
 }
