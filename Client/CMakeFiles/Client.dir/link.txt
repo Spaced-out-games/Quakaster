@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG -Wl,--dependency-file=CMakeFiles/Client.dir/link.d CMakeFiles/Client.dir/ClientApplication.cpp.o CMakeFiles/Client.dir/main.cpp.o -o ../bin/Client  ../lib/libEngine.a ../lib/libspdlog.a ../lib/libimgui.a ../lib/libstb_image.a ../lib/libglfw3.a /usr/lib64/librt.a -lm -ldl ../lib/libenet.a
