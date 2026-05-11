@@ -9,6 +9,9 @@
 //#include "../platform/glfw_EventTranslator.h"
 #include "spdlog/spdlog.h"
 #include <stdexcept>
+
+using qk::utility::now;
+
 namespace qk {
 
 
@@ -169,7 +172,7 @@ namespace qk {
 		}
 
 
-		kv.timestamp = util::now();
+		kv.timestamp = utility::now();
 		kv.scancode() = scancode;
 		kv.mods() = mods;
 		kv.key() = key;
@@ -189,7 +192,7 @@ namespace qk {
 		MouseEvent& ev = (MouseEvent&)queue->emplace_back();
 		ev.m_Category = cat_mouse;
 
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 		ev.button() = button;
 		ev.mods() = mods;
 
@@ -210,7 +213,7 @@ namespace qk {
 		if (!queue) return;
 
 		MouseMoveEvent& mv = (MouseMoveEvent&)queue->emplace_back();
-		mv.timestamp = util::now();
+		mv.timestamp = now();
 		mv.m_Category = cat_continuous | cat_mouse;
 		mv.m_Type = MouseMove_evt;
 		mv.x() = (float)xpos;
@@ -228,7 +231,7 @@ namespace qk {
 
 		Event& mv = queue->emplace_back();
 		mv.m_Category = cat_mouse | cat_window;
-		mv.timestamp = util::now();
+		mv.timestamp = now();
 
 		if (entered) {
 			mv.m_Type = MouseEnter_evt;
@@ -246,7 +249,7 @@ namespace qk {
 		auto* queue = target->queue();
 		if (!queue) return;
 		MouseScrollEvent& sv = (MouseScrollEvent&)queue->emplace_back();
-		sv.timestamp = util::now();
+		sv.timestamp = now();
 
 		sv.m_Category = cat_mouse | cat_continuous;
 		sv.m_Type = MouseScroll_evt;
@@ -263,7 +266,7 @@ namespace qk {
 		auto* queue = target->queue();
 		if (!queue) return;
 		WindowResizeEvent& rv = (WindowResizeEvent&)queue->emplace_back();
-		rv.timestamp = util::now();
+		rv.timestamp = now();
 
 		rv.m_Category = cat_window | cat_continuous;
 		rv.m_Type = WindowResize_evt;
@@ -279,7 +282,7 @@ namespace qk {
 		auto* queue = target->queue();
 		if (!queue) return;
 		WindowCloseEvent& cv = (WindowCloseEvent&)queue->emplace_back();
-		cv.timestamp = util::now();
+		cv.timestamp = now();
 
 		cv.m_Category = cat_window;
 		cv.m_Type = WindowClose_evt;
@@ -293,7 +296,7 @@ namespace qk {
 		if (!queue) return;
 		WindowRefreshEvent& rv = (WindowRefreshEvent&)queue->emplace_back();
 		rv.m_Category = cat_window;
-		rv.timestamp = util::now();
+		rv.timestamp = now();
 
 		rv.m_Type = WindowRefresh_evt;
 	}
@@ -305,7 +308,7 @@ namespace qk {
 		auto* queue = target->queue();
 		if (!queue) return;
 		Event& ev = queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 
 		ev.m_Category = cat_window;
 		if (focus) {
@@ -323,7 +326,7 @@ namespace qk {
 		auto* queue = target->queue();
 		if (!queue) return;
 		Event& ev = queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 
 		ev.m_Category = cat_window;
 
@@ -344,7 +347,7 @@ namespace qk {
 
 		if (!queue) return;
 		Event& ev = queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 
 		ev.m_Category = cat_window;
 		ev.m_Type = maximized ? WindowMaximize_evt : WindowMaximizeRestored_evt;
@@ -362,7 +365,7 @@ namespace qk {
 
 		if (!queue) return;
 		WindowFramebufferResizeEvent& ev = (WindowFramebufferResizeEvent&)queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 
 		ev.m_Category = cat_window;
 		ev.m_Type = FramebufferResize_evt;
@@ -380,7 +383,7 @@ namespace qk {
 
 		if (!queue) return;
 		WindowDPIUpdateEvent& ev = (WindowDPIUpdateEvent&)queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 		ev.m_Category = cat_window;
 		ev.m_Type = WindowDPIUpdate_evt;
 		ev.xscale() = (float)xscale;
@@ -394,7 +397,7 @@ namespace qk {
 
 		if (!queue) return;
 		TextInputEvent& ev = (TextInputEvent&)queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 		ev.m_Category = cat_text;
 		ev.m_Type = TextInput_evt;
 		ev.code() = codepoint;
@@ -410,7 +413,7 @@ namespace qk {
 
 		if (!queue) return;
 		TextInputEventEx& ev = (TextInputEventEx&)queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 		ev.m_Category = cat_text;
 		ev.m_Type = TextInputEx_evt;
 		ev.code() = codepoint;
@@ -428,7 +431,7 @@ namespace qk {
 		if (!queue) return;
 
 		DragDropEvent& ev = (DragDropEvent&)queue->emplace_back();
-		ev.timestamp = util::now();
+		ev.timestamp = now();
 		ev.m_Category = cat_window;
 		ev.m_Type = DragDrop_evt;
 		ev.count() = pathcount;
