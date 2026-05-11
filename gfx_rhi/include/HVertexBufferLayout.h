@@ -1,7 +1,7 @@
 #pragma once
 #include "core.h"
 #include "Handle.h"
-#include "VertexBufferLayoutDesc.h"
+#include "HVertexBufferLayoutDesc.h"
 
 
 namespace qk::gfx::rhi {

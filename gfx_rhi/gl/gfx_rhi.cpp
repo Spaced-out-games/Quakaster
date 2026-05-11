@@ -1,5 +1,5 @@
 #include "gfx_rhi.h"
-#include "../external\glad\include\glad\glad.h"
+#include <glad/glad.h>
 
 namespace qk::gfx::rhi {
 	static inline ClearChannels g_ClearChannels;

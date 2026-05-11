@@ -1,5 +1,5 @@
-#include "VertexBufferLayout.h"
-#include "VertexArray.h"
+#include "HVertexBufferLayout.h"
+#include "HVertexArray.h"
 #include <vector>
 
 using qk::gfx::rhi::HVertexBufferLayoutTag;
@@ -15,12 +15,12 @@ using qk::gfx::rhi::VertexBufferLayout;
 namespace qk {
 	
 	template<>
-	VertexBufferLayout* get<HVertexBufferLayoutTag, VertexBufferLayout*>(const Handle<HVertexBufferLayoutTag>& handle) {
+	inline VertexBufferLayout* get<HVertexBufferLayoutTag, VertexBufferLayout*>(const Handle<HVertexBufferLayoutTag>& handle) {
 		return (VertexBufferLayout*)handle.m_Handle;
 	}
 
 	template<>
-	void set<HVertexBufferLayoutTag, VertexBufferLayout*>(Handle<HVertexBufferLayoutTag>& handle, VertexBufferLayout* value) {
+	inline void set<HVertexBufferLayoutTag, VertexBufferLayout*>(Handle<HVertexBufferLayoutTag>& handle, VertexBufferLayout* value) {
 		handle.m_Handle = (uintptr_t)value;
 	}
 

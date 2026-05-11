@@ -1,5 +1,5 @@
 #pragma once
-#include "Texture.h"
+#include "HTexture.h"
 
 namespace qk::gfx::rhi::gui {
 
