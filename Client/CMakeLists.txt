@@ -1,13 +1,15 @@
-file(GLOB_RECURSE CLIENT_SOURCES
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/*.cxx"
+# Quakaster/Client/CMakeLists.txt
+cmake_minimum_required(VERSION 3.16)
+project(Client)
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CLIENT_SOURCES 
+	main.cpp
 )
+message("[CLIENT] Building target `Client`...")
+add_executable(${PROJECT_NAME} ${CLIENT_SOURCES})
+target_link_libraries(${PROJECT_NAME} PRIVATE qk_core)
+target_link_libraries(${PROJECT_NAME} PRIVATE Engine)
 
-if(NOT CLIENT_SOURCES)
-    message(STATUS "[Client] No source files found — skipping executable target.")
-    return()
-endif()
 
-add_executable(Client ${CLIENT_SOURCES} "ClientApplication.h" "ClientApplication.cpp")
-
-target_link_libraries(Client PRIVATE Engine)

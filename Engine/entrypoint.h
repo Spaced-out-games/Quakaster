@@ -1,9 +1,9 @@
 #pragma once
-#include "core/core/Application.h"
+#include "platform/Application.h"
 #include <memory>
 
 namespace qk {
-	extern std::unique_ptr<qk::core::Application> create_application(int argc, char** argv);
+    extern std::unique_ptr<Application> create_application(int argc, char** argv);
 }
 
 

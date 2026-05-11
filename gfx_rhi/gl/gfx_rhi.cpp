@@ -1,0 +1,42 @@
+#include "gfx_rhi.h"
+#include "../external\glad\include\glad\glad.h"
+
+namespace qk::gfx::rhi {
+	static inline ClearChannels g_ClearChannels;
+	float						g_ClearColor[4];
+
+
+	GLbitfield ClearChannels_cast(qk::gfx::rhi::ClearChannels channels) {
+		GLbitfield result = 0;
+
+		if ((channels & qk::gfx::rhi::ClearChannels::COLOR) == qk::gfx::rhi::ClearChannels::COLOR)
+			result |= GL_COLOR_BUFFER_BIT;
+
+		if ((channels & qk::gfx::rhi::ClearChannels::DEPTH) == qk::gfx::rhi::ClearChannels::DEPTH)
+			result |= GL_DEPTH_BUFFER_BIT;
+
+		if ((channels & qk::gfx::rhi::ClearChannels::STENCIL) == qk::gfx::rhi::ClearChannels::STENCIL)
+			result |= GL_STENCIL_BUFFER_BIT;
+
+		return result;
+	}
+
+	int init(void* procLoader) {
+		return gladLoadGLLoader((GLADloadproc)procLoader);
+	}
+
+	void clear(float r, float g, float b, float a, ClearChannels channels) {
+		g_ClearChannels = channels;
+		g_ClearColor[0] = r; g_ClearColor[1] = g;
+		g_ClearColor[2] = b; g_ClearColor[3] = a;
+
+		glClearColor(r, g, b, a);
+		glClear(ClearChannels_cast(g_ClearChannels));
+		
+
+	}
+
+	void clear() {
+		glClear(ClearChannels_cast(g_ClearChannels));
+	}
+}
