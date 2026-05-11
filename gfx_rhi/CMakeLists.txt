@@ -22,13 +22,19 @@ set(RHI_SOURCES
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
     ${GFX_BACKEND}/gfx_rhi.cpp
-    ${GFX_BACKEND}/VertexBufferLayoutDesc.cpp
-    ${GFX_BACKEND}/VertexBufferLayout.cpp
-    ${GFX_BACKEND}/VertexArray.cpp
+    ${GFX_BACKEND}/HVertexBufferLayoutDesc.cpp
+    ${GFX_BACKEND}/HVertexBufferLayout.cpp
+    ${GFX_BACKEND}/HVertexArray.cpp
 
     ${GFX_BACKEND}/gui_rhi_glfw_impl.cpp
-
- "gl/gui_widget_rhi.cpp" "gl/Texture.cpp" "gl/gui_widget_input.cpp")
+    ${GFX_BACKEND}/gui_widget_rhi.cpp
+    ${GFX_BACKEND}/HTexture.cpp
+    ${GFX_BACKEND}/gui_widget_input.cpp
+    ${GFX_BACKEND}/HVertexBuffer.cpp
+    ${GFX_BACKEND}/HShader.cpp
+    ${GFX_BACKEND}/HShaderProgram.cpp
+    ${GFX_BACKEND}/gfx_draw.cpp
+)
 
 # ------------------------------------------------------------------------------
 # Backend selection
