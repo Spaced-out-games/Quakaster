@@ -1,90 +1,96 @@
-#include <iostream>
-#include "Handle.h"
-#include <platform\Quakaster.h>
-#include "core.h"
-#include "platform/Application.h"
+// setup
+#include <platform/Quakaster.h>
 #include "entrypoint.h"
+#include "core.h"
+
+// standard library
 #include <memory>
+
+// platform
+#include "platform/Application.h"
 #include "platform/Window.h"
-#include "gfx_rhi.h"
-#include "VertexBufferLayoutDesc.h"
-#include "VertexArray.h"
-#include "gui_rhi.h"
-#include "gui_widget_rhi.h"
-#include "io/Event.h"
-#include "Result.h"
-#include "Texture.h"
-#include "media/Image.h"
-#include "gui/GUIWidget.h"
-#include "gui/GUILayer.h"
-#include "io/LayerStack.h"
+
+// io
 #include "io/EventQueue.h"
+#include "io/LayerStack.h"
+
+// gui
+#include "gui_rhi.h"
+#include "gui/GUILayer.h"
+#include "gui/GUIWidget.h"
+//#include "gui_widget_rhi.h"
+
+
 
 
 
 #define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (54).png"
-//#include "vendor/stb_image.h"
 
 using namespace qk::gfx;
 
 
 struct cl_app : qk::Application {
-	qk::Result<int, float> test;
 	qk::Window window;
-	qk::Event ev;
 	qk::EventQueue queue;
-	rhi::VertexBufferLayoutDesc layoutDesc;
-	rhi::HVertexArray vao;
-	rhi::HTexture hTex;
 	qk::LayerStack layers;
+	glm::vec3 demo_vec;
 
-
-	glm::vec3 some_vec;
-
-	void init(int argc, char** argv) override {
-		using rhi::InputRate;
-		using rhi::ScalarType;
-		using rhi::VertexAttribute;
+	// Can be called before or after render_init()
+	void attach_queues() {
 		layers.attach_queue(&queue);
+		window.set_event_queue(&queue);
+	}
+
+
+
+	void render_init() {
 		qk::startup();
 		window.init(qk::Window::Size{ 480, 480 }, "Quakaster Demo", nullptr);
-		window.set_event_queue(&queue);
-
 		rhi::init(window.getProcAddress_pfn());
+	}
 
-		//qk::media::Image img;
-		//img.reload(TEST_IMAGE_PATH);
-		//hTex = rhi::Texture_ctor();
-		//rhi::Texture_bind(hTex, rhi::TextureType::TEX_2D);
-		//rhi::Texture_upload_2D(hTex, img.data(), img.width(), img.height(), img.channels());
-
+	// this has to be called last because some layers depend on window handles
+	void attach_layers() {
 		auto& gui = layers.emplace_layer<qk::gfx::gui::GUILayer>(window.handle());
 
-		auto& widget = gui.emplace<qk::gfx::gui::Vec3EditWidget>();
-		widget.target = &some_vec;
-		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::COLOR | rhi::ClearChannels::DEPTH);
+		auto& vec3e = gui.emplace<qk::gfx::gui::Vec3EditWidget>();
+
+		vec3e.target = &demo_vec;
 
 	}
 
+
+	void init(int argc, char** argv) override {
+
+
+		attach_queues();
+
+		render_init();
+
+		attach_layers();
+
+
+		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::COLOR | rhi::ClearChannels::DEPTH);
+		
+	}
+
 	void run() override {
-		window.swap_buffers();
+
+		// populates event queue
+		window.pollEvents();
+		// flushes it
+		layers.propagate_events();
+
+		// flushes offscreen image
 		rhi::clear();
 
-		window.pollEvents();
-		layers.propagate_events();
-		rhi::gui::begin_frame(0.016);
-
+		// renders to offscreen image
 		layers.render();
 
+		// presents offscreen image
+		window.swap_buffers();
 
-		//rhi::gui::demo();
-		//rhi::gui::image(hTex, { 2000, 2000 }, {0,0}, {1, 1});
-		
-		rhi::gui::end_frame();   // optional depending on your wrapper
-		rhi::gui::render();
-
-		std::cout << queue.size() << '\n';
-
+		// updates when told to by the window.
 		set_status(window.should_close());
 
 	}
