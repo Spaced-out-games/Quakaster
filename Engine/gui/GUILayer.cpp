@@ -185,14 +185,25 @@ namespace qk::gfx::gui {
 
 
 	void GUILayer::on_render() {
+
+        rhi::gui::begin_frame(0.016f);
+
+
         for (size_t i = 0; i < m_Widgets.size(); i++) {
             m_Widgets[i]->render();
         }
+
+        rhi::gui::end_frame();
+        rhi::gui::render();
+
 	}
 
 	void GUILayer::on_attach() {
         subscribe(EEventCategory::cat_kbmouse);
         rhi::gui::init(m_hWindow);
+
+
+
 	}
 
 	void GUILayer::on_detach() {
