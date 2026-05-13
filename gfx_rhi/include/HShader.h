@@ -18,14 +18,13 @@ namespace qk::gfx::rhi {
 
 	struct HShaderTag {};
 	using HShader = Handle<HShaderTag>;
-	using HShaderRef = Ref<HShaderTag>;
 
 
 	Result<HShader, std::string> Shader_ctor(ShaderType type);
 
 	void Shader_dtor(HShader& hShader);
 
-	Result<void, std::string> Shader_upload(const HShader& hShader, const std::string& source);
+	Result<void_t, std::string> Shader_upload(const HShader& hShader, const std::string& source);
 
 
 
