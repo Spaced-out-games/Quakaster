@@ -3,26 +3,11 @@
 #include <stdexcept>
 
 
-using qk::gfx::rhi::HShader;
-using qk::gfx::rhi::HShaderTag;
+using namespace qk::gfx::rhi;
 using qk::set;
 using qk::get;
 
-namespace qk {
-
-	template<>
-	inline GLuint get<HShaderTag, GLuint>(const Handle<HShaderTag>& handle) {
-		return (GLuint)handle.m_Handle;
-	}
-
-	template<>
-	inline void set<HShaderTag, GLuint>(Handle<HShaderTag>& handle, GLuint value) {
-		handle.m_Handle = (uintptr_t)value;
-	}
-
-
-}
-
+#include "rhi_HandleDefinitions.inl"
 
 namespace qk::gfx::rhi {
 	GLuint ShaderType_cast(ShaderType type)
@@ -51,7 +36,7 @@ namespace qk::gfx::rhi {
 
 		if (shader == 0)
 		{
-			return std::unexpected("glCreateShader failed (invalid context or out of resources)");
+			return std::string{ "glCreateShader failed (invalid context or out of resources)" };
 		}
 
 		HShader hShader;
@@ -62,7 +47,7 @@ namespace qk::gfx::rhi {
 
 	void Shader_dtor(HShader& hShader)
 	{
-		GLuint shader = get<HShaderTag, GLuint>(hShader);
+		GLuint shader = get(hShader);
 
 		if (shader != 0)
 		{
@@ -73,8 +58,8 @@ namespace qk::gfx::rhi {
 
 
 
-	Result<void, std::string> Shader_upload(const HShader& hShader, const std::string& source) {
-		GLuint shader = get<HShaderTag, GLuint>(hShader);
+	Result<void_t, std::string> Shader_upload(const HShader& hShader, const std::string& source) {
+		GLuint shader = get(hShader);
 
 		// prevent bad hygeine.
 		assert(shader != 0);
@@ -97,9 +82,9 @@ namespace qk::gfx::rhi {
 			if (!log.empty() && log.back() == '\0')
 				log.pop_back();
 
-			return std::unexpected(log);
+			return log;
 		}
-		return {};
+		return void_t{};
 	}
 
 

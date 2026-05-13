@@ -7,6 +7,16 @@
 
 
 
+
+namespace qk {
+    template<>
+    struct handle_traits<WindowTag> {
+        using value_type = GLFWwindow*;
+    };
+
+}
+
+
 namespace qk::gfx::gui::io {
 
     Key key_cast(int glfw_key)
@@ -162,24 +172,13 @@ namespace qk::gfx::gui::io {
 }
 
 
-namespace qk {
 
-    template <>
-    inline GLFWwindow* get<WindowTag, GLFWwindow*>(const Handle<WindowTag>& hdl) {
-        return reinterpret_cast<GLFWwindow*>(hdl.m_Handle);
-    }
-
-    template <>
-    inline void set<WindowTag, GLFWwindow*>(Handle<WindowTag>& hdl, GLFWwindow* value) {
-        hdl.m_Handle = reinterpret_cast<uintptr_t>(value);
-    }
-}
 
 namespace qk::gfx::gui {
 
     GUILayer::GUILayer(qk::HWindow hWindow) {
         
-        qk::set<WindowTag, GLFWwindow*>(m_hWindow, qk::get<WindowTag, GLFWwindow*>(hWindow));
+        qk::set(m_hWindow, qk::get(hWindow));
 
     }
 

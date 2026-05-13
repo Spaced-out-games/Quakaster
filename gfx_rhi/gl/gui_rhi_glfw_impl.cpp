@@ -3,18 +3,23 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "../include/gui_rhi.h"
 #include "Handle.h"
-#include <GLFW\glfw3.h> // this should be fine since we are only using the macros. Consider improvement.
+#include <GLFW\glfw3.h>
+
+
+
+
+
+
+
+
+
 
 namespace qk {
-    template <>
-    inline GLFWwindow* get<WindowTag, GLFWwindow*>(const Handle<WindowTag>& hdl) {
-        return reinterpret_cast<GLFWwindow*>(hdl.m_Handle);
-    }
+    template<>
+    struct handle_traits<WindowTag> {
+        using value_type = GLFWwindow*;
+    };
 
-    template <>
-    inline void set<WindowTag, GLFWwindow*>(Handle<WindowTag>& hdl, GLFWwindow* value) {
-        hdl.m_Handle = reinterpret_cast<uintptr_t>(value);
-    }
 }
 
 
@@ -54,7 +59,7 @@ namespace qk::gfx::rhi::gui {
 
     void init(const HWindow& window)
     {
-        auto* glfw_win = get<WindowTag, GLFWwindow*>(window);
+        auto* glfw_win = get(window);
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();

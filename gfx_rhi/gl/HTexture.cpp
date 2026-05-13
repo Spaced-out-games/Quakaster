@@ -8,17 +8,10 @@ using namespace qk::gfx::rhi;
 
 
 namespace qk {
-
 	template<>
-	inline GLuint get<HTextureTag, GLuint>(const Handle<HTextureTag>& handle) {
-		return (GLuint)handle.m_Handle;
-	}
-
-	template<>
-	inline void set<HTextureTag, GLuint>(Handle<HTextureTag>& handle, GLuint value) {
-		handle.m_Handle = (uintptr_t)value;
-	}
-
+	struct handle_traits<HTextureTag> {
+		using value_type = GLuint;
+	};
 
 }
 
@@ -77,13 +70,13 @@ namespace qk::gfx::rhi {
 		HTexture hTex;
 		GLuint tex;
 		glGenTextures(1, &tex);
-		qk::set<HTextureTag, GLuint>(hTex, tex);
+		qk::set(hTex, tex);
 		return hTex;
 	}
 
 
 	void Texture_upload_2D(const HTexture& hTex, const uint8_t* data, int width, int height, int channels) {
-		GLuint tex = qk::get<HTextureTag, GLuint>(hTex);
+		GLuint tex = qk::get(hTex);
 		GLenum format = Channel_cast(channels);
 
 		QK_ASSERT(tex);
@@ -93,7 +86,7 @@ namespace qk::gfx::rhi {
 	}
 
 	void Texture_upload_1D(const HTexture& hTex, const uint8_t* data, int size, int channels) {
-		GLuint tex = qk::get<HTextureTag, GLuint>(hTex);
+		GLuint tex = qk::get(hTex);
 		GLenum format = Channel_cast(channels);
 
 		QK_ASSERT(tex);
@@ -130,11 +123,11 @@ namespace qk::gfx::rhi {
 	*/
 
 	void Texture_bind(const HTexture& hTex, TextureType type) {
-		glBindTexture(TextureType_cast(type), qk::get<HTextureTag, GLuint>(hTex));
+		glBindTexture(TextureType_cast(type), get(hTex));
 	}
 
 	void Texture_dtor(HTexture& hTex) {
-		GLuint handle = qk::get<HTextureTag, GLuint>(hTex);
+		GLuint handle = get(hTex);
 		QK_ASSERT(handle);
 		glDeleteTextures(1, &handle);
 		
