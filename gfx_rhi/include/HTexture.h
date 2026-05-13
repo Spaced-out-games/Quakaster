@@ -18,7 +18,7 @@ namespace qk::gfx::rhi {
 		TEX_2D_ARRAY,
 	};
 
-	enum class TextureFilterMode : uint32_t {
+	enum TextureFilterMode : uint32_t {
 		TEXEL,
 		BILINEAR
 	};
