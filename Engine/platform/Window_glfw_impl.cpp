@@ -12,18 +12,22 @@
 
 using qk::utility::now;
 
+
+
+namespace qk {
+	template<>
+	struct handle_traits<WindowTag> {
+		using value_type = GLFWwindow*;
+	};
+
+}
+
+
+
+
 namespace qk {
 
 
-	template <>
-	inline GLFWwindow* get<WindowTag, GLFWwindow*>(const Handle<WindowTag>& hdl) {
-		return reinterpret_cast<GLFWwindow*>(hdl.m_Handle);
-	}
-
-	template <>
-	inline void set<WindowTag, GLFWwindow*>(Handle<WindowTag>& hdl, GLFWwindow* value) {
-		hdl.m_Handle = reinterpret_cast<uintptr_t>(value);
-	}
 
 	
 	
@@ -41,18 +45,18 @@ namespace qk {
 		if (!m_Handle.valid()) {
 			throw std::runtime_error("Window not initialized!");
 		}
-		glfwMakeContextCurrent(get<WindowTag, GLFWwindow*>(m_Handle));
+		glfwMakeContextCurrent(get(m_Handle));
 	}
 
 	Window::Position Window::get_position() {
 		Position result;
-		glfwGetWindowPos(get<WindowTag, GLFWwindow*>(m_Handle), &(result.x), &(result.y));
+		glfwGetWindowPos(get(m_Handle), &(result.x), &(result.y));
 		return result;
 	}
 
 	void Window::set_position(Window::Position new_position) {
 		
-		glfwSetWindowPos(get<WindowTag, GLFWwindow*>(m_Handle), new_position.x, new_position.y);
+		glfwSetWindowPos(get(m_Handle), new_position.x, new_position.y);
 	}
 
 	std::string Window::get_title() {
@@ -69,26 +73,26 @@ namespace qk {
 
 
 	int Window::should_close() {
-		return glfwWindowShouldClose(get<WindowTag, GLFWwindow*>(m_Handle));
+		return glfwWindowShouldClose(get(m_Handle));
 	}
 
 	void Window::swap_buffers() {
-		glfwSwapBuffers(get<WindowTag, GLFWwindow*>(m_Handle));
+		glfwSwapBuffers(get(m_Handle));
 	}
 	void Window::resize(Window::Size new_size) {
-		glfwSetWindowSize(get<WindowTag, GLFWwindow*>(m_Handle), new_size.w, new_size.h);
+		glfwSetWindowSize(get(m_Handle), new_size.w, new_size.h);
 	}
 
 	Window::Size Window::get_size() const {
 		Window::Size sz;
-		glfwGetWindowSize(get<WindowTag, GLFWwindow*>(m_Handle), &sz.w, &sz.h);
+		glfwGetWindowSize(get(m_Handle), &sz.w, &sz.h);
 		return sz;
 	}
 
 	HWindow Window::handle() {
 		// a little bypass XD
 		HWindow result;
-		set<WindowTag, GLFWwindow*>(result, get<WindowTag, GLFWwindow*>(m_Handle));
+		set(result, get(m_Handle));
 
 		return result;
 	}
@@ -109,7 +113,7 @@ namespace qk {
 			return;
 		}
 
-		set<WindowTag, GLFWwindow*>(m_Handle, win);
+		set(m_Handle, win);
 
 		// Now m_Window is valid & safe to set user pointer and callbacks
 		glfwSetWindowUserPointer(win, this);
@@ -122,10 +126,10 @@ namespace qk {
 	}
 
 	void Window::destroy() {
-		if (get<WindowTag, GLFWwindow*>(m_Handle)) {
+		if (get(m_Handle)) {
 			spdlog::info("Window destroyed at {:#x}", (uintptr_t)this);
-			glfwDestroyWindow(get<WindowTag, GLFWwindow*>(m_Handle));
-			set<WindowTag, GLFWwindow*>(m_Handle, nullptr);
+			glfwDestroyWindow(get(m_Handle));
+			set(m_Handle, nullptr);
 		}
 	}
 
@@ -568,7 +572,7 @@ namespace qk {
 	void InitWindowEventSystem(Window& window) {
 
 
-		GLFWwindow* win = get<WindowTag, GLFWwindow*>(window.handle());
+		GLFWwindow* win = get(window.handle());
 
 
 		// Window events
