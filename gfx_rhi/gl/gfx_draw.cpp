@@ -24,10 +24,10 @@ namespace qk::gfx::rhi {
 
 
 
-	Result<void, std::string> DrawArrays(const HVertexArray& hVertexArray, PrimitiveType type, int first, size_t count) {
+	Result<void_t, std::string> DrawArrays(const HVertexArray& hVertexArray, PrimitiveType type, int offset, size_t numVertices) {
 		VertexArray_bind(hVertexArray);
-		glDrawArrays(PrimitiveType_cast(type), first, count);
-		return {};
+		glDrawArrays(PrimitiveType_cast(type), offset, numVertices);
+		return void_t{};
 	}
 
 }
