@@ -60,21 +60,22 @@ add_library(${PROJECT_NAME} ${ENGINE_SOURCES})
 
 # engine include lists go here
 target_link_libraries(${PROJECT_NAME}
-    INTERFACE 
     PUBLIC
         qk_core
         qk_rhi
-        glm::glm # consider making a wrapper. Probably don't need to, though
+        glm::glm
         EnTT::EnTT
+        nlohmann_json::nlohmann_json
+
     PRIVATE
         spdlog::spdlog
         glfw
 )
 
+
 target_include_directories(Engine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
-
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../vendor
 )

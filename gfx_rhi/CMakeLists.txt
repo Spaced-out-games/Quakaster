@@ -22,7 +22,7 @@ set(RHI_SOURCES
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
     ${GFX_BACKEND}/gfx_rhi.cpp
-    ${GFX_BACKEND}/HVertexBufferLayoutDesc.cpp
+    "gl/VertexBufferLayoutDesc.cpp"
     ${GFX_BACKEND}/HVertexBufferLayout.cpp
     ${GFX_BACKEND}/HVertexArray.cpp
 
@@ -34,7 +34,7 @@ set(RHI_SOURCES
     ${GFX_BACKEND}/HShader.cpp
     ${GFX_BACKEND}/HShaderProgram.cpp
     ${GFX_BACKEND}/gfx_draw.cpp
-)
+ "gl/HDescriptorSet.cpp" "gl/Scalar.cpp")
 
 # ------------------------------------------------------------------------------
 # Backend selection
