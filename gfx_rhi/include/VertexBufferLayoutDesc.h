@@ -3,31 +3,13 @@
 #include "Handle.h"
 #include <stdint.h>
 #include <vector>
-
+#include "Scalar.h"
 
 
 namespace qk::gfx::rhi {
 
+    static constexpr uint32_t AUTO = UINT_MAX;
 
-
-
-    enum class ScalarType : uint32_t {
-        unknown,
-        i8,
-        i16,
-        i32,
-        i64,
-
-        u8,
-        u16,
-        u32,
-        u64,
-
-        f32,
-        f64,
-
-        ptr
-    };
 
     enum class InputRate: uint8_t {
         Vertex,
@@ -37,7 +19,7 @@ namespace qk::gfx::rhi {
     // ------------------------------------------------------------
     // Runtime size query (used by layout systems, strides, etc.)
     // ------------------------------------------------------------
-    size_t QK_API ScalarType_size(ScalarType type);
+    
 
     // ------------------------------------------------------------
     // Compile-time mapping from C++ type -> ScalarType
@@ -129,30 +111,21 @@ namespace qk::gfx::rhi {
             std::vector<VertexAttributeBinding> m_Attributes;
             std::vector<VertexBufferBinding> m_Bindings;
 
-            // internal tracking for auto-offset computation
-            uint32_t m_CurrentOffset[8] = { 0 }; // assumes small binding count for now
-
+            uint32_t m_LastLocation = AUTO;
+            uint32_t m_LastBinding = 0;
         public:
-            // ------------------------------------------------------------
-            // Add a vertex buffer stream (vertex or instance)
-            // ------------------------------------------------------------
+
             void add_binding(uint32_t binding, uint32_t stride, InputRate rate = InputRate::Vertex);
 
-            // ------------------------------------------------------------
-            // Add an attribute to a specific binding
-            // Automatically assigns correct offset
-            // ------------------------------------------------------------
-            void push(const VertexAttribute& attr, uint32_t location, uint32_t binding);
 
-            // ------------------------------------------------------------
-            // Query helpers
-            // ------------------------------------------------------------
+            void push(const VertexAttribute& attr, uint32_t location = AUTO, uint32_t binding = AUTO);
+
+
             const std::vector<VertexAttributeBinding>& attributes() const;
 
-            // gets all the bindings
+
             const std::vector<VertexBufferBinding>& bindings() const;
 
-            // total stride for a binding.
             uint32_t stride(uint32_t binding) const;
     };
 
