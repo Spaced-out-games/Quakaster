@@ -6,16 +6,16 @@
 namespace qk::gfx::rhi {
 
 
-	enum class BufferUsage {
-		Static,
-		Dynamic,
-		Stream
+	enum BufferUsage {
+		StaticDraw,
+		DynamicDraw,
+		StreamDraw
 	};
 
 
 	struct HVertexBufferTag {};
 	using HVertexBuffer = Handle<HVertexBufferTag>;
-	using HVertexBufferRef = Ref<HVertexBufferTag>;
+	//using HVertexBufferRef = Ref<HVertexBufferTag>;
 
 
 	HVertexBuffer VertexBuffer_ctor();
