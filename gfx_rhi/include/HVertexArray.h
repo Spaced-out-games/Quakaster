@@ -2,6 +2,8 @@
 #include "core.h"
 #include "Handle.h"
 #include "Result.h"
+#include "HVertexBuffer.h"
+#include "HVertexBufferLayout.h"
 #include <string>
 
 
@@ -9,9 +11,10 @@
 
 namespace qk::gfx::rhi {
 
+
+
 	struct HVertexArrayTag {};
 	using HVertexArray = Handle<HVertexArrayTag>;
-	using HVertexArrayRef = Ref<HVertexArrayTag>;
 
 
 	HVertexArray VertexArray_ctor();
@@ -22,7 +25,8 @@ namespace qk::gfx::rhi {
 
 	void VertexArray_unbind();
 
-	HVertexArrayRef VertexArray_get_current_bound() noexcept;
+
+	void VertexArray_applyLayout(const HVertexArray& hVertexArray, const HVertexBuffer& hVertexBuffer, const HVertexBufferLayout& hLayout);
 
 
 
