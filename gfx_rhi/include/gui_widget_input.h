@@ -3,7 +3,7 @@
 
 namespace qk::gfx::gui::io {
 
-	enum class MouseSource {
+	enum MouseSource {
 		Mouse,
 		TouchScreen,
 		Pen
