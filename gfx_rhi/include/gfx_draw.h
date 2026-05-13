@@ -8,7 +8,7 @@
 
 
 namespace qk::gfx::rhi {
-	enum class PrimitiveType {
+	enum PrimitiveType {
 		Triangle,
 		Lines,
 		Points,
@@ -17,6 +17,6 @@ namespace qk::gfx::rhi {
 	};
 
 
-	Result<void, std::string> DrawArrays(const HVertexArray& hVertexArray, PrimitiveType type, int first, size_t count);
+	Result<void_t, std::string> DrawArrays(const HVertexArray& hVertexArray, PrimitiveType type, int offset, size_t numVertices);
 
 }
