@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 namespace qk::gfx::rhi {
-	enum class ClearChannels : uint32_t {
+	enum ClearChannels : uint32_t {
 		COLOR =		1u << 0,
 		DEPTH =		1u << 1,
 		STENCIL =	1u << 2
