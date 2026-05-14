@@ -32,6 +32,7 @@ set(ENGINE_SOURCES
 
     # media
     media/Image.cpp
+    media/json.cpp
 
     # gui
     gui/GUILayer.cpp
@@ -48,12 +49,17 @@ set(ENGINE_SOURCES
     # services
     services/IService.cpp
     services/ConvarService.cpp
+    services/GraphNodeService.cpp
 
     # scripting
     scripting/Convar.cpp
     scripting/ConvarRegistry.cpp
 
- "services/GraphNodeService.cpp")
+    # gfx
+    gfx/Material.cpp
+    gfx/Mesh.cpp
+
+)
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})
