@@ -119,7 +119,6 @@ namespace qk::gfx::gui::io {
 
 	void PushMouseWheelEvent(float wheel_x, float wheel_y);
 
-	// NOTICE: This is NOT currently implemented correctly and is using a dud to de-expose ImGuiKey
 	void PushKeyEvent(Key keycode, bool pressed);
 	
 	void PushInputCharacter(unsigned int c);
