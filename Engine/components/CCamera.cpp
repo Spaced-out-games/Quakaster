@@ -2,7 +2,9 @@
 #include <glm/gtc/matrix_transform.hpp>   // perspective
 
 
-namespace qk::entity {
+#define QK_CAMERA_ELIPSON 0.0001f
+
+namespace qk::components {
 
 	glm::mat4 CCamera::projection() const {
 		return glm::perspective(m_FovRadians, m_AspectRatio, m_Near, m_Far);
@@ -23,7 +25,7 @@ namespace qk::entity {
 	}
 
 	void CCamera::set_near(float near) {
-		m_Near = std::max(m_Near, 0.0001f);
+		m_Near = std::max(m_Near, QK_CAMERA_ELIPSON);
 
 	}
 
@@ -32,7 +34,7 @@ namespace qk::entity {
 	}
 
 	void CCamera::set_far(float far) {
-		m_Far = std::max(m_Far, m_Near + 0.0001f);
+		m_Far = std::max(m_Far, m_Near + QK_CAMERA_ELIPSON);
 	}
 	float CCamera::far() const {
 		return m_Far;

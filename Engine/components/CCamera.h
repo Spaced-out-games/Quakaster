@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// math/CCamera.h
+/// components/CCamera.h
 /// Purpose: Defines a minimal Camera definition. Represents a projection matrix and nothing more.
 /// **************************************************************************************************
 
@@ -7,7 +7,7 @@
 #include "core.h"
 #include <glm/matrix.hpp>                 // mat4 type
 
-namespace qk::entity {
+namespace qk::components {
 
 	class QK_API CCamera {
 		float m_FovRadians;
