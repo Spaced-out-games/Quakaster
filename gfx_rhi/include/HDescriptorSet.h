@@ -25,11 +25,11 @@ namespace qk::gfx::rhi {
 		uint16_t scalar_count, ScalarMultiplicity multiplicity,
 		void* data);
 
-	void DescriptorSet_update(HShaderProgram& hShaderProgram, HDescriptorSet& hDescriptorSet, HShaderUniform& hLocation);
+	void DescriptorSet_update(const HShaderProgram& hShaderProgram, const HDescriptorSet& hDescriptorSet, const HShaderUniform& hLocation);
 
 
 
-	void DescriptorSet_update(HShaderProgram& hShaderProgram, HDescriptorSet& hDescriptorSet);
+	void DescriptorSet_update(const HShaderProgram& hShaderProgram, const HDescriptorSet& hDescriptorSet);
 
 
 

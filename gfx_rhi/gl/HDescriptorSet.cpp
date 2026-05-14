@@ -148,9 +148,9 @@ namespace qk::gfx::rhi {
 
 	}
 
-    void DescriptorSet_update(HShaderProgram& hShader,
-        HDescriptorSet& hDescriptorSet,
-        HShaderUniform& hLocation)
+    void DescriptorSet_update(const HShaderProgram& hShader,
+        const HDescriptorSet& hDescriptorSet,
+        const HShaderUniform& hLocation)
     {
         auto program = get(hShader);
         auto* set = get(hDescriptorSet);
@@ -167,8 +167,8 @@ namespace qk::gfx::rhi {
         upload_uniform(get(hLocation), it->second);
     }
 
-    void DescriptorSet_update(HShaderProgram& hShaderProgram,
-        HDescriptorSet& hDescriptorSet)
+    void DescriptorSet_update(const HShaderProgram& hShaderProgram,
+        const HDescriptorSet& hDescriptorSet)
     {
         auto program = get(hShaderProgram);
         auto* set = get(hDescriptorSet);
