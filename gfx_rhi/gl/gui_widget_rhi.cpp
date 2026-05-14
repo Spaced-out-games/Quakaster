@@ -116,6 +116,10 @@ namespace qk::gfx::rhi::gui {
     {
         return ImGui::SliderFloat(label, &v, min, max);
     }
+    bool slider_float2(const char* label, Vec2& v, float min, float max)
+    {
+        return ImGui::SliderFloat2(label, &v.x, min, max);
+    }
     bool slider_float3(const char* label, float v[3], float min, float max, const char* fmt, SliderFlags flags) {
 
         return ImGui::SliderFloat3(label, v, min, max, fmt, SliderFlags_cast(flags));

@@ -70,6 +70,7 @@ namespace qk::gfx::rhi::gui {
 
 	// sliders
 	bool slider_float(const char* label, float& v, float min, float max);
+	bool slider_float(const char* label, float& v, float min, float max);
 	bool slider_float3(const char* label, float v[3], float min, float max, const char* fmt, SliderFlags flags = SliderFlags::None);
 	bool slider_int(const char* label, int& v, int min, int max);
 	bool drag_float(const char* label, float& v, float speed = 1.0f);
