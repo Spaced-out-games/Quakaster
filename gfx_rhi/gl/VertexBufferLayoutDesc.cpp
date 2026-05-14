@@ -51,7 +51,9 @@ namespace qk::gfx::rhi {
 	// Push attribute
 	// ------------------------------------------------------------
 	void VertexBufferLayoutDesc::push(
-		const VertexAttribute& attr,
+		ScalarType type,
+		uint32_t count,
+		bool normalize,
 		uint32_t location,
 		uint32_t binding
 	)
@@ -98,7 +100,7 @@ namespace qk::gfx::rhi {
 		// push attribute
 		// ----------------------------------------
 		m_Attributes.push_back(VertexAttributeBinding{
-			.attr = attr,
+			.attr = VertexAttribute{type, count, normalize},
 			.location = location,
 			.offset = offset,
 			.binding = binding,
@@ -120,7 +122,7 @@ namespace qk::gfx::rhi {
 			{
 				b.stride =
 					offset +
-					(attr.count * ScalarType_size(attr.type));
+					(count * ScalarType_size(type));
 			}
 		}
 	}

@@ -118,7 +118,12 @@ namespace qk::gfx::rhi {
             void add_binding(uint32_t binding, uint32_t stride, InputRate rate = InputRate::Vertex);
 
 
-            void push(const VertexAttribute& attr, uint32_t location = AUTO, uint32_t binding = AUTO);
+            void push(
+                ScalarType type, uint32_t count, bool normalize,
+                uint32_t location = AUTO, uint32_t binding = AUTO
+            );
+
+
 
 
             const std::vector<VertexAttributeBinding>& attributes() const;
