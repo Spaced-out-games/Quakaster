@@ -6,6 +6,7 @@
 #include "HDescriptorSet.h"
 #include "HVertexArray.h"
 #include "HVertexBuffer.h"
+#include "HIndexBuffer.h"
 #include "glad/glad.h"
 #include "HTexture.h"
 #include "HShader.h"
@@ -21,6 +22,11 @@ namespace qk {
 
 	template<>
 	struct handle_traits<HVertexBufferTag> {
+		using value_type = GLuint;
+	};
+
+	template<>
+	struct handle_traits<HIndexBufferTag> {
 		using value_type = GLuint;
 	};
 
