@@ -21,7 +21,7 @@ namespace qk {
 
 
 namespace qk::gfx::rhi {
-	GLuint BufferUsage_cast(BufferUsage usage) {
+	inline GLuint BufferUsage_cast(BufferUsage usage) {
 		switch (usage)
 		{
 		case qk::gfx::rhi::BufferUsage::StaticDraw:
