@@ -31,7 +31,8 @@
 #include "HShaderProgram.h"
 #include "HDescriptorSet.h"
 
-#include "media/json.h"
+#include "gfx/Material.h"
+#include "gfx/Mesh.h"
 
 #define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (54).png"
 
@@ -80,11 +81,10 @@ void main()
 
 
 std::vector<float> points = {
-	0,0,
-	0,1,
-	1,0
+	-0.5,-0.5,
+	0.5,-0.5,
+	0.0,0.5
 };
-
 
 
 struct cl_app : qk::Application {
@@ -94,24 +94,19 @@ struct cl_app : qk::Application {
 	qk::EventQueue queue;
 	qk::LayerStack layers;
 
-	glm::vec3 color = {};
+	glm::vec3 color = {1,1,1};
 	glm::vec3 position = {};
 
 	// rhi types
-	rhi::HVertexArray hVertexArray;
-	rhi::HVertexBuffer hVertexBuffer;
+	//rhi::HVertexArray hVertexArray;
+	//rhi::HVertexBuffer hVertexBuffer;
 	rhi::HVertexBufferLayout hLayout;
 	rhi::VertexBufferLayoutDesc LayoutDesc;
 
-	rhi::HShader hVertexShader;
-	rhi::HShader hFragmentShader;
+	//Material mat_flat;
+	Mesh mesh_triangle;
 
-	rhi::HShaderProgram hShaderProgram;
-	rhi::HDescriptorSet hDescriptorSet;
-	rhi::HShaderUniform hColor;
-	rhi::HShaderUniform hPosition;
 
-	
 	// Can be called before or after render_init()
 	void attach_queues() {
 		layers.attach_queue(&queue);
@@ -129,7 +124,7 @@ struct cl_app : qk::Application {
 		auto& gui = layers.emplace_layer<qk::gfx::gui::GUILayer>(window.handle());
 
 		gui.emplace<qk::gfx::gui::Vec3EditWidget>("color", &color, 0.0f, 1.0f);
-		gui.emplace<qk::gfx::gui::Vec3EditWidget>("position", &position, -1.0f, 1.0f);
+		gui.emplace<qk::gfx::gui::Vec3EditWidget>("position", &position, -5.0f, 5.0f);
 	}
 
 
@@ -138,78 +133,17 @@ struct cl_app : qk::Application {
 		attach_queues();
 		render_init();
 		attach_layers();
-		
-		// Construct the vertex array and bind
-		hVertexArray = rhi::VertexArray_ctor();
-		rhi::VertexArray_bind(hVertexArray);
+
 		// create the vertex buffer layout
-		LayoutDesc.push(rhi::VertexAttribute{ rhi::f32, 2, 0 });
+		LayoutDesc.push(rhi::f32, 2, 0);
 		hLayout = rhi::VertexBufferLayout_ctor(LayoutDesc);
 
-		hVertexBuffer = rhi::VertexBuffer_ctor();
-		rhi::VertexBuffer_upload(hVertexBuffer, points.data(), points.size(), sizeof(float), rhi::StaticDraw);
-
-		// apply the layout
-		rhi::VertexArray_applyLayout(hVertexArray, hVertexBuffer, hLayout);
 
 
+		mesh_triangle.init(points, hLayout, demoVertShaderSource, demoFragShaderSource, rhi::StaticDraw);
+		mesh_triangle.push_uniform<glm::vec3>("u_Color", &color);
+		mesh_triangle.push_uniform<glm::vec3>("u_Position", &position);
 		
-
-
-
-
-
-
-		// Fragment shader
-		auto RFrag = rhi::Shader_ctor(rhi::ShaderType::Fragment);
-
-		if (RFrag.has_value()) {
-			hFragmentShader = std::move(RFrag.value());
-			rhi::Shader_upload(hFragmentShader, demoFragShaderSource);
-		} else std::cout << RFrag.error();
-
-		// Vertex Shader
-		auto RVert = rhi::Shader_ctor(rhi::ShaderType::Vertex);
-
-		if (RVert.has_value()) {
-			hVertexShader = std::move(RVert.value());
-			rhi::Shader_upload(hVertexShader, demoVertShaderSource);
-		} else std::cout << RVert.error();
-
-
-		// Shader Program
-		auto RProgram = rhi::ShaderProgram_ctor(hFragmentShader, hVertexShader);
-
-		if (RProgram.has_value())
-			hShaderProgram = std::move(RProgram.value());
-		else
-			std::cout << RProgram.error();
-
-		auto RColor = rhi::ShaderProgram_getUniform(hShaderProgram, "u_Color");
-
-		if (RColor.has_value())
-			hColor = RColor.value();
-
-		auto RPosition = rhi::ShaderProgram_getUniform(hShaderProgram, "u_Position");
-
-		if (RPosition.has_value())
-			hPosition = RPosition.value();
-
-
-		
-
-
-
-		hDescriptorSet = rhi::DescriptorSet_ctor();
-		
-
-		rhi::DescriptorSet_push(hDescriptorSet, hColor, rhi::f32, 3, rhi::ScalarMultiplicity::Vector, &color);
-		rhi::DescriptorSet_push(hDescriptorSet, hPosition, rhi::f32, 3, rhi::ScalarMultiplicity::Vector, &position);
-
-		rhi::DescriptorSet_update(hShaderProgram, hDescriptorSet, hColor);
-		rhi::DescriptorSet_update(hShaderProgram, hDescriptorSet, hPosition);
-
-
 
 
 		// set clear settings.
@@ -228,13 +162,14 @@ struct cl_app : qk::Application {
 		rhi::clear();
 
 		// renders to offscreen image
+		mesh_triangle.bind();
+		mesh_triangle.update_uniforms();
+		rhi::DrawArrays(mesh_triangle.m_hVertexArray, rhi::Triangle, 0, 3);
 		layers.render();
-		rhi::ShaderProgram_bind(hShaderProgram);
-		rhi::DrawArrays(hVertexArray, rhi::Triangle, 0, 3);
+
 
 		// presents offscreen image
 		window.swap_buffers();
-		rhi::DescriptorSet_update(hShaderProgram, hDescriptorSet);
 		//rhi::DescriptorSet_update(hShaderProgram, hDescriptorSet, hPosition);
 
 
