@@ -4,38 +4,38 @@
 
 namespace qk {
 
-    template<class Tag>
+    template<class tag_t>
     struct handle_traits; // must be forward declared FIRST
 
-    template<class Tag>
+    template<class tag_t>
     class Handle;
 
 
-    template<class Tag>
+    template<class tag_t>
     class Ref {
-        const Handle<Tag>& h;
+        const Handle<tag_t>& m_Handle;
 
     public:
-        Ref(const Handle<Tag>& handle) : h(handle) {}
+        Ref(const Handle<tag_t>& handle) : m_Handle(handle) {}
 
         // implicit access to underlying handle
-        operator const Handle<Tag>& () const noexcept {
-            return h;
+        operator const Handle<tag_t>& () const noexcept {
+            return m_Handle;
         }
 
-        const Handle<Tag>* operator->() const noexcept {
-            return &h;
+        const Handle<tag_t>* operator->() const noexcept {
+            return &m_Handle;
         }
 
-        const Handle<Tag>& get() const noexcept {
-            return h;
+        const Handle<tag_t>& get() const noexcept {
+            return m_Handle;
         }
     };
 
 
 
 
-    template<class Tag>
+    template<class tag_t>
     class Handle {
         uintptr_t m_Handle = 0;
 
@@ -57,8 +57,8 @@ namespace qk {
         // non - const&. It *shouldn't* be capable of anything other than a forced memory leak.
 
 
-        Ref<Tag> ref() const noexcept {
-            return Ref<Tag>(*this);
+        Ref<tag_t> ref() const noexcept {
+            return Ref<tag_t>(*this);
         }
 
     private:
@@ -66,16 +66,16 @@ namespace qk {
         friend void set(Handle<T>&, typename handle_traits<T>::value_type);
     };
 
-    template<class Tag>
-    typename handle_traits<Tag>::value_type
-        get(const Handle<Tag>& h)
+    template<class tag_t>
+    typename handle_traits<tag_t>::value_type
+        get(const Handle<tag_t>& h)
     {
-        return (typename handle_traits<Tag>::value_type)(h.value());
+        return (typename handle_traits<tag_t>::value_type)(h.value());
     }
 
-    template<class Tag>
-    void set(Handle<Tag>& h,
-        typename handle_traits<Tag>::value_type v)
+    template<class tag_t>
+    void set(Handle<tag_t>& h,
+        typename handle_traits<tag_t>::value_type v)
     {
         h.m_Handle = (uintptr_t)(v);
     }
