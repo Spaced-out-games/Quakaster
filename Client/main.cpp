@@ -80,57 +80,54 @@ void main()
 )";
 
 
-std::vector<float> points = {
+std::vector<float> g_Points = {
 	-0.5,-0.5,
 	0.5,-0.5,
 	0.0,0.5
 };
 
 
-struct cl_app : qk::Application {
+struct DemoClientApplication : qk::Application {
 	
 	// core needs
-	qk::Window window;
-	qk::EventQueue queue;
-	qk::LayerStack layers;
+	qk::Window m_Window;
+	qk::EventQueue m_EventQueue;
+	qk::LayerStack m_Layers;
 
-	glm::vec3 color = {1,1,1};
-	glm::vec3 position = {};
+	glm::vec3 m_Color = {1,1,1};
+	glm::vec3 m_Position = {};
 
-	// rhi types
-	//rhi::HVertexArray hVertexArray;
-	//rhi::HVertexBuffer hVertexBuffer;
+
 	rhi::HVertexBufferLayout hLayout;
 	rhi::VertexBufferLayoutDesc LayoutDesc;
 
-	//Material mat_flat;
-	Mesh mesh_triangle;
+	Mesh m_DemoMesh;
 
 
 	// Can be called before or after render_init()
-	void attach_queues() {
-		layers.attach_queue(&queue);
-		window.set_event_queue(&queue);
+	void attach_m_EventQueues() {
+		m_Layers.attach_queue(&m_EventQueue);
+		m_Window.set_event_queue(&m_EventQueue);
 	}
 
 	void render_init() {
 		qk::startup();
-		window.init(qk::Window::Size{ 1920, 1080 }, "Quakaster Demo", nullptr);
-		rhi::init(window.getProcAddress_pfn());
+		m_Window.init(qk::Window::Size{ 1920, 1080 }, "Quakaster Demo", nullptr);
+		rhi::init(m_Window.getProcAddress_pfn());
 	}
 
-	// this has to be called last because some layers might depend on window handles
+	// this has to be called last because some m_Layers might depend on m_Window handles
 	void attach_layers() {
-		auto& gui = layers.emplace_layer<qk::gfx::gui::GUILayer>(window.handle());
+		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());
 
-		gui.emplace<qk::gfx::gui::Vec3EditWidget>("color", &color, 0.0f, 1.0f);
-		gui.emplace<qk::gfx::gui::Vec3EditWidget>("position", &position, -5.0f, 5.0f);
+		gui.emplace<qk::gfx::gui::Vec3EditWidget>("Color", &m_Color, 0.0f, 1.0f);
+		gui.emplace<qk::gfx::gui::Vec3EditWidget>("Position", &m_Position, -5.0f, 5.0f);
 	}
 
 
 	void init(int argc, char** argv) override {
 
-		attach_queues();
+		attach_m_EventQueues();
 		render_init();
 		attach_layers();
 
@@ -140,9 +137,9 @@ struct cl_app : qk::Application {
 
 
 
-		mesh_triangle.init(points, hLayout, demoVertShaderSource, demoFragShaderSource, rhi::StaticDraw);
-		mesh_triangle.push_uniform<glm::vec3>("u_Color", &color);
-		mesh_triangle.push_uniform<glm::vec3>("u_Position", &position);
+		m_DemoMesh.init(g_Points, hLayout, demoVertShaderSource, demoFragShaderSource, rhi::StaticDraw);
+		m_DemoMesh.push_uniform<glm::vec3>("u_Color", &m_Color);
+		m_DemoMesh.push_uniform<glm::vec3>("u_Position", &m_Position);
 		
 
 
@@ -153,28 +150,27 @@ struct cl_app : qk::Application {
 
 	void run() override {
 
-		// populates event queue
-		window.pollEvents();
+		// populates event m_EventQueue
+		m_Window.pollEvents();
 		// flushes it
-		layers.propagate_events();
+		m_Layers.propagate_events();
 
 		// flushes offscreen image
 		rhi::clear();
 
 		// renders to offscreen image
-		mesh_triangle.bind();
-		mesh_triangle.update_uniforms();
-		rhi::DrawArrays(mesh_triangle.m_hVertexArray, rhi::Triangle, 0, 3);
-		layers.render();
+		m_DemoMesh.bind();
+		m_DemoMesh.update_uniforms();
+		rhi::DrawArrays(m_DemoMesh.m_hVertexArray, rhi::Triangle, 0, 3);
+		m_Layers.render();
 
 
 		// presents offscreen image
-		window.swap_buffers();
-		//rhi::DescriptorSet_update(hShaderProgram, hDescriptorSet, hPosition);
+		m_Window.swap_buffers();
 
 
-		// updates when told to by the window.
-		set_status(window.should_close());
+		// updates when told to by the m_Window.
+		set_status(m_Window.should_close());
 
 	}
 
@@ -186,7 +182,7 @@ struct cl_app : qk::Application {
 
 
 std::unique_ptr<qk::Application> qk::create_application(int argc, char** argv) {
-	return std::make_unique<cl_app>();
+	return std::make_unique<DemoClientApplication>();
 }
 
 
