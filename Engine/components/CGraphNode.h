@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// ent/CGraphNode.h
+/// components/CGraphNode.h
 /// Purpose: Defines a scene graph node type, within the entt ecosystem
 /// **************************************************************************************************
 #pragma once
@@ -21,9 +21,6 @@ namespace qk::entity {
 		};
 
 	};
-
-
-
 
 
 
