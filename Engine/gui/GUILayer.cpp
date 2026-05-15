@@ -183,7 +183,7 @@ namespace qk::gfx::gui {
     }
 
 
-	void GUILayer::on_render() {
+	void GUILayer::onRender() {
 
         rhi::gui::begin_frame(0.016f);
 
@@ -197,7 +197,7 @@ namespace qk::gfx::gui {
 
 	}
 
-	void GUILayer::on_attach() {
+	void GUILayer::onAttach() {
         subscribe(EEventCategory::cat_kbmouse);
         rhi::gui::init(m_hWindow);
 
@@ -205,11 +205,11 @@ namespace qk::gfx::gui {
 
 	}
 
-	void GUILayer::on_detach() {
+	void GUILayer::onDetach() {
 
 	}
 
-	[[nodiscard]] Layer::EBlock GUILayer::on_event(const Event& evt) {
+	[[nodiscard]] Layer::EBlock GUILayer::onEvent(const Event& evt) {
         
 
         switch (evt.m_Type)

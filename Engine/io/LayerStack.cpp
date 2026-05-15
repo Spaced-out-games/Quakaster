@@ -8,7 +8,7 @@
 namespace qk {
 
 	void LayerStack::insert_layer(std::unique_ptr<Layer>&& layer) {
-		layer->on_attach();
+		layer->onAttach();
 		m_Layers.push_back(std::move(layer));
 	}
 
@@ -33,7 +33,7 @@ namespace qk {
 
 				if (!(layerPtr->filter & evt.m_Category)) continue;
 
-				BlockResult = layerPtr->on_event(evt);
+				BlockResult = layerPtr->onEvent(evt);
 
 				if (BlockResult == Layer::EBlock::Block) {
 					break;
@@ -47,7 +47,7 @@ namespace qk {
 
 	void LayerStack::render() {
 		for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it) {
-			(*it)->on_render();
+			(*it)->onRender();
 		}
 	}
 

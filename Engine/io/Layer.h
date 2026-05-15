@@ -21,10 +21,10 @@ namespace qk {
 
 
 		virtual ~Layer() = default;
-		[[nodiscard]] virtual EBlock on_event(const Event& evt) = 0;
-		virtual void on_render() = 0;
-		virtual void on_attach() = 0;
-		virtual void on_detach() = 0;
+		[[nodiscard]] virtual EBlock onEvent(const Event& evt) = 0;
+		virtual void onRender() = 0;
+		virtual void onAttach() = 0;
+		virtual void onDetach() = 0;
 
 
 		void subscribe(EEventCategory category);

@@ -36,13 +36,13 @@ namespace qk::gfx::gui {
 		// sorts widgets by their Z
 		void sort();
 
-		virtual void on_render() override;
+		virtual void onRender() override;
 
-		virtual void on_attach() override;
+		virtual void onAttach() override;
 
-		virtual void on_detach() override;
+		virtual void onDetach() override;
 
-		[[nodiscard]] virtual EBlock on_event(const Event& evt) override;
+		[[nodiscard]] virtual EBlock onEvent(const Event& evt) override;
 
 
 	};

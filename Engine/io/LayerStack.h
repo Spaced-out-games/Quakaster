@@ -32,7 +32,7 @@ namespace qk {
             auto layer = std::make_unique<layer_t>(std::forward<Args>(args)...);
             layer_t& ref = *layer;
 
-            ref.on_attach();
+            ref.onAttach();
             m_Layers.push_back(std::move(layer));
 
             return ref;
