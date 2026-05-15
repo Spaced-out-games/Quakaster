@@ -35,8 +35,8 @@ namespace qk {
         size_t size() const;
         bool empty() const;
 
-        Event& operator[](size_t i) { return m_Data[i]; }
-        const Event& operator[](size_t i) const { return m_Data[i]; }
+        Event& operator[](size_t i) { return m_Data.at(i); }
+        const Event& operator[](size_t i) const { return m_Data.at(i); }
 
         Event* data();
         const Event* data() const;
