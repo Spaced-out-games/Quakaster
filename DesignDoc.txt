@@ -1,0 +1,74 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// DesignDoc.txt
+/// Purpose: prevent us from losing our fucking minds
+/// **************************************************************************************************
+
+Definitions:
+Entity: A single atomic object in the game world
+
+Actor: A subtree of the scene graph, logically comprised of any number of entities.
+Conceptually, the root of this entity tree IS the 'Actor root' and stores some 
+driver state, like CThink or the Actor's root via the world-relative CTransform
+* Note: CTransform represents a transform relative to its parent, or is world-space
+if parentless.
+
+Component: A composable unit of state. Generally, operations should be free functions
+with the exception of operations that operate primarily on the self. Camera.rotate()
+is fine, but Camera.LookAt() is not - make that into LookAt(camera, target)
+
+System: A type derived from qk::ISystem that is effectively just a function pointer
+with timing informatinon. Design-wise, it is to operate primarily with Components,
+Entities, and by extension, Actors
+
+
+General Design goals:
+Prefer composition of small, atomic operations
+Return highly descriptive error semantics (ie, message) by value at the low level
+High level types / functions are allowed to be more opinionated about how to handle
+errors themselves.
+
+
+
+Naming Conventions:
+
+class naming conventions:
+PascalCase, except basic type aliases (ie, u8), which can be all lowercase
+
+Prefix interfaces with I, eg, IService.
+Enums: prefix with E, eg, EColor.
+Components: procede with C, eg, CCamera.
+Actor Template: Prefix with A, eg, APlayerCharacter. These shouldn't need extensive
+methods, barring good component and system design, but inline composite helpers are legal.
+Systems: literally a for loop and plumbing. Should use component methods and
+actor helpers. There is some give here for things like casting or mathematics
+
+member naming conventions:
+Private members: must prefix with m_
+Public members: Do not prefix with m_
+Pointers: prefix with p
+Handles: prefix with h
+
+methods:
+Public methods are to be named in camelCase
+Private methods are to be named in snake_case
+
+arg naming conventions:
+Pointers: prefix with p
+Handles: prefix with h
+
+
+
+For the RHI:
+OpenGL handles can be preceded by gl_, eg, gl_VertexBuffer in function local scopes
+Vulkan handles are prefixed with vk_ (when that becomes a thing).
+Don't use objects; use free functions using the convention:
+TypeName_method_name
+
+Other conventions:
+
+headers get the following heading:
+
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// /.h
+/// Purpose: 
+/// **************************************************************************************************
