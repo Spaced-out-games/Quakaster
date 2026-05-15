@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// math/CCamera.h
+/// components/CCamera.h
 /// Purpose: Defines a matrix type that's not even being used in the engine lmao.
 /// **************************************************************************************************
 
@@ -7,6 +7,6 @@
 #include "glm/mat4x4.hpp"
 
 
-namespace qk::math {
+namespace qk::components {
 	using CMatrix = glm::mat4;
 }
