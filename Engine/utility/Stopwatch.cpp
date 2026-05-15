@@ -22,9 +22,9 @@ namespace qk::utility {
 		m_StartTime = 0;
 	}
 
-	uint64_t Stopwatch::total_time() const { return m_TotalTime; }
-	double Stopwatch::total_time_ms() const { return m_TotalTime / 1e6; }
-	double Stopwatch::total_time_s() const { return m_TotalTime / 1e9; }
+	uint64_t Stopwatch::totalTime() const { return m_TotalTime; }
+	double Stopwatch::totalTime_ms() const { return m_TotalTime / 1e6; }
+	double Stopwatch::totalTime_s() const { return m_TotalTime / 1e9; }
 
 
 

@@ -17,18 +17,20 @@ namespace qk::gfx::rhi  {
 	Result<HShaderProgram, std::string>
 		ShaderProgram_ctor(const HShader& hFragment, const HShader& hVertex)
 	{
-		GLuint frag = get(hFragment);
-		GLuint vert = get(hVertex);
+		QK_ASSERT(hFragment.valid());
+		QK_ASSERT(hVertex.valid());
 
-		assert(frag);
-		assert(vert);
+		GLuint gl_fragShader = get(hFragment);
+		GLuint gl_vertShader = get(hVertex);
+
+
 
 		GLuint program = glCreateProgram();
 		if (program == 0)
 			return std::string{"glCreateProgram() failed"};
 
-		glAttachShader(program, vert);
-		glAttachShader(program, frag);
+		glAttachShader(program, gl_vertShader);
+		glAttachShader(program, gl_fragShader);
 		glLinkProgram(program);
 
 		GLint success = GL_FALSE;
@@ -55,8 +57,8 @@ namespace qk::gfx::rhi  {
 			return log;
 		}
 
-		glDetachShader(program, vert);
-		glDetachShader(program, frag);
+		glDetachShader(program, gl_vertShader);
+		glDetachShader(program, gl_fragShader);
 
 		HShaderProgram hProgram;
 		set(hProgram, program);
@@ -68,23 +70,26 @@ namespace qk::gfx::rhi  {
 	}
 
 	void ShaderProgram_dtor(HShaderProgram& hProgram) {
-		GLuint program = get(hProgram);
+		QK_ASSERT(hProgram.valid());
+		GLuint gl_program = get(hProgram);
 
-		// enforce good hygiene
-		assert(program != 0);
-
-		glDeleteProgram(program);
+		glDeleteProgram(gl_program);
 		hProgram = nullptr;
 
 	}
 
 	Result<HShaderUniform, void_t> ShaderProgram_getUniform(const HShaderProgram& hProgram, const char* uniformName) {
-		GLuint program = get(hProgram);
+
+		QK_ASSERT(hProgram.valid());
+
+
+		GLuint gl_program = get(hProgram);
+
 		HShaderUniform hUniform;
 
-		int uniformLocation = glGetUniformLocation(program, uniformName);
+		int uniformLocation = glGetUniformLocation(gl_program, uniformName);
 
-		if (uniformLocation == -1) return void_t{};
+		if (uniformLocation == -1) return HShaderUniform{ nullptr };// void_t{};
 
 		set(hUniform, uniformLocation);
 

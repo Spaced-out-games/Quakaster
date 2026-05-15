@@ -10,11 +10,11 @@ namespace qk::spacial {
 	using SpacialGridCell = glm::ivec3;
 
 	struct SpacialGridCellHash {
-		size_t operator()(const SpacialGridCell& v) const noexcept {
+		size_t operator()(const SpacialGridCell& cell) const noexcept {
 
-			size_t h1 = std::hash<int>()(v.x);
-			size_t h2 = std::hash<int>()(v.y);
-			size_t h3 = std::hash<int>()(v.z);
+			size_t h1 = std::hash<int>()(cell.x);
+			size_t h2 = std::hash<int>()(cell.y);
+			size_t h3 = std::hash<int>()(cell.z);
 
 			// decent hash combine
 			return h1 ^ (h2 << 1) ^ (h3 << 2);

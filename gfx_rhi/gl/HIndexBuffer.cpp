@@ -27,34 +27,39 @@ namespace qk::gfx::rhi {
 
 	HIndexBuffer IndexBuffer_ctor() {
 		HIndexBuffer hIndexBuffer;
-		GLuint ibo = 0;
-		glGenBuffers(1, &ibo);
-		set(hIndexBuffer, ibo);
+		GLuint gl_IBO = 0;
+		glGenBuffers(1, &gl_IBO);
+		set(hIndexBuffer, gl_IBO);
 		return hIndexBuffer;
 	}
 
 	void IndexBuffer_dtor(HIndexBuffer& hIndexBuffer) {
-		GLuint ibo = 0;
+		QK_ASSERT(hIndexBuffer.valid());
 
-		glDeleteBuffers(1, &ibo);
+		GLuint gl_IBO = 0;
 
+		glDeleteBuffers(1, &gl_IBO);
 		hIndexBuffer = nullptr;
 	}
 
 	void IndexBuffer_bind(const HIndexBuffer& hIndexBuffer) {
-		assert(get(hIndexBuffer));
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, get(hIndexBuffer));
+		QK_ASSERT(hIndexBuffer.valid());
+
+		GLuint gl_IBO = get(hIndexBuffer);
+		
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_IBO);
 	}
 
 	void IndexBuffer_unbind() {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
-	void IndexBuffer_upload(const HIndexBuffer& hIndexBuffer, const void* indices, uint32_t count, uint32_t elem_size, BufferUsage usage) {
-		assert(get(hIndexBuffer));
+	void IndexBuffer_upload(const HIndexBuffer& hIndexBuffer, const void* pIndices, uint32_t count, uint32_t elem_size, BufferUsage usage) {
+		QK_ASSERT(hIndexBuffer.valid());
+		GLuint gl_IBO = get(hIndexBuffer);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, get(hIndexBuffer));
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * elem_size, indices, BufferUsage_cast(usage));
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl_IBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * elem_size, pIndices, BufferUsage_cast(usage));
 
 	}
 

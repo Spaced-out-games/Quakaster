@@ -4,11 +4,11 @@
 using qk::utility::now;
 
 namespace qk {
-	void System::set_tick_interval_ns(uint64_t interval_ns) {
+	void System::setTickInterval_ns(uint64_t interval_ns) {
 		m_TickInterval_ns = interval_ns;
 	}
 
-	uint64_t System::get_tick_interval_ns() {
+	uint64_t System::getTickInterval_ns() {
 		return m_TickInterval_ns;
 	}
 

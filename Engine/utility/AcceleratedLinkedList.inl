@@ -27,7 +27,7 @@ namespace qk::util {
     }
 
     template <class K, class T, order_pfn_t<T> order_fn>
-    size_t AcceleratedLinkedList<K, T, order_fn>::live_size() const
+    size_t AcceleratedLinkedList<K, T, order_fn>::liveSize() const
     {
         return m_AliveCount;
     }
@@ -248,8 +248,8 @@ namespace qk::util {
 
 
     template <class K, class T, order_pfn_t<T> order_fn>
-    AcceleratedLinkedList<K, T, order_fn>::iterator::iterator(AcceleratedLinkedList* list, index_t idx) :
-        m_List(list),
+    AcceleratedLinkedList<K, T, order_fn>::iterator::iterator(AcceleratedLinkedList* pList, index_t idx) :
+        m_pList(pList),
         m_Index(idx)
     {}
 
@@ -257,11 +257,11 @@ namespace qk::util {
     typename AcceleratedLinkedList<K, T, order_fn>::iterator::reference
         AcceleratedLinkedList<K, T, order_fn>::iterator::operator*() const
     {
-        if (!m_List)
+        if (!m_pList)
         {
             spdlog::critical(
                 "AcceleratedLinkedList::iterator::operator*() at 0x{:x}: "
-                "m_List was nullptr",
+                "m_pList was nullptr",
                 (uintptr_t)this
             );
         }
@@ -272,11 +272,11 @@ namespace qk::util {
                 "AcceleratedLinkedList::iterator::operator*() at 0x{:x}: "
                 "attempted to dereference end()/NULL_LINK iterator (list 0x{:x})",
                 (uintptr_t)this,
-                (uintptr_t)m_List
+                (uintptr_t)m_pList
             );
         }
 
-        auto& node = m_List->m_Nodes[m_Index];
+        auto& node = m_pList->m_Nodes[m_Index];
 
         if (!node.value)
         {
@@ -285,7 +285,7 @@ namespace qk::util {
                 "node index {} has nullptr value (list 0x{:x})",
                 (uintptr_t)this,
                 m_Index,
-                (uintptr_t)m_List
+                (uintptr_t)m_pList
             );
         }
 
@@ -306,9 +306,9 @@ namespace qk::util {
     template <class K, class T, order_pfn_t<T> order_fn>
     typename AcceleratedLinkedList<K, T, order_fn>::iterator&
         AcceleratedLinkedList<K, T, order_fn>::iterator::operator++() {
-        assert(m_List);
+        assert(m_pList);
         if (m_Index != NULL_LINK) {
-            m_Index = m_List->m_Nodes[m_Index].next;
+            m_Index = m_pList->m_Nodes[m_Index].next;
         }
 
 
@@ -327,7 +327,7 @@ namespace qk::util {
     bool AcceleratedLinkedList<K, T, order_fn>::iterator::operator==(
         const iterator& other
         ) const {
-        return m_List == other.m_List && m_Index == other.m_Index;
+        return m_pList == other.m_pList && m_Index == other.m_Index;
     }
 
     template <class K, class T, order_pfn_t<T> order_fn>
@@ -350,27 +350,27 @@ namespace qk::util {
 
 
     template <class K, class T, order_pfn_t<T> order_fn>
-    AcceleratedLinkedList<K, T, order_fn>::reverse_iterator::reverse_iterator(AcceleratedLinkedList* list, index_t idx)
-        : m_List(list), m_Index(idx) {}
+    AcceleratedLinkedList<K, T, order_fn>::reverse_iterator::reverse_iterator(AcceleratedLinkedList* pList, index_t idx)
+        : m_pList(pList), m_Index(idx) {}
 
 
     template <class K, class T, order_pfn_t<T> order_fn>
     T& AcceleratedLinkedList<K, T, order_fn>::reverse_iterator::operator*() const {
-        assert(m_List && m_Index != NULL_LINK);
-        T* ptr = m_List->m_Nodes[m_Index].value.get();
+        assert(m_pList && m_Index != NULL_LINK);
+        T* ptr = m_pList->m_Nodes[m_Index].value.get();
         assert(ptr != nullptr);
         return *ptr;
     }
 
     template <class K, class T, order_pfn_t<T> order_fn>
     T* AcceleratedLinkedList<K, T, order_fn>::reverse_iterator::operator->() const {
-        return m_List->m_Nodes[m_Index].value.get();
+        return m_pList->m_Nodes[m_Index].value.get();
     }
 
     template <class K, class T, order_pfn_t<T> order_fn>
     typename AcceleratedLinkedList<K, T, order_fn>::reverse_iterator&
         AcceleratedLinkedList<K, T, order_fn>::reverse_iterator::operator++() {
-        m_Index = m_List->m_Nodes[m_Index].prev;
+        m_Index = m_pList->m_Nodes[m_Index].prev;
         return *this;
     }
 
@@ -384,7 +384,7 @@ namespace qk::util {
 
     template <class K, class T, order_pfn_t<T> order_fn>
     bool AcceleratedLinkedList<K, T, order_fn>::reverse_iterator::operator==(const reverse_iterator& other) const {
-        return m_List == other.m_List && m_Index == other.m_Index;
+        return m_pList == other.m_pList && m_Index == other.m_Index;
     }
 
     template <class K, class T, order_pfn_t<T> order_fn>

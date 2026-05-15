@@ -137,5 +137,5 @@ namespace qk::gfx::gui::io {
 
 	bool& RequestsMouseInput();
 
-	void set_display_size(float w, float h);
+	void setDisplaySize(float w, float h);
 }

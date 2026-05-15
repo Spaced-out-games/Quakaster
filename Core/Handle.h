@@ -6,6 +6,7 @@
 #pragma once
 #include <cstdint>
 #include <utility>
+#define QK_NULL_HANDLE ((uintptr_t)UINTPTR_MAX)
 
 namespace qk {
 
@@ -42,14 +43,15 @@ namespace qk {
 
     template<class tag_t>
     class Handle {
-        uintptr_t m_Handle = 0;
+        uintptr_t m_Handle = QK_NULL_HANDLE;
 
     public:
         Handle() = default;
-        Handle(std::nullptr_t) : m_Handle(0) {}
+        Handle(std::nullptr_t) : m_Handle(QK_NULL_HANDLE) {}
+        Handle(uintptr_t hValue) : m_Handle(hValue) {}
 
         bool valid() const noexcept {
-            return m_Handle != 0;
+            return m_Handle != QK_NULL_HANDLE;
         }
 
         uintptr_t value() const noexcept {

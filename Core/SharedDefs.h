@@ -1,11 +1,19 @@
 #pragma once
 #include "Handle.h"
 namespace qk {
+	struct MonitorTag {};
+	using HMonitor = Handle<MonitorTag>;
 
-	using HMonitor = Handle<struct MonitorTag>;
+	struct WindowTag {};
+	using HWindow = Handle<WindowTag>;
 
-	using HWindow = Handle<struct WindowTag>;
+	using HWindowRef = Ref<WindowTag>;
 
+
+	namespace gfx {
+		struct HLoaderTag {};
+		using HLoader = Handle<HLoaderTag>;
+	}
 
 }
 

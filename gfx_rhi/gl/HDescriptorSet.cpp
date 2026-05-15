@@ -25,28 +25,18 @@ namespace qk {
 namespace qk::gfx::rhi {
 
 
-
-
-
-    
-
-
-
-
-
-
 	struct Descriptor {
 
-		void* Data = nullptr;
-		ScalarDesc	Scalar;
+		void* pData = nullptr;
+		ScalarDesc	scalar;
 		
 	};
 
     static void upload_uniform(GLint location, const Descriptor& desc)
     {
-        const auto& s = desc.Scalar;
+        const auto& s = desc.scalar;
 
-        void* data = desc.Data;
+        void* data = desc.pData;
 
         switch (s.type)
         {
@@ -128,41 +118,51 @@ namespace qk::gfx::rhi {
 	}
 
 	void DescriptorSet_dtor(HDescriptorSet& hDescriptorSet) {
+
+        QK_ASSERT(hDescriptorSet.valid());
+
 		delete get(hDescriptorSet);
-		hDescriptorSet = nullptr;
+        hDescriptorSet = nullptr;
 	}
 
-	void DescriptorSet_push(HDescriptorSet& hDescriptorSet, HShaderUniform hLocation, ScalarType type,
-		uint16_t scalar_count, ScalarMultiplicity multiplicity,
-		void* data) {
-		auto* pDescriptorSet = get(hDescriptorSet);
+    void DescriptorSet_push(
+        HDescriptorSet& hDescriptorSet, HShaderUniform hLocation, ScalarType type,
+        uint16_t scalar_count, ScalarMultiplicity multiplicity,
+        void* pData) {
 
-		assert(pDescriptorSet);
+        QK_ASSERT(hDescriptorSet.valid());
+        QK_ASSERT(hLocation.valid());
+
+        DescriptorSet* pDescriptorSet = get(hDescriptorSet);
 
         pDescriptorSet->m_Descriptors.emplace(
             std::piecewise_construct,
             std::forward_as_tuple(hLocation.value()),
-            std::forward_as_tuple(data, ScalarDesc{ multiplicity, type, scalar_count })
+            std::forward_as_tuple(pData, ScalarDesc{ multiplicity, type, scalar_count })
         );
 
 
-	}
+    }
 
-    void DescriptorSet_update(const HShaderProgram& hShader,
+    void DescriptorSet_update(const HShaderProgram& hShaderProgram,
         const HDescriptorSet& hDescriptorSet,
         const HShaderUniform& hLocation)
     {
-        auto program = get(hShader);
-        auto* set = get(hDescriptorSet);
+        QK_ASSERT(hShaderProgram.valid());
+        QK_ASSERT(hDescriptorSet.valid());
+        QK_ASSERT(hLocation.valid());
 
-        assert(program);
-        assert(set);
 
-        auto it = set->m_Descriptors.find(hLocation.value());
-        if (it == set->m_Descriptors.end())
+        GLuint gl_program = get(hShaderProgram);
+
+
+        DescriptorSet* pDescriptorSet = get(hDescriptorSet);
+
+        auto it = pDescriptorSet->m_Descriptors.find(hLocation.value());
+        if (it == pDescriptorSet->m_Descriptors.end())
             return;
 
-        glUseProgram(program);
+        glUseProgram(gl_program);
 
         upload_uniform(get(hLocation), it->second);
     }
@@ -170,18 +170,18 @@ namespace qk::gfx::rhi {
     void DescriptorSet_update(const HShaderProgram& hShaderProgram,
         const HDescriptorSet& hDescriptorSet)
     {
-        auto program = get(hShaderProgram);
-        auto* set = get(hDescriptorSet);
+        QK_ASSERT(hShaderProgram.valid());
+        QK_ASSERT(hDescriptorSet.valid());
 
-        assert(program);
-        assert(set);
 
-        glUseProgram(program);
+        GLuint gl_program = get(hShaderProgram);
+
+        auto* pDescriptorSet = get(hDescriptorSet);
+
+        glUseProgram(gl_program);
         HShaderUniform hCurrentUniform;
-        for (const auto& [location, desc] : set->m_Descriptors)
+        for (const auto& [location, desc] : pDescriptorSet->m_Descriptors)
         {
-            
-            
             upload_uniform(location, desc);
         }
     }

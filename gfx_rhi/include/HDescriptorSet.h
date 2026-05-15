@@ -11,23 +11,21 @@ using namespace qk;
 
 namespace qk::gfx::rhi {
 
-
-
-
 	struct HDescriptorSetTag {};
 	using HDescriptorSet = Handle<HDescriptorSetTag>;
+
+
 
 	HDescriptorSet DescriptorSet_ctor();
 
 	void DescriptorSet_dtor(HDescriptorSet& hDescriptorSet);
 
-	void DescriptorSet_push(HDescriptorSet& hDescriptorSet, HShaderUniform hLocation, ScalarType type,
-		uint16_t scalar_count, ScalarMultiplicity multiplicity,
-		void* data);
+	void DescriptorSet_push(
+		HDescriptorSet& hDescriptorSet, HShaderUniform hLocation, ScalarType type,
+		uint16_t scalar_count, ScalarMultiplicity multiplicity, void* pData
+	);
 
 	void DescriptorSet_update(const HShaderProgram& hShaderProgram, const HDescriptorSet& hDescriptorSet, const HShaderUniform& hLocation);
-
-
 
 	void DescriptorSet_update(const HShaderProgram& hShaderProgram, const HDescriptorSet& hDescriptorSet);
 

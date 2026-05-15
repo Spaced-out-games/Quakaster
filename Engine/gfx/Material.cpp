@@ -24,11 +24,11 @@ namespace qk::gfx {
 
         auto vertUpload = rhi::Shader_upload(hVertShader, vertSrc);
 
-        if (!vertUpload)
+        if (!vertUpload.empty())
         {
             spdlog::error(
                 "Failed to upload vertex shader: {}",
-                vertUpload.error()
+                vertUpload
             );
 
             return -2;
@@ -51,11 +51,11 @@ namespace qk::gfx {
 
         auto fragUpload = rhi::Shader_upload(hFragShader, fragSrc);
 
-        if (!fragUpload)
+        if (!fragUpload.empty())
         {
             spdlog::error(
                 "Failed to upload fragment shader: {}",
-                fragUpload.error()
+                fragUpload
             );
 
             return -4;

@@ -16,8 +16,8 @@ namespace qk {
 		uint64_t		m_TickInterval_ns = 0;
 		uint64_t		m_NextTick_ns = 0;
 	public:
-		void set_tick_interval_ns(uint64_t interval_ns);
-		uint64_t get_tick_interval_ns();
+		void setTickInterval_ns(uint64_t interval_ns);
+		uint64_t getTickInterval_ns();
 		bool valid();
 		bool ready();
 

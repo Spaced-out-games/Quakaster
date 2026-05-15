@@ -9,9 +9,10 @@
 
 namespace qk {
 	class QK_API Application {
-		int m_Status = 0;
 
 		public:
+		int m_Status = 0;
+
 		Application();
 		virtual ~Application();
 
@@ -26,7 +27,7 @@ namespace qk {
 		int status();
 
 		// Sets the status code of the application.
-		void set_status(int new_status);
+		void setStatus(int new_status);
 	};
 }
 

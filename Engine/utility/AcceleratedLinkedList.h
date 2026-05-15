@@ -80,7 +80,7 @@ namespace qk::util {
         // Number of alive and dead nodes in the linked list
         size_t size() const;
         // Number of alive nodes in the linked list
-        size_t live_size() const;
+        size_t liveSize() const;
 
         // Gets the number of slots allocated before a resize is needed
         size_t capacity() const;
@@ -111,8 +111,8 @@ namespace qk::util {
         T* operator[](const K& id);
 
         class iterator {
-            AcceleratedLinkedList* m_List = nullptr;
-            index_t                 m_Index = NULL_LINK;
+            AcceleratedLinkedList* m_pList = nullptr;
+            index_t                m_Index = NULL_LINK;
         public:
             using iterator_category = std::forward_iterator_tag;
             using value_type = T;
@@ -120,7 +120,7 @@ namespace qk::util {
             using pointer = T*;
             using reference = T&;
 
-            iterator(AcceleratedLinkedList* list, index_t idx);
+            iterator(AcceleratedLinkedList* pList, index_t idx);
 
             reference operator*() const;
 
@@ -138,10 +138,10 @@ namespace qk::util {
         };
 
         struct reverse_iterator {
-            AcceleratedLinkedList* m_List;
+            AcceleratedLinkedList* m_pList;
             index_t m_Index;
 
-            reverse_iterator(AcceleratedLinkedList* list, index_t idx);
+            reverse_iterator(AcceleratedLinkedList* pList, index_t idx);
 
             T& operator*() const;
             T* operator->() const;

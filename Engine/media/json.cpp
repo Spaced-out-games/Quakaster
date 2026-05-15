@@ -25,17 +25,17 @@ namespace qk::media {
 
 
 
-    bool validate_path(const std::filesystem::path& path) {
+    bool validatePath(const std::filesystem::path& path) {
         // no validity checks for now
         return 1;
     }
 
 
-    std::string load_text(const std::filesystem::path& path) {
+    std::string loadText(const std::filesystem::path& path) {
 
         auto canonical_path = std::filesystem::canonical(path);
 
-        if (!validate_path(canonical_path)) {
+        if (!validatePath(canonical_path)) {
             spdlog::error("Invalid path: `{}`", canonical_path.string());
         }
         std::ifstream file(canonical_path);
@@ -52,14 +52,14 @@ namespace qk::media {
     }
 
 
-    json load_json(const std::filesystem::path& path)
+    json loadJSON(const std::filesystem::path& path)
     {
         if (path.extension() != ".json" && path.extension() != ".jsonc") {
             spdlog::critical("file `{}` is not a .json or .jsonc file!", path.string());
             throw std::runtime_error("Not a JSON file");
         }
 
-        std::string content = load_text(path);
+        std::string content = loadText(path);
 
         bool allow_comments = true;// (path.extension() == ".jsonc"); // strict
         json j;

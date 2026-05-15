@@ -35,12 +35,12 @@ namespace qk::gfx::rhi {
 		return result;
 	}
 	void VertexBufferLayout_dtor(HVertexBufferLayout& hLayout) {
-		
-		auto* layout = get(hLayout);
+		QK_ASSERT(hLayout.valid());
 
-		if (layout) delete layout;
+		VertexBufferLayoutDesc* pVertexBufferLayoutDesc = get(hLayout);
 
-		set(hLayout, nullptr);
+		if (pVertexBufferLayoutDesc) delete pVertexBufferLayoutDesc;
+		hLayout = nullptr;
 		
 	}
 

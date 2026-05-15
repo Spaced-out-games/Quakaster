@@ -26,7 +26,7 @@ namespace qk::gfx::rhi {
 
 	void VertexBuffer_unbind();
 
-	void VertexBuffer_upload(const HVertexBuffer& hVertexBuffer, const void* data, size_t count, size_t elem_size, BufferUsage usage);
+	void VertexBuffer_upload(const HVertexBuffer& hVertexBuffer, const void* pData, size_t count, size_t elem_size, BufferUsage usage);
 
 
 

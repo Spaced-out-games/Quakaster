@@ -32,59 +32,62 @@ namespace qk::gfx::rhi {
 
 	Result<HShader, std::string> Shader_ctor(ShaderType type)
 	{
-		GLuint shader = glCreateShader(ShaderType_cast(type));
 
-		if (shader == 0)
-		{
+		GLuint gl_shader = glCreateShader(ShaderType_cast(type));
+
+		if (gl_shader == 0)
 			return std::string{ "glCreateShader failed (invalid context or out of resources)" };
-		}
+
+
 
 		HShader hShader;
-		set(hShader, shader);
+		set(hShader, gl_shader);
 
 		return hShader;
 	}
 
 	void Shader_dtor(HShader& hShader)
 	{
-		GLuint shader = get(hShader);
+		QK_ASSERT(hShader.valid());
 
-		if (shader != 0)
-		{
-			glDeleteShader(shader);
-			hShader = nullptr;
-		}
+		GLuint gl_shader = get(hShader);
+
+		
+		glDeleteShader(gl_shader);
+		hShader = nullptr;
+
 	}
 
 
 
-	Result<void_t, std::string> Shader_upload(const HShader& hShader, const std::string& source) {
-		GLuint shader = get(hShader);
+	std::string Shader_upload(const HShader& hShader, const std::string& source) {
+		QK_ASSERT(hShader.valid());
 
-		// prevent bad hygeine.
-		assert(shader != 0);
+		GLuint gl_shader = get(hShader);
+
+
 
 		const char* src = source.c_str();
-		glShaderSource(shader, 1, &src, nullptr);
-		glCompileShader(shader);
+		glShaderSource(gl_shader, 1, &src, nullptr);
+		glCompileShader(gl_shader);
 		GLint success;
-		glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+		glGetShaderiv(gl_shader, GL_COMPILE_STATUS, &success);
 
 		if (!success) {
 			GLint logLength = 0;
-			glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+			glGetShaderiv(gl_shader, GL_INFO_LOG_LENGTH, &logLength);
 
 			std::string log;
 			log.resize(static_cast<size_t>(logLength));
 
-			glGetShaderInfoLog(shader, logLength, nullptr, log.data());
+			glGetShaderInfoLog(gl_shader, logLength, nullptr, log.data());
 
 			if (!log.empty() && log.back() == '\0')
 				log.pop_back();
 
 			return log;
 		}
-		return void_t{};
+		return "";
 	}
 
 

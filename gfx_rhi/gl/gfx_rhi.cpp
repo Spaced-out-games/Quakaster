@@ -1,6 +1,13 @@
 #include "gfx_rhi.h"
 #include <glad/glad.h>
 
+namespace qk {
+	template<>
+	struct handle_traits<gfx::HLoaderTag> {
+		using value_type = void*;
+	};
+}
+
 namespace qk::gfx::rhi {
 	static inline ClearChannels g_ClearChannels;
 	float						g_ClearColor[4];
@@ -9,20 +16,20 @@ namespace qk::gfx::rhi {
 	GLbitfield ClearChannels_cast(qk::gfx::rhi::ClearChannels channels) {
 		GLbitfield result = 0;
 
-		if ((channels & qk::gfx::rhi::ClearChannels::COLOR) == qk::gfx::rhi::ClearChannels::COLOR)
+		if ((channels & qk::gfx::rhi::ClearChannels::Color) == qk::gfx::rhi::ClearChannels::Color)
 			result |= GL_COLOR_BUFFER_BIT;
 
-		if ((channels & qk::gfx::rhi::ClearChannels::DEPTH) == qk::gfx::rhi::ClearChannels::DEPTH)
+		if ((channels & qk::gfx::rhi::ClearChannels::Depth) == qk::gfx::rhi::ClearChannels::Depth)
 			result |= GL_DEPTH_BUFFER_BIT;
 
-		if ((channels & qk::gfx::rhi::ClearChannels::STENCIL) == qk::gfx::rhi::ClearChannels::STENCIL)
+		if ((channels & qk::gfx::rhi::ClearChannels::Stencil) == qk::gfx::rhi::ClearChannels::Stencil)
 			result |= GL_STENCIL_BUFFER_BIT;
 
 		return result;
 	}
 
-	int init(void* procLoader) {
-		return gladLoadGLLoader((GLADloadproc)procLoader);
+	int init(HLoader hLoader) {
+		return gladLoadGLLoader((GLADloadproc)get(hLoader));
 	}
 
 	void clear(float r, float g, float b, float a, ClearChannels channels) {

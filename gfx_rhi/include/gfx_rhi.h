@@ -1,12 +1,14 @@
 #pragma once
 #include "core.h"
 #include <stdint.h>
+#include "SharedDefs.h"
 
 namespace qk::gfx::rhi {
+
 	enum ClearChannels : uint32_t {
-		COLOR =		1u << 0,
-		DEPTH =		1u << 1,
-		STENCIL =	1u << 2
+		Color =		1u << 0,
+		Depth =		1u << 1,
+		Stencil =	1u << 2
 	};
 
 	inline constexpr ClearChannels operator|(ClearChannels a, ClearChannels b) {
@@ -48,7 +50,7 @@ namespace qk::gfx::rhi {
 		return a;
 	}
 	// something like glfwGetProcAddress
-	int QK_API init(void* procLoader);
+	int QK_API init(HLoader hLoader);
 
 	void clear(float r, float g, float b, float a, ClearChannels channels);
 

@@ -14,7 +14,7 @@
 
 namespace qk::media {
 	class QK_API Image {
-		uint8_t* m_Data = nullptr;
+		uint8_t* m_pData = nullptr;
 		int m_Width = 0;
 		int m_Height = 0;
 		int m_Channels = 0;

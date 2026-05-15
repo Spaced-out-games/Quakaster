@@ -24,7 +24,7 @@ namespace qk::gfx::rhi {
 
 	void Shader_dtor(HShader& hShader);
 
-	Result<void_t, std::string> Shader_upload(const HShader& hShader, const std::string& source);
+	std::string Shader_upload(const HShader& hShader, const std::string& source);
 
 
 

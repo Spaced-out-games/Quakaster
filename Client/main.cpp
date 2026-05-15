@@ -107,13 +107,13 @@ struct DemoClientApplication : qk::Application {
 	// Can be called before or after render_init()
 	void attach_m_EventQueues() {
 		m_Layers.attachQueue(&m_EventQueue);
-		m_Window.set_event_queue(&m_EventQueue);
+		m_Window.setEventQueue(&m_EventQueue);
 	}
 
 	void render_init() {
 		qk::startup();
 		m_Window.init(qk::Window::Size{ 1920, 1080 }, "Quakaster Demo", nullptr);
-		rhi::init(m_Window.getProcAddress_pfn());
+		rhi::init(qk::getProcAddress());
 	}
 
 	// this has to be called last because some m_Layers might depend on m_Window handles
@@ -144,7 +144,8 @@ struct DemoClientApplication : qk::Application {
 
 
 		// set clear settings.
-		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::COLOR | rhi::ClearChannels::DEPTH);
+		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::Color | rhi::ClearChannels::Stencil);
+
 
 	}
 
@@ -166,11 +167,11 @@ struct DemoClientApplication : qk::Application {
 
 
 		// presents offscreen image
-		m_Window.swap_buffers();
+		m_Window.swapBuffers();
 
 
 		// updates when told to by the m_Window.
-		set_status(m_Window.should_close());
+		setStatus(m_Window.shouldClose());
 
 	}
 

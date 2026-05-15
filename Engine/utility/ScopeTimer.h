@@ -9,10 +9,10 @@
 
 namespace qk::utility {
     struct QK_API ScopeTimer {
-        uint64_t* m_Target = nullptr;
+        uint64_t* m_pTarget = nullptr;
         uint64_t m_StartTime = 0;
 
-        explicit ScopeTimer(uint64_t* target_out);
+        explicit ScopeTimer(uint64_t* pTarget);
 
         ~ScopeTimer();
 

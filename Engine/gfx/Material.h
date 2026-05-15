@@ -76,13 +76,15 @@ namespace qk::gfx {
         void pushUniform(const std::string& name, T* data)
         {
             auto result = rhi::ShaderProgram_getUniform(m_hShaderProgram, name.c_str());///* your lookup by name */;
-            if (result.has_error()) return;
-            HShaderUniform location = result.value();
-            using Traits = MaterialTraits<T>;
+            if (!result.value().valid()) return;
+            //if (!result.has_error()) return;
 
+            //HShaderUniform gl_ShaderLocation(result.value());
+            using Traits = MaterialTraits<T>;
+            HShaderUniform gl_ShaderLocation = result.value();
             rhi::DescriptorSet_push(
                 m_hDescriptorSet,
-                location,
+                gl_ShaderLocation,
                 Traits::type,
                 Traits::count,
                 Traits::mult,

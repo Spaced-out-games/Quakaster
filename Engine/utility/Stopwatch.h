@@ -19,10 +19,10 @@ namespace qk::utility {
 
 		void reset();
 
-		[[nodiscard]] uint64_t total_time() const;
+		[[nodiscard]] uint64_t totalTime() const;
 
-		[[nodiscard]] double total_time_ms() const;
-		[[nodiscard]] double total_time_s() const;
+		[[nodiscard]] double totalTime_ms() const;
+		[[nodiscard]] double totalTime_s() const;
 	};
 
 }

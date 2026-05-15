@@ -98,14 +98,16 @@ namespace qk::gfx::rhi {
 
 	}
 
-	void VertexArray_dtor(HVertexArray& hdl) {
-		GLuint native = get(hdl);
-		glDeleteVertexArrays(1, &native);
-		hdl = nullptr;
+	void VertexArray_dtor(HVertexArray& hVertexArray) {
+		QK_ASSERT(hVertexArray.valid());
+		GLuint gl_vao = get(hVertexArray);
+		glDeleteVertexArrays(1, &gl_vao);
+		hVertexArray = nullptr;
 	}
 
-	void VertexArray_bind(const HVertexArray& hdl) {
-		glBindVertexArray(get(hdl));
+	void VertexArray_bind(const HVertexArray& hVertexArray) {
+		QK_ASSERT(hVertexArray.valid());
+		glBindVertexArray(get(hVertexArray));
 	}
 
 	void VertexArray_unbind() {
@@ -122,20 +124,24 @@ namespace qk::gfx::rhi {
 
 		return handle.copy();
 
-	}*/
+	}
+	*/
 
 	void VertexArray_applyLayout(
 		const HVertexArray& hVertexArray,
 		const HVertexBuffer& hVertexBuffer,
 		const HVertexBufferLayout& hLayout
 	) {
+		QK_ASSERT(hVertexBuffer.valid());
+		QK_ASSERT(hVertexArray.valid());
+		QK_ASSERT(hLayout.valid());
+
+
 		VertexArray_bind(hVertexArray);
 		VertexBuffer_bind(hVertexBuffer);
 
 
 		VertexBufferLayoutDesc* layout = get(hLayout);
-
-		assert(layout);
 
 		if (!layout) return;
 

@@ -22,7 +22,7 @@ namespace qk::service {
 
 	}
 
-	void IService::clear_timer() {
+	void IService::clearTimer() {
 		m_Uptime_ns = 0;
 	}
 

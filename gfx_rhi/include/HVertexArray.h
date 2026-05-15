@@ -19,9 +19,9 @@ namespace qk::gfx::rhi {
 
 	HVertexArray VertexArray_ctor();
 
-	void VertexArray_dtor(HVertexArray& hdl);
+	void VertexArray_dtor(HVertexArray& hVertexArray);
 
-	void VertexArray_bind(const HVertexArray& hdl);
+	void VertexArray_bind(const HVertexArray& hVertexArray);
 
 	void VertexArray_unbind();
 

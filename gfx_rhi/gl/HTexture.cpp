@@ -68,30 +68,30 @@ namespace qk::gfx::rhi {
 
 	HTexture Texture_ctor() {
 		HTexture hTex;
-		GLuint tex;
-		glGenTextures(1, &tex);
-		qk::set(hTex, tex);
+		GLuint gl_tex;
+		glGenTextures(1, &gl_tex);
+		qk::set(hTex, gl_tex);
 		return hTex;
 	}
 
 
-	void Texture_upload_2D(const HTexture& hTex, const uint8_t* data, int width, int height, int channels) {
-		GLuint tex = qk::get(hTex);
+	void Texture_upload_2D(const HTexture& hTex, const uint8_t* pData, int width, int height, int channels) {
+		QK_ASSERT(hTex.valid());
+
+		GLuint gl_tex = qk::get(hTex);
 		GLenum format = Channel_cast(channels);
 
-		QK_ASSERT(tex);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pData);
 		
 	}
 
-	void Texture_upload_1D(const HTexture& hTex, const uint8_t* data, int size, int channels) {
-		GLuint tex = qk::get(hTex);
+	void Texture_upload_1D(const HTexture& hTex, const uint8_t* pData, int size, int channels) {
+		QK_ASSERT(hTex.valid());
+		GLuint gl_tex = qk::get(hTex);
 		GLenum format = Channel_cast(channels);
 
-		QK_ASSERT(tex);
 
-		glTexImage1D(GL_TEXTURE_1D, 0, format, size, 0, format, GL_UNSIGNED_BYTE, data);
+		glTexImage1D(GL_TEXTURE_1D, 0, format, size, 0, format, GL_UNSIGNED_BYTE, pData);
 	}
 
 	/*
@@ -127,9 +127,10 @@ namespace qk::gfx::rhi {
 	}
 
 	void Texture_dtor(HTexture& hTex) {
-		GLuint handle = get(hTex);
-		QK_ASSERT(handle);
-		glDeleteTextures(1, &handle);
+		QK_ASSERT(hTex.valid());
+
+		GLuint gl_tex = get(hTex);
+		glDeleteTextures(1, &gl_tex);
 		
 		// resets the actual handle
 		hTex = nullptr;

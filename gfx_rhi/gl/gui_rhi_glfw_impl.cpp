@@ -97,7 +97,7 @@ namespace qk::gfx::rhi::gui {
         io.DeltaTime = deltaTime > 0.0f ? deltaTime : (1.0f / 60.0f);
     }
 
-        void end_frame()
+    void end_frame()
     {
         ImGui::EndFrame();
     }

@@ -31,7 +31,7 @@ namespace qk::gfx::rhi {
 
 	HTexture Texture_ctor();
 
-	void Texture_upload_2D(const HTexture& hTex, const uint8_t* data, int width, int height, int channels);
+	void Texture_upload_2D(const HTexture& hTex, const uint8_t* pData, int width, int height, int channels);
 
 
 	void Texture_bind(const HTexture& hTex, TextureType type);

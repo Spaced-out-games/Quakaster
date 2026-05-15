@@ -19,7 +19,7 @@ namespace qk {
 		return m_Status;
 	}
 
-	void Application::set_status(int new_status) {
+	void Application::setStatus(int new_status) {
 		m_Status = new_status;
 	}
 

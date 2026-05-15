@@ -53,13 +53,15 @@ namespace qk::gfx::rhi {
 	
 
 	void VertexBuffer_dtor(HVertexBuffer& hVertexBuffer) {
-		GLuint hVBO = get(hVertexBuffer);
-		QK_ASSERT(hVBO);
-		glDeleteBuffers(1, &hVBO);
+		QK_ASSERT(hVertexBuffer.valid());
+
+		GLuint gl_vbo = get(hVertexBuffer);
+		glDeleteBuffers(1, &gl_vbo);
 		hVertexBuffer = nullptr;
 	}
 	
 	void VertexBuffer_bind(const HVertexBuffer& hVertexBuffer) {
+		QK_ASSERT(hVertexBuffer.valid());
 		glBindBuffer(GL_ARRAY_BUFFER, get(hVertexBuffer));
 	}
 
@@ -68,8 +70,9 @@ namespace qk::gfx::rhi {
 
 	}
 
-	void VertexBuffer_upload(const HVertexBuffer& hVertexBuffer, const void* data, size_t count, size_t elem_size, BufferUsage usage) {
+	void VertexBuffer_upload(const HVertexBuffer& hVertexBuffer, const void* pData, size_t count, size_t elem_size, BufferUsage usage) {
+		QK_ASSERT(hVertexBuffer.valid());
 		glBindBuffer(GL_ARRAY_BUFFER, get(hVertexBuffer));
-		glBufferData(GL_ARRAY_BUFFER, count * elem_size, data, BufferUsage_cast(usage));
+		glBufferData(GL_ARRAY_BUFFER, count * elem_size, pData, BufferUsage_cast(usage));
 	}
 }

@@ -17,7 +17,7 @@ namespace qk::utility {
 
     struct ServiceEntry {
         IService* service = nullptr;
-        void (*dtor)(void* storage, ServiceMap&, const std::string&) = nullptr; // C-style function pointer
+        void (*dtor)(void* pStorage, ServiceMap&, const std::string&) = nullptr; // C-style function pointer
     };
 
     // Type for ServiceManager bookkeeping
@@ -42,24 +42,24 @@ namespace qk::utility {
     // ----------------------------------------
     template <ServiceStorageConcept Storage>
     struct BasicServiceManager {
-        Storage* storage;
+        Storage* pStorage;
         ServiceMap map;
 
         template <typename T, typename... Args>
         T* emplace(const std::string& name, Args&&... args) {
             spdlog::info("Added service {} to ServiceManager", name);
-            return static_cast<T*>(storage->template emplace<T>(name, map, std::forward<Args>(args)...));
+            return static_cast<T*>(pStorage->template emplace<T>(name, map, std::forward<Args>(args)...));
         }
 
         IService* get(const std::string& name) {
 
-            return storage->get(name, map);
+            return pStorage->get(name, map);
         }
 
 
         void erase(const std::string& name) {
             spdlog::info("Removed service {} from ServiceManager", name);
-            storage->erase(name, map);
+            pStorage->erase(name, map);
         }
     };
 

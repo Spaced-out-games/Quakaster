@@ -31,12 +31,12 @@ namespace qk::media {
 	}
 
 	Image::Image(Image&& other) noexcept
-		: m_Data(other.m_Data),
+		: m_pData(other.m_pData),
 		m_Width(other.m_Width),
 		m_Height(other.m_Height),
 		m_Channels(other.m_Channels)
 	{
-		other.m_Data = nullptr;
+		other.m_pData = nullptr;
 		other.m_Width = 0;
 		other.m_Height = 0;
 		other.m_Channels = 0;
@@ -44,20 +44,20 @@ namespace qk::media {
 
 	Image& Image::operator=(Image&& other) noexcept {
 		if (this != &other) {
-			if (m_Data)
-				stbi_image_free(m_Data);
+			if (m_pData)
+				stbi_image_free(m_pData);
 
-			m_Data = other.m_Data;
+			m_pData = other.m_pData;
 			m_Width = other.m_Width;
 			m_Height = other.m_Height;
 			m_Channels = other.m_Channels;
 
-			other.m_Data = nullptr;
+			other.m_pData = nullptr;
 		}
 		return *this;
 	}
 
-	uint8_t* Image::data() const { return m_Data; }
+	uint8_t* Image::data() const { return m_pData; }
 	int Image::width() const { return m_Width; }
 	int Image::height() const { return m_Height; }
 	int Image::channels() const { return m_Channels; }
@@ -67,8 +67,8 @@ namespace qk::media {
 
 	void Image::destroy() {
 
-		stbi_image_free(m_Data);
-		m_Data = nullptr;
+		stbi_image_free(m_pData);
+		m_pData = nullptr;
 		m_Channels = 0;
 		m_Height = 0;
 		m_Width = 0;
@@ -77,11 +77,11 @@ namespace qk::media {
 	void load_image(Image& target, const std::string& path)
 	{
 		assert(path != "");
-		assert(target.m_Data == nullptr);
+		assert(target.m_pData == nullptr);
 
 
 
-		target.m_Data = stbi_load(
+		target.m_pData = stbi_load(
 			path.c_str(),
 			&target.m_Width,
 			&target.m_Height,
@@ -89,14 +89,14 @@ namespace qk::media {
 			0
 		);
 
-		if (!target.m_Data)
+		if (!target.m_pData)
 			throw std::runtime_error(stbi_failure_reason());
 	}
 
 	void make_image(Image& target, int width, int height, int channels)
 	{
 
-		assert(target.m_Data == nullptr);
+		assert(target.m_pData == nullptr);
 		
 		assert(channels > 0);
 		assert(height > 0);
@@ -104,11 +104,11 @@ namespace qk::media {
 
 		size_t size = (size_t)width * (size_t)height * (size_t)channels;
 
-		target.m_Data = (uint8_t*)malloc(size);
-		if (!target.m_Data)
+		target.m_pData = (uint8_t*)malloc(size);
+		if (!target.m_pData)
 			throw std::runtime_error("malloc failed");
 
-		memset(target.m_Data, 0, size);
+		memset(target.m_pData, 0, size);
 
 		target.m_Width = width;
 		target.m_Height = height;

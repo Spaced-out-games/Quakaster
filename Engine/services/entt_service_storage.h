@@ -14,11 +14,11 @@
 
 namespace qk::service {
     struct entt_service_storage {
-        entt::registry* reg;
+        entt::registry* m_pRegistry;
 
         template <typename T, typename... Args>
         IService* emplace(const std::string& name, ServiceMap& map, Args&&... args) {
-            T& svc = reg->ctx().emplace<T>(std::forward<Args>(args)...);
+            T& svc = m_pRegistry->ctx().emplace<T>(std::forward<Args>(args)...);
             map[name].service = &svc;
             map[name].dtor = [](void* storage, ServiceMap&, const std::string&) {
                 entt::registry* registry = (entt::registry*)storage;
@@ -40,7 +40,7 @@ namespace qk::service {
 
                 auto dtor = it->second.dtor;
 
-                if (dtor) dtor(reg, map, name);
+                if (dtor) dtor(m_pRegistry, map, name);
                 map.erase(it);
             }
         }
