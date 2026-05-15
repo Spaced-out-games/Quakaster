@@ -138,8 +138,8 @@ struct DemoClientApplication : qk::Application {
 
 
 		m_DemoMesh.init(g_Points, hLayout, demoVertShaderSource, demoFragShaderSource, rhi::StaticDraw);
-		m_DemoMesh.push_uniform<glm::vec3>("u_Color", &m_Color);
-		m_DemoMesh.push_uniform<glm::vec3>("u_Position", &m_Position);
+		m_DemoMesh.pushUniform<glm::vec3>("u_Color", &m_Color);
+		m_DemoMesh.pushUniform<glm::vec3>("u_Position", &m_Position);
 		
 
 
@@ -160,7 +160,7 @@ struct DemoClientApplication : qk::Application {
 
 		// renders to offscreen image
 		m_DemoMesh.bind();
-		m_DemoMesh.update_uniforms();
+		m_DemoMesh.updateUniforms();
 		rhi::DrawArrays(m_DemoMesh.m_hVertexArray, rhi::Triangle, 0, 3);
 		m_Layers.render();
 

@@ -38,8 +38,8 @@ namespace qk::gfx {
 		}
 
 		template <class T>
-		void push_uniform(const std::string& name, T* data) {
-			m_Material.push_uniform<T>(name, data);
+		void pushUniform(const std::string& name, T* data) {
+			m_Material.pushUniform<T>(name, data);
 		}
 
 		void bind() const {
@@ -47,7 +47,7 @@ namespace qk::gfx {
 			m_Material.bind();
 		}
 
-		void update_uniforms() const {
+		void updateUniforms() const {
 			m_Material.update();
 		}
 
