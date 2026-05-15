@@ -7,33 +7,33 @@
 
 namespace qk {
 
-	void LayerStack::insert_layer(std::unique_ptr<Layer>&& layer) {
-		layer->onAttach();
-		m_Layers.push_back(std::move(layer));
+	void LayerStack::insertLayer(std::unique_ptr<Layer>&& pLayer) {
+		pLayer->onAttach();
+		m_Layers.push_back(std::move(pLayer));
 	}
 
-	void LayerStack::attach_queue(EventQueue* queue) {
-		m_Queue = queue;
+	void LayerStack::attachQueue(EventQueue* pQueue) {
+		m_pQueue = pQueue;
 	}
 
 
 
 	void LayerStack::propagate_events() {
 
-		if (!m_Queue) return;
+		if (!m_pQueue) return;
 
 		Layer::EBlock BlockResult = {};
 
 
-		for (const Event& evt: m_Queue->events())
+		for (const Event& evt: m_pQueue->events())
 		{
 			for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
 			{
-				auto& layerPtr = *it;
+				auto& pLayer = *it;
 
-				if (!(layerPtr->filter & evt.m_Category)) continue;
+				if (!(pLayer->filter & evt.m_Category)) continue;
 
-				BlockResult = layerPtr->onEvent(evt);
+				BlockResult = pLayer->onEvent(evt);
 
 				if (BlockResult == Layer::EBlock::Block) {
 					break;
@@ -41,13 +41,13 @@ namespace qk {
 			}
 		}
 
-		m_Queue->clear();
+		m_pQueue->clear();
 
 	}
 
 	void LayerStack::render() {
 		for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it) {
-			(*it)->onRender();
+			it->get()->onRender();
 		}
 	}
 

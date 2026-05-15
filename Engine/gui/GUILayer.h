@@ -14,9 +14,9 @@ namespace qk::gfx::gui {
 		qk::HWindow m_hWindow;
 		std::vector<std::unique_ptr<Widget>> m_Widgets;
 
-		void push(std::unique_ptr<Widget> widget)
+		void push(std::unique_ptr<Widget> pWidget)
 		{
-			m_Widgets.emplace_back(std::move(widget));
+			m_Widgets.emplace_back(std::move(pWidget));
 		}
 
 		template <typename T, typename... Args>

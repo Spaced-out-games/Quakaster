@@ -170,6 +170,7 @@ namespace qk {
 
 			return *reinterpret_cast<T*>(m_Payload + offset);
 		}
+
 		template<typename T>
 		inline const T& view(size_t offset = 0) const
 		{

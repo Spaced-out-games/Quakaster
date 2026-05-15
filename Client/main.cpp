@@ -106,7 +106,7 @@ struct DemoClientApplication : qk::Application {
 
 	// Can be called before or after render_init()
 	void attach_m_EventQueues() {
-		m_Layers.attach_queue(&m_EventQueue);
+		m_Layers.attachQueue(&m_EventQueue);
 		m_Window.set_event_queue(&m_EventQueue);
 	}
 

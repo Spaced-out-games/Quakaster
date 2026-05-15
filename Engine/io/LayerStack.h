@@ -15,27 +15,27 @@
 namespace qk {
     class QK_API LayerStack {
         std::vector<std::unique_ptr<Layer>> m_Layers;
-        EventQueue* m_Queue = nullptr;
+        EventQueue* m_pQueue = nullptr;
 
     public:
 
-        void attach_queue(EventQueue* queue);
+        void attachQueue(EventQueue* pQueue);
 
-        // todo: template this!!!
-        void insert_layer(std::unique_ptr<Layer>&& layer);
+        
+        void insertLayer(std::unique_ptr<Layer>&& pLayer);
 
 
         template<typename layer_t, typename... Args>
         layer_t& emplace_layer(Args&&... args) {
             static_assert(std::is_base_of_v<Layer, layer_t>, "layer_t must derive from Layer");
 
-            auto layer = std::make_unique<layer_t>(std::forward<Args>(args)...);
-            layer_t& ref = *layer;
+            auto pLayer = std::make_unique<layer_t>(std::forward<Args>(args)...);
 
-            ref.onAttach();
-            m_Layers.push_back(std::move(layer));
+            pLayer->onAttach();
 
-            return ref;
+            m_Layers.push_back(std::move(pLayer));
+
+            return *(layer_t*)(m_Layers.back().get());
         }
 
 
