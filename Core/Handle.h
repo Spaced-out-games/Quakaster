@@ -1,3 +1,8 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// Core/Result.h
+/// Purpose: Defines an opaque Handle type that smuggles resources past encapsulation borders.
+///          Also defines an opaque reference to these resources
+/// **************************************************************************************************
 #pragma once
 #include <cstdint>
 #include <utility>
@@ -5,7 +10,7 @@
 namespace qk {
 
     template<class tag_t>
-    struct handle_traits; // must be forward declared FIRST
+    struct handle_traits;
 
     template<class tag_t>
     class Handle;
@@ -53,8 +58,8 @@ namespace qk {
 
         // PSA: It is entirely possible for you to call foo() -> Handle<T>.ref() -> Ref<T> and it end up
         // causing a forced memory leak, since handle destructors will (or at least SHOULD) take a non-const&,
-        // meaning it is damn near impossible to call the destructor with the ref since it would discard the
-        // non - const&. It *shouldn't* be capable of anything other than a forced memory leak.
+        // meaning it is damn impossible to call the destructor with the ref without causing UB since it would
+        // discard the non - const&. It *shouldn't* be capable of anything other than a forced memory leak.
 
 
         Ref<tag_t> ref() const noexcept {
