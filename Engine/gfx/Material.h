@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// gfx/Material.h
+/// Purpose: Defines a graphical material type, around the rhi.
+/// **************************************************************************************************
 #pragma once
 #include <HDescriptorSet.h>
 #include <HShaderProgram.h>
@@ -69,7 +73,7 @@ namespace qk::gfx {
 		void update() const;
 
         template <class T>
-        void push_uniform(const std::string& name, T* data)
+        void pushUniform(const std::string& name, T* data)
         {
             auto result = rhi::ShaderProgram_getUniform(m_hShaderProgram, name.c_str());///* your lookup by name */;
             if (result.has_error()) return;
