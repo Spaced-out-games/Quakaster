@@ -2,7 +2,7 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "../include/gui_rhi.h"
-#include "Handle.h"
+#include "Resource.h"
 #include <GLFW\glfw3.h>
 
 
@@ -16,7 +16,7 @@
 
 namespace qk {
     template<>
-    struct handle_traits<WindowTag> {
+    struct ResourceTraits<WindowTag> {
         using value_type = GLFWwindow*;
     };
 

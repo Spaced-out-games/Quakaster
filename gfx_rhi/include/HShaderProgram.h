@@ -1,10 +1,11 @@
 #pragma once
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
 #include "HShader.h"
 #include <string>
 #include "Result.h"
 #include "HShaderUniform.h"
+#include "ResourcePool.h"
 
 namespace qk::gfx::rhi {
 
@@ -12,7 +13,7 @@ namespace qk::gfx::rhi {
 
 
 	struct HShaderProgramTag {};
-	using HShaderProgram = Handle<HShaderProgramTag>;
+	using HShaderProgram = Resource<HShaderProgramTag>;
 
 
 
@@ -27,6 +28,6 @@ namespace qk::gfx::rhi {
 
 
 	// then you'll need EVEN MORE for uploading uniforms.
-
+	using ShaderProgramRegistry = ResourcePool <HShaderProgramTag, ShaderProgram_dtor>;
 
 }

@@ -4,7 +4,7 @@
 /// ************************************************************************************************** 
 
 #pragma once
-#include "Handle.h"
+#include "Resource.h"
 #include "core.h"
 #include <string>
 #include <memory>
@@ -73,7 +73,7 @@ namespace qk {
 
 			Size getSize() const;
 
-			// Gets a platform handle (GLFWWindow*, SDLWindow*...)
+			// Gets a platform Resource (GLFWWindow*, SDLWindow*...)
 			HWindowRef handle();
 
 			// Explicit destruction

@@ -9,7 +9,7 @@ using namespace qk::gfx::rhi;
 
 namespace qk {
 	template<>
-	struct handle_traits<HTextureTag> {
+	struct ResourceTraits<HTextureTag> {
 		using value_type = GLuint;
 	};
 

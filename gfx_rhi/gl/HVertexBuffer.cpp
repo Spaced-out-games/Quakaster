@@ -13,7 +13,7 @@ using qk::get;
 
 namespace qk {
 	template<>
-	struct handle_traits<HVertexBufferTag> {
+	struct ResourceTraits<HVertexBufferTag> {
 		using value_type = GLuint;
 	};
 

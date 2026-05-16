@@ -1,7 +1,7 @@
 #pragma once
 #include "HShaderUniform.h"
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
 #include "HShaderProgram.h"
 #include <string>
 #include "Result.h"
@@ -12,7 +12,7 @@ using namespace qk;
 namespace qk::gfx::rhi {
 
 	struct HDescriptorSetTag {};
-	using HDescriptorSet = Handle<HDescriptorSetTag>;
+	using HDescriptorSet = Resource<HDescriptorSetTag>;
 
 
 

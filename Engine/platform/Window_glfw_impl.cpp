@@ -16,12 +16,12 @@ using qk::utility::now;
 
 namespace qk {
 	template<>
-	struct handle_traits<WindowTag> {
+	struct ResourceTraits<WindowTag> {
 		using value_type = GLFWwindow*;
 	};
 
 	template<>
-	struct handle_traits<gfx::HLoaderTag> {
+	struct ResourceTraits<gfx::HLoaderTag> {
 		using value_type = void*;
 	};
 

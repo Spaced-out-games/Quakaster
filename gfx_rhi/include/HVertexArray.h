@@ -1,6 +1,6 @@
 #pragma once
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
 #include "Result.h"
 #include "HVertexBuffer.h"
 #include "HVertexBufferLayout.h"
@@ -14,7 +14,7 @@ namespace qk::gfx::rhi {
 
 
 	struct HVertexArrayTag {};
-	using HVertexArray = Handle<HVertexArrayTag>;
+	using HVertexArray = Resource<HVertexArrayTag>;
 
 
 	HVertexArray VertexArray_ctor();
@@ -29,7 +29,7 @@ namespace qk::gfx::rhi {
 	void VertexArray_applyLayout(const HVertexArray& hVertexArray, const HVertexBuffer& hVertexBuffer, const HVertexBufferLayout& hLayout);
 
 
-
+	using VertexArrayRegistry = ResourcePool <HVertexArrayTag, VertexArray_dtor>;
 
 
 }

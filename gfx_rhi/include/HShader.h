@@ -1,6 +1,6 @@
 #pragma once
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
 #include <string>
 #include "Result.h"
 
@@ -17,7 +17,7 @@ namespace qk::gfx::rhi {
 
 
 	struct HShaderTag {};
-	using HShader = Handle<HShaderTag>;
+	using HShader = Resource<HShaderTag>;
 
 
 	Result<HShader, std::string> Shader_ctor(ShaderType type);

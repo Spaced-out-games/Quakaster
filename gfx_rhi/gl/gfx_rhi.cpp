@@ -3,7 +3,7 @@
 
 namespace qk {
 	template<>
-	struct handle_traits<gfx::HLoaderTag> {
+	struct ResourceTraits<gfx::HLoaderTag> {
 		using value_type = void*;
 	};
 }

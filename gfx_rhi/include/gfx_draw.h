@@ -1,11 +1,11 @@
 #pragma once
 #include "HVertexArray.h"
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
 #include "Result.h"
 #include <string>
 
-
+// this should get depricated before long
 
 namespace qk::gfx::rhi {
 	enum PrimitiveType {

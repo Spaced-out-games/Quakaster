@@ -1,6 +1,6 @@
 #pragma once
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
 #include "VertexBufferLayoutDesc.h"
 
 
@@ -8,7 +8,7 @@ namespace qk::gfx::rhi {
 
 	struct HVertexBufferLayoutTag {};
 
-	using HVertexBufferLayout = qk::Handle<HVertexBufferLayoutTag>;
+	using HVertexBufferLayout = qk::Resource<HVertexBufferLayoutTag>;
 
 
 	HVertexBufferLayout QK_API VertexBufferLayout_ctor(const VertexBufferLayoutDesc& desc);

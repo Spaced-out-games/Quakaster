@@ -2,6 +2,7 @@
 #include "HVertexBufferLayout.h"
 #include "HVertexBufferLayout.h"
 #include "VertexBufferLayoutDesc.h"
+#include "HCommandBuffer.h"
 #include "HShaderProgram.h"
 #include "HDescriptorSet.h"
 #include "HVertexArray.h"
@@ -12,50 +13,55 @@
 #include "HShader.h"
 
 using namespace qk::gfx::rhi;
-
+namespace qk::gfx::rhi {
+	struct CommandBuffer;
+}
 namespace qk {
 
 	template<>
-	struct handle_traits<HVertexBufferLayoutTag> {
+	struct ResourceTraits<HVertexBufferLayoutTag> {
 		using value_type = VertexBufferLayoutDesc*;
 	};
 
 	template<>
-	struct handle_traits<HVertexBufferTag> {
+	struct ResourceTraits<HVertexBufferTag> {
 		using value_type = GLuint;
 	};
 
 	template<>
-	struct handle_traits<HIndexBufferTag> {
+	struct ResourceTraits<HIndexBufferTag> {
 		using value_type = GLuint;
 	};
 
 	template<>
-	struct handle_traits<HVertexArrayTag> {
+	struct ResourceTraits<HVertexArrayTag> {
 		using value_type = GLuint;
 	};
 
 	template<>
-	struct handle_traits<HTextureTag> {
+	struct ResourceTraits<HTextureTag> {
 		using value_type = GLuint;
 	};
 
 	template<>
-	struct handle_traits<HShaderTag> {
+	struct ResourceTraits<HShaderTag> {
 		using value_type = GLuint;
 	};
 
 	template<>
-	struct handle_traits<HShaderProgramTag> {
+	struct ResourceTraits<HShaderProgramTag> {
 		using value_type = GLuint;
 	};
 
 	template<>
-	struct handle_traits<HShaderUniformTag> {
+	struct ResourceTraits<HShaderUniformTag> {
 		using value_type = GLint;
 	};
 
-
+	template<>
+	struct ResourceTraits<HCommandBufferTag> {
+		using value_type = CommandBuffer*;
+	};
 
 	
 

@@ -1,20 +1,23 @@
 #pragma once
-#include "core.h"
-#include "Handle.h"
+#include "DrawCommand.h"
+#include <core.h>
 
 namespace qk::gfx::rhi {
 
-	using HCommandBuffer = qk::Handle<struct CommandBufferTag>;
+	// TODO: Deal with memory management
+
+	struct HCommandBufferTag {};
+
+	using HCommandBuffer = qk::Resource<HCommandBufferTag>;
 
 	// Lifecycle
-	HCommandBuffer QK_API CommandBuffer_ctor();
-	void QK_API CommandBuffer_dtor(HCommandBuffer handle);
+	HCommandBuffer CommandBuffer_ctor();
+	void CommandBuffer_dtor(HCommandBuffer& hCommandBuffer);
 
 	// Usage
-	void QK_API CommandBuffer_submit(const HCommandBuffer handle);
-	void QK_API CommandBuffer_clear(HCommandBuffer handle);
+	void CommandBuffer_push(const HCommandBuffer& hCommandBuffer, const DrawCommand& drawCommand);
+	void CommandBuffer_call(const HCommandBuffer& hCommandBuffer);
 
-	// Query
-	size_t QK_API CommandBuffer_size(const HCommandBuffer handle);
+
 
 }

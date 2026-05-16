@@ -2,7 +2,7 @@
 
 
 
-#include "rhi_HandleDefinitions.inl"
+#include "rhi_ResourceDefinitions.inl"
 
 namespace qk::gfx::rhi {
 

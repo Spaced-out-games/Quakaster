@@ -1,6 +1,7 @@
 #pragma once
-#include <Handle.h>
+#include <Resource.h>
 #include <stdint.h>
+#include "ResourcePool.h"
 
 
 
@@ -26,8 +27,7 @@ namespace qk::gfx::rhi {
 
 	struct HTextureTag {};
 
-
-	using HTexture = qk::Handle<HTextureTag>;
+	using HTexture = qk::Resource<HTextureTag>;
 
 	HTexture Texture_ctor();
 
@@ -37,5 +37,8 @@ namespace qk::gfx::rhi {
 	void Texture_bind(const HTexture& hTex, TextureType type);
 	
 	void Texture_dtor(HTexture& hTex);
+
+	using TextureRegistry = ResourcePool<HTextureTag, Texture_dtor>;
+
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
 #include <stdint.h>
 #include <vector>
 #include "Scalar.h"

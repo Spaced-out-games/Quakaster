@@ -4,7 +4,7 @@
 
 namespace qk::gfx::rhi {
 
-	GLuint PrimitiveType_cast(PrimitiveType type) {
+	inline GLuint PrimitiveType_cast(PrimitiveType type) {
 		switch (type)
 		{
 		case qk::gfx::rhi::PrimitiveType::Triangle:

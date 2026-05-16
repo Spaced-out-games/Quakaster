@@ -13,7 +13,7 @@ using qk::gfx::rhi::VertexBufferLayoutDesc;
 
 namespace qk {
 	template<>
-	struct handle_traits<HVertexBufferLayoutTag> {
+	struct ResourceTraits<HVertexBufferLayoutTag> {
 		using value_type = VertexBufferLayoutDesc*;
 	};
 

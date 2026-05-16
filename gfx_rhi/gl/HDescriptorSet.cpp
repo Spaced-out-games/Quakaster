@@ -15,12 +15,12 @@ namespace qk::gfx::rhi {
 
 namespace qk {
 	template<>
-	struct handle_traits<HDescriptorSetTag> {
+	struct ResourceTraits<HDescriptorSetTag> {
 		using value_type = DescriptorSet*;
 	};
 }
 
-#include "rhi_HandleDefinitions.inl"
+#include "rhi_ResourceDefinitions.inl"
 
 namespace qk::gfx::rhi {
 

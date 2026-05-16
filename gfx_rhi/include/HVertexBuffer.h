@@ -1,6 +1,7 @@
 #pragma once
 #include "core.h"
-#include "Handle.h"
+#include "Resource.h"
+#include "ResourcePool.h"
 
 
 namespace qk::gfx::rhi {
@@ -14,8 +15,7 @@ namespace qk::gfx::rhi {
 
 
 	struct HVertexBufferTag {};
-	using HVertexBuffer = Handle<HVertexBufferTag>;
-	//using HVertexBufferRef = Ref<HVertexBufferTag>;
+	using HVertexBuffer = Resource<HVertexBufferTag>;
 
 
 	HVertexBuffer VertexBuffer_ctor();
@@ -29,5 +29,6 @@ namespace qk::gfx::rhi {
 	void VertexBuffer_upload(const HVertexBuffer& hVertexBuffer, const void* pData, size_t count, size_t elem_size, BufferUsage usage);
 
 
+	using VertexBufferRegistry = ResourcePool <HVertexBufferTag, VertexBuffer_dtor>;
 
 }

@@ -7,7 +7,7 @@ using namespace qk::gfx::rhi;
 using qk::set;
 using qk::get;
 
-#include "rhi_HandleDefinitions.inl"
+#include "rhi_ResourceDefinitions.inl"
 
 namespace qk::gfx::rhi {
 	GLuint ShaderType_cast(ShaderType type)
