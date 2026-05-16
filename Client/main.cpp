@@ -30,6 +30,9 @@
 #include "HShader.h"
 #include "HShaderProgram.h"
 #include "HDescriptorSet.h"
+#include "HCommandBuffer.h"
+
+#include "GraphicsResourceRegistry.h"
 
 #include "gfx/Material.h"
 #include "gfx/Mesh.h"
@@ -89,6 +92,8 @@ std::vector<float> g_Points = {
 
 struct DemoClientApplication : qk::Application {
 	
+
+	qk::gfx::GraphicsResourceRegistry grr;
 	// core needs
 	qk::Window m_Window;
 	qk::EventQueue m_EventQueue;
@@ -96,11 +101,11 @@ struct DemoClientApplication : qk::Application {
 
 	glm::vec3 m_Color = {1,1,1};
 	glm::vec3 m_Position = {};
-
+	DrawCommand d;
 
 	rhi::HVertexBufferLayout hLayout;
 	rhi::VertexBufferLayoutDesc LayoutDesc;
-
+	rhi::HCommandBuffer hCmdBuf;
 	Mesh m_DemoMesh;
 
 
@@ -116,7 +121,7 @@ struct DemoClientApplication : qk::Application {
 		rhi::init(qk::getProcAddress());
 	}
 
-	// this has to be called last because some m_Layers might depend on m_Window handles
+	// this has to be called last because some m_Layers might depend on m_Window Resources
 	void attach_layers() {
 		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());
 
@@ -126,6 +131,7 @@ struct DemoClientApplication : qk::Application {
 
 
 	void init(int argc, char** argv) override {
+
 
 		attach_m_EventQueues();
 		render_init();
@@ -140,12 +146,15 @@ struct DemoClientApplication : qk::Application {
 		m_DemoMesh.init(g_Points, hLayout, demoVertShaderSource, demoFragShaderSource, rhi::StaticDraw);
 		m_DemoMesh.pushUniform<glm::vec3>("u_Color", &m_Color);
 		m_DemoMesh.pushUniform<glm::vec3>("u_Position", &m_Position);
+
+		hCmdBuf = rhi::CommandBuffer_ctor();
+		rhi::CommandBuffer_push(hCmdBuf, DrawVertexArrayCmd{ rhi::Triangle, 0, 3 });
 		
 
+		grr.registerVertexBuffer("test", std::move(m_DemoMesh.m_hVertexBuffer));
 
 		// set clear settings.
 		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::Color | rhi::ClearChannels::Stencil);
-
 
 	}
 
@@ -162,7 +171,7 @@ struct DemoClientApplication : qk::Application {
 		// renders to offscreen image
 		m_DemoMesh.bind();
 		m_DemoMesh.updateUniforms();
-		rhi::DrawArrays(m_DemoMesh.m_hVertexArray, rhi::Triangle, 0, 3);
+		rhi::CommandBuffer_call(hCmdBuf);
 		m_Layers.render();
 
 

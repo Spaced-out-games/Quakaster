@@ -10,7 +10,7 @@
 
 namespace qk {
     template<>
-    struct handle_traits<WindowTag> {
+    struct ResourceTraits<WindowTag> {
         using value_type = GLFWwindow*;
     };
 
