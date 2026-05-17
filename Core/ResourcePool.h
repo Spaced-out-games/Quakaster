@@ -41,6 +41,10 @@ namespace qk {
 				return it->second.ref();
 			}
 
+			bool has(uint64_t id) {
+				return m_Storage.find(id) == m_Storage.end(id);
+			}
+
 	};
 
 

@@ -12,7 +12,7 @@ namespace qk::gfx::rhi {
 
 	struct HIndexBufferTag {};
 	using HIndexBuffer = Resource<HIndexBufferTag>;
-	//using HIndexBufferRef = Ref<HIndexBufferTag>;
+	using HIndexBufferRef = Ref<HIndexBufferTag>;
 
 
 	HIndexBuffer IndexBuffer_ctor();

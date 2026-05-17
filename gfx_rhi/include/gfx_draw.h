@@ -19,4 +19,6 @@ namespace qk::gfx::rhi {
 
 	Result<void_t, std::string> DrawArrays(const HVertexArray& hVertexArray, PrimitiveType type, int offset, size_t numVertices);
 
+	Result<void_t, std::string> DrawArraysInstanced(const HVertexArray& hVertexArray, PrimitiveType type, int offset, size_t numVertices, size_t numInstances);
+
 }

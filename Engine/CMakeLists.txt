@@ -59,7 +59,7 @@ set(ENGINE_SOURCES
     gfx/Material.cpp
     gfx/Mesh.cpp
 
-)
+ "gfx/VertexBuffer.cpp" "gfx/IndexBuffer.cpp" "gfx/VertexArray.cpp" "gfx/Texture.cpp" "gfx/VertexBufferLayout.cpp")
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})

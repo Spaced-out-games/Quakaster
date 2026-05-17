@@ -30,4 +30,15 @@ namespace qk::gfx::rhi {
 		return void_t{};
 	}
 
+	Result<void_t, std::string> DrawArraysInstanced(const HVertexArray& hVertexArray, PrimitiveType type, int offset, size_t numVertices, size_t numInstances) {
+		VertexArray_bind(hVertexArray);
+		glDrawArraysInstanced(
+			PrimitiveType_cast(type),
+			offset,
+			numVertices,
+			numInstances
+		);
+		return void_t{};
+	}
+
 }

@@ -2,6 +2,8 @@
 #include "HVertexBufferLayout.h"
 #include "glad\glad.h"
 
+
+#include <iostream> // temporary
 using qk::gfx::rhi::HVertexArray;
 using qk::gfx::rhi::HVertexArrayTag;
 using qk::gfx::rhi::HVertexBufferLayout;
@@ -147,14 +149,19 @@ namespace qk::gfx::rhi {
 
 		for (const auto& elem : layout->attributes())
 		{
+
+			std::cout << "location: " << elem.location;
+			std::cout << "\nbinding: " << elem.binding;
+			std::cout << "\noffset: " <<elem.offset << "\n\n";
+
 			glEnableVertexAttribArray(elem.location);
 
-			if (ScalarType_isInteger(elem.attr.type) && !elem.attr.normalize)
+			if (ScalarType_isInteger(elem.attr.scalar.type) && !elem.attr.normalize)
 			{
 				glVertexAttribIPointer(
 					elem.location,
-					elem.attr.count,
-					ScalarType_cast(elem.attr.type),
+					elem.attr.scalar.count,
+					ScalarType_cast(elem.attr.scalar.type),
 					layout->stride(elem.binding),
 					(void*)(uintptr_t)elem.offset
 				);
@@ -163,13 +170,19 @@ namespace qk::gfx::rhi {
 			{
 				glVertexAttribPointer(
 					elem.location,
-					elem.attr.count,
-					ScalarType_cast(elem.attr.type),
+					elem.attr.scalar.count,
+					ScalarType_cast(elem.attr.scalar.type),
 					elem.attr.normalize,
 					layout->stride(elem.binding),
 					(void*)(uintptr_t)elem.offset
 				);
 			}
+
+			glVertexAttribDivisor(
+				elem.location,
+				elem.rate == InputRate::Instance ? 1 : 0
+			);
+
 		}
 
 	}

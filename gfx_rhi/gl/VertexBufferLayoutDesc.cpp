@@ -29,44 +29,19 @@ namespace qk::gfx::rhi {
 		}
 	}
 
-	// ------------------------------------------------------------
-	// Add a binding stream
-	// ------------------------------------------------------------
-	void VertexBufferLayoutDesc::add_binding(
-		uint32_t binding,
-		uint32_t stride,
-		InputRate rate
-	)
-	{
-		m_Bindings.push_back(VertexBufferBinding{
-			.stride = stride,
-			.binding = binding,
-			.rate = rate
-			});
-
-		m_LastBinding = binding;
-	}
 
 	// ------------------------------------------------------------
 	// Push attribute
 	// ------------------------------------------------------------
 	void VertexBufferLayoutDesc::push(
 		ScalarType type,
-		uint32_t count,
+		uint16_t count,
 		bool normalize,
-		uint32_t location,
-		uint32_t binding
+		InputRate rate,
+		ScalarMultiplicity multiplicity,
+		uint32_t location
 	)
 	{
-		// ----------------------------------------
-		// auto binding
-		// ----------------------------------------
-		if (binding == AUTO)
-		{
-			assert(m_LastBinding != AUTO);
-			binding = m_LastBinding;
-		}
-
 		// ----------------------------------------
 		// auto location
 		// ----------------------------------------
@@ -79,52 +54,41 @@ namespace qk::gfx::rhi {
 		}
 
 		// ----------------------------------------
-		// compute offset
+		// compute offset (packing attributes sequentially)
 		// ----------------------------------------
 		uint32_t offset = 0;
 
 		for (const auto& existing : m_Attributes)
 		{
-			if (existing.binding != binding)
-				continue;
+			uint32_t size =
+				existing.attr.scalar.count *
+				ScalarType_size(existing.attr.scalar.type);
 
-			uint32_t end =
-				existing.offset +
-				(existing.attr.count * ScalarType_size(existing.attr.type));
+			uint32_t end = existing.offset + size;
 
 			if (end > offset)
 				offset = end;
 		}
 
 		// ----------------------------------------
-		// push attribute
+		// create attribute
 		// ----------------------------------------
-		m_Attributes.push_back(VertexAttributeBinding{
-			.attr = VertexAttribute{type, count, normalize},
-			.location = location,
-			.offset = offset,
-			.binding = binding,
-			});
+		VertexAttributeBinding attr;
+		attr.attr = VertexAttribute{ ScalarDesc{multiplicity, type, count}, normalize };
+		attr.location = location;
+		attr.offset = offset;
+		attr.rate = rate;
+
+		m_Attributes.push_back(attr);
 
 		m_LastLocation = location;
-		m_LastBinding = binding;
 
 		// ----------------------------------------
-		// auto stride update
+		// update stride (IMPORTANT FIX)
 		// ----------------------------------------
-		for (auto& b : m_Bindings)
-		{
-			if (b.binding != binding)
-				continue;
+		uint32_t attrSize = count * ScalarType_size(type);
 
-			// if stride was AUTO, infer it
-			if (b.stride == AUTO)
-			{
-				b.stride =
-					offset +
-					(count * ScalarType_size(type));
-			}
-		}
+		m_Stride = offset + attrSize;
 	}
 
 	// ------------------------------------------------------------
@@ -139,24 +103,19 @@ namespace qk::gfx::rhi {
 	// ------------------------------------------------------------
 	// bindings
 	// ------------------------------------------------------------
+	/*
 	const std::vector<VertexBufferBinding>&
 		VertexBufferLayoutDesc::bindings() const
 	{
 		return m_Bindings;
 	}
-
+	*/
 	// ------------------------------------------------------------
 	// stride query
 	// ------------------------------------------------------------
-	uint32_t VertexBufferLayoutDesc::stride(uint32_t binding) const
+	uint32_t VertexBufferLayoutDesc::stride(uint32_t) const
 	{
-		for (const auto& b : m_Bindings)
-		{
-			if (b.binding == binding)
-				return b.stride;
-		}
-
-		return 0;
+		return m_Stride;
 	}
 
 }

@@ -15,6 +15,7 @@ namespace qk::gfx::rhi {
 
 	struct HVertexArrayTag {};
 	using HVertexArray = Resource<HVertexArrayTag>;
+	using HVertexArrayRef = Ref<HVertexArrayTag>;
 
 
 	HVertexArray VertexArray_ctor();

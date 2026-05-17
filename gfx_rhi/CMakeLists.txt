@@ -37,7 +37,7 @@ set(RHI_SOURCES
     ${GFX_BACKEND}/HDescriptorSet.cpp
     ${GFX_BACKEND}/Scalar.cpp
     ${GFX_BACKEND}/HIndexBuffer.cpp
- "gl/DrawCommand.cpp" "gl/HCommandBuffer.cpp")
+ )
 
 # ------------------------------------------------------------------------------
 # Backend selection

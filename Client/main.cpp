@@ -25,17 +25,16 @@
 #include "gfx_draw.h"
 #include "HVertexArray.h"
 #include "VertexBufferLayoutDesc.h"
-#include "HVertexBufferLayout.h"
-#include "HVertexBuffer.h"
-#include "HShader.h"
-#include "HShaderProgram.h"
-#include "HDescriptorSet.h"
-#include "HCommandBuffer.h"
 
-#include "GraphicsResourceRegistry.h"
 
+// graphics
 #include "gfx/Material.h"
 #include "gfx/Mesh.h"
+
+// media
+#include "media/Image.h"
+
+
 
 #define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (54).png"
 
@@ -46,8 +45,12 @@ static const char* demoVertShaderSource = R"(
 #version 330 core
 
 layout(location = 0) in vec2 aPos;
+layout(location = 1) in vec2 iOffset;
+layout(location = 2) in vec3 iColor;
 uniform vec3 u_Position;
 
+out vec3 fColor;
+out vec2 aUV;
 mat2 rotation2D(float a)
 {
     float s = sin(a);
@@ -63,24 +66,39 @@ mat2 rotation2D(float a)
 
 void main()
 {
-    gl_Position = vec4((aPos * rotation2D(u_Position.z))+ u_Position.xy , 0.0, 1.0);
+	vec2 worldPos = (aPos + iOffset + u_Position.xy) * rotation2D(u_Position.z);
+	gl_Position = vec4(worldPos, 0.0, 1.0);
+	fColor = iColor;
+	aUV = worldPos;
 }
 
 )";
-
 
 static const char* demoFragShaderSource = R"(
 
 #version 330 core
+in vec2 aUV;
+
 uniform vec3 u_Color;
+//uniform sampler2D u_Texture;
+
+in vec3 fColor;
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = vec4(u_Color, 1.0);
+	vec4 tex = vec4(1,1,1, 1);
+    //vec4 tex = texture(u_Texture, aUV); // TEMP placeholder UV
+    FragColor = vec4(fColor * u_Color * tex.rgb, tex.a);
 }
 
 )";
+
+
+struct InstanceData {
+	glm::vec2 pos;
+	glm::vec3 color;
+};
 
 
 std::vector<float> g_Points = {
@@ -89,11 +107,15 @@ std::vector<float> g_Points = {
 	0.0,0.5
 };
 
+std::vector<float> g_Instances = {
+	-0.5,-0.5,		1,0,0,
+	-0.5,0.5,		0,1,0,
+	0.5,-0.5,		0,0,1
+};
 
 struct DemoClientApplication : qk::Application {
 	
 
-	qk::gfx::GraphicsResourceRegistry grr;
 	// core needs
 	qk::Window m_Window;
 	qk::EventQueue m_EventQueue;
@@ -101,16 +123,14 @@ struct DemoClientApplication : qk::Application {
 
 	glm::vec3 m_Color = {1,1,1};
 	glm::vec3 m_Position = {};
-	DrawCommand d;
 
-	rhi::HVertexBufferLayout hLayout;
-	rhi::VertexBufferLayoutDesc LayoutDesc;
-	rhi::HCommandBuffer hCmdBuf;
+	VertexBufferLayout m_Layout;
 	Mesh m_DemoMesh;
-
+	Material m_DemoMat;
+	int slot = 0;
 
 	// Can be called before or after render_init()
-	void attach_m_EventQueues() {
+	void attach_event_queues() {
 		m_Layers.attachQueue(&m_EventQueue);
 		m_Window.setEventQueue(&m_EventQueue);
 	}
@@ -132,26 +152,51 @@ struct DemoClientApplication : qk::Application {
 
 	void init(int argc, char** argv) override {
 
+		VertexBufferLayout vert_layout;
+		rhi::VertexBufferLayoutDesc vert_layout_desc;
+		vert_layout_desc.push(rhi::f32, 2, 0, InputRate::Vertex, ScalarMultiplicity::Scalar, 0);
+		vert_layout.init(vert_layout_desc);
 
-		attach_m_EventQueues();
+		VertexBufferLayout instance_layout;
+		rhi::VertexBufferLayoutDesc instance_layout_desc;
+		instance_layout_desc.push(rhi::f32, 2, 0, InputRate::Instance, ScalarMultiplicity::Scalar, 1);
+		instance_layout_desc.push(rhi::f32, 3, 0, InputRate::Instance, ScalarMultiplicity::Scalar, 2);
+		instance_layout.init(instance_layout_desc);
+
+		media::Image img;
+		media::load_image(img, TEST_IMAGE_PATH);
+
+
+
+		attach_event_queues();
 		render_init();
 		attach_layers();
 
-		// create the vertex buffer layout
-		LayoutDesc.push(rhi::f32, 2, 0);
-		hLayout = rhi::VertexBufferLayout_ctor(LayoutDesc);
+
+		Texture test_texture;
 
 
+		test_texture.init();
+		test_texture.upload_2D(img.data(), img.width(), img.height(), img.channels());
 
-		m_DemoMesh.init(g_Points, hLayout, demoVertShaderSource, demoFragShaderSource, rhi::StaticDraw);
-		m_DemoMesh.pushUniform<glm::vec3>("u_Color", &m_Color);
-		m_DemoMesh.pushUniform<glm::vec3>("u_Position", &m_Position);
-
-		hCmdBuf = rhi::CommandBuffer_ctor();
-		rhi::CommandBuffer_push(hCmdBuf, DrawVertexArrayCmd{ rhi::Triangle, 0, 3 });
 		
 
-		grr.registerVertexBuffer("test", std::move(m_DemoMesh.m_hVertexBuffer));
+
+
+		m_DemoMesh.init();
+		m_DemoMesh.pushVertexBuffer(std::span<float>(g_Points), rhi::StaticDraw, vert_layout);
+		m_DemoMesh.pushVertexBuffer(std::span<float>(g_Instances), rhi::StaticDraw, instance_layout);
+		m_DemoMat.init(demoVertShaderSource, demoFragShaderSource);
+		m_DemoMat.pushUniform<glm::vec3>("u_Color", &m_Color);
+		m_DemoMat.pushUniform<glm::vec3>("u_Position", &m_Position);
+		//m_DemoMat.pushUniform<int>("u_Texture", &slot);
+
+		//m_DemoMat.PushTexture(std::move(test_texture), "u_Texture", 0);
+
+		
+
+
+		rhi::HShaderUniform u_Texture = rhi::ShaderProgram_getUniform(m_DemoMat.m_hShaderProgram, "u_Texture").value();
 
 		// set clear settings.
 		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::Color | rhi::ClearChannels::Stencil);
@@ -170,9 +215,11 @@ struct DemoClientApplication : qk::Application {
 
 		// renders to offscreen image
 		m_DemoMesh.bind();
-		m_DemoMesh.updateUniforms();
-		rhi::CommandBuffer_call(hCmdBuf);
+		m_DemoMat.bind();
+		m_DemoMat.update();
 		m_Layers.render();
+
+		rhi::DrawArraysInstanced(m_DemoMesh.ref(), Triangle, 0, 3, 3);
 
 
 		// presents offscreen image

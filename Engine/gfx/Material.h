@@ -5,12 +5,15 @@
 #pragma once
 #include <HDescriptorSet.h>
 #include <HShaderProgram.h>
+#include "Texture.h"
+#include "fnv1a.h"
 #include <Result.h>
 #include <string>
 #include <glm/glm.hpp>
 
 using namespace qk::gfx::rhi;
 
+using qk::string_hash;
 
 namespace qk::gfx {
 
@@ -56,14 +59,20 @@ namespace qk::gfx {
     };
 
 
-
+    struct TextureBinding {
+        Texture texture;
+        uint8_t slot;
+        //uint32_t location; // TODO: make use of HShaderUniform for this
+        rhi::HShaderUniform location;
+    };
 
 
 
 	struct Material {
 		HShaderProgram m_hShaderProgram;
 		HDescriptorSet m_hDescriptorSet;
-
+        std::vector<TextureBinding> m_TextureBindings;
+        std::vector<uint8_t> m_TextureSlots;
 		int init(const std::string& vertSrc, const std::string& fragSrc);
 
 
@@ -91,6 +100,9 @@ namespace qk::gfx {
                 data
             );
         }
+
+        void PushTexture(Texture&& texture, std::string_view name, uint8_t slot = AUTO_TEX_SLOT);
+
 
 	};
 }

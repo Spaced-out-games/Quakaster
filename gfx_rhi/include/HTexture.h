@@ -28,13 +28,14 @@ namespace qk::gfx::rhi {
 	struct HTextureTag {};
 
 	using HTexture = qk::Resource<HTextureTag>;
+	using HTextureRef = qk::Ref<HTextureTag>;
 
 	HTexture Texture_ctor();
 
 	void Texture_upload_2D(const HTexture& hTex, const uint8_t* pData, int width, int height, int channels);
 
 
-	void Texture_bind(const HTexture& hTex, TextureType type);
+	void Texture_bind(const HTexture& hTex, TextureType type, uint8_t slot);
 	
 	void Texture_dtor(HTexture& hTex);
 

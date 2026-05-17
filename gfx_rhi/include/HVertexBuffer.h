@@ -16,6 +16,7 @@ namespace qk::gfx::rhi {
 
 	struct HVertexBufferTag {};
 	using HVertexBuffer = Resource<HVertexBufferTag>;
+	using HVertexBufferRef = Ref<HVertexBufferTag>;
 
 
 	HVertexBuffer VertexBuffer_ctor();

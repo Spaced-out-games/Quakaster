@@ -91,11 +91,35 @@ namespace qk::gfx {
 
 
 
-	void Material::bind() const {
+    void Material::bind() const {
         rhi::ShaderProgram_bind(m_hShaderProgram);
-	}
+
+
+
+        // 1. bind textures FIRST
+        for (const auto& tex : m_TextureBindings) {
+            tex.texture.bind(tex.slot);
+        }
+
+        // 2. THEN set sampler uniforms
+        for (const auto& tex : m_TextureBindings) {
+            rhi::DescriptorSet_update(
+                m_hShaderProgram,
+                m_hDescriptorSet,
+                tex.location
+            );
+        }
+    }
 
 	void Material::update() const {
         rhi::DescriptorSet_update(m_hShaderProgram, m_hDescriptorSet);
 	};
+
+    void Material::PushTexture(Texture&& texture, std::string_view name, uint8_t slot) {
+        if (slot == AUTO_TEX_SLOT) slot = m_TextureBindings.size();
+        auto location = rhi::ShaderProgram_getUniform(m_hShaderProgram, name.data()).value();
+        m_TextureBindings.emplace_back(std::move(texture), slot, location);
+        m_TextureSlots.push_back(slot);
+    }
+
 }

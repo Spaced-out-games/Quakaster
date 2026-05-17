@@ -122,7 +122,8 @@ namespace qk::gfx::rhi {
 	
 	*/
 
-	void Texture_bind(const HTexture& hTex, TextureType type) {
+	void Texture_bind(const HTexture& hTex, TextureType type, uint8_t slot) {
+		glActiveTexture(GL_TEXTURE0 + slot);
 		glBindTexture(TextureType_cast(type), get(hTex));
 	}
 

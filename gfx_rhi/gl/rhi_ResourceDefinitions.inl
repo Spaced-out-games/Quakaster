@@ -2,7 +2,6 @@
 #include "HVertexBufferLayout.h"
 #include "HVertexBufferLayout.h"
 #include "VertexBufferLayoutDesc.h"
-#include "HCommandBuffer.h"
 #include "HShaderProgram.h"
 #include "HDescriptorSet.h"
 #include "HVertexArray.h"
@@ -58,10 +57,7 @@ namespace qk {
 		using value_type = GLint;
 	};
 
-	template<>
-	struct ResourceTraits<HCommandBufferTag> {
-		using value_type = CommandBuffer*;
-	};
+
 
 	
 

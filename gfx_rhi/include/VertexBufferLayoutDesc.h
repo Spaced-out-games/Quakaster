@@ -86,8 +86,7 @@ namespace qk::gfx::rhi {
     }
 
     struct VertexAttribute {
-        ScalarType type;
-        uint32_t count;
+        ScalarDesc scalar;
         bool normalize;
     };
 
@@ -96,12 +95,13 @@ namespace qk::gfx::rhi {
         uint32_t location;
         uint32_t offset;
         uint32_t binding;
+        InputRate rate;
+
     };
 
     struct VertexBufferBinding {
         uint32_t stride;
         uint32_t binding;
-        InputRate rate;
 
     };
 
@@ -109,18 +109,18 @@ namespace qk::gfx::rhi {
     class QK_API VertexBufferLayoutDesc {
         private:
             std::vector<VertexAttributeBinding> m_Attributes;
-            std::vector<VertexBufferBinding> m_Bindings;
-
+            uint32_t m_Stride;
             uint32_t m_LastLocation = AUTO;
             uint32_t m_LastBinding = 0;
         public:
 
-            void add_binding(uint32_t binding, uint32_t stride, InputRate rate = InputRate::Vertex);
 
 
             void push(
-                ScalarType type, uint32_t count, bool normalize,
-                uint32_t location = AUTO, uint32_t binding = AUTO
+                ScalarType type, uint16_t count, bool normalize,
+                InputRate rate = InputRate::Vertex,
+                ScalarMultiplicity multiplicity = ScalarMultiplicity::Scalar,
+                uint32_t location = AUTO
             );
 
 
@@ -129,7 +129,7 @@ namespace qk::gfx::rhi {
             const std::vector<VertexAttributeBinding>& attributes() const;
 
 
-            const std::vector<VertexBufferBinding>& bindings() const;
+            //const std::vector<VertexBufferBinding>& bindings() const;
 
             uint32_t stride(uint32_t binding) const;
     };

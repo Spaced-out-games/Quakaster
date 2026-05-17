@@ -14,7 +14,12 @@ namespace qk::gfx::rhi {
 	struct HDescriptorSetTag {};
 	using HDescriptorSet = Resource<HDescriptorSetTag>;
 
+	struct Descriptor {
 
+		void* pData = nullptr;
+		ScalarDesc	scalar;
+
+	};
 
 	HDescriptorSet DescriptorSet_ctor();
 
@@ -29,6 +34,7 @@ namespace qk::gfx::rhi {
 
 	void DescriptorSet_update(const HShaderProgram& hShaderProgram, const HDescriptorSet& hDescriptorSet);
 
-
+	// need better name / implementation ngl.
+	void updateUniform(const HShaderUniform& hLocation, const Descriptor& desc);
 
 }

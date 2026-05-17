@@ -25,12 +25,7 @@ namespace qk {
 namespace qk::gfx::rhi {
 
 
-	struct Descriptor {
 
-		void* pData = nullptr;
-		ScalarDesc	scalar;
-		
-	};
 
     static void upload_uniform(GLint location, const Descriptor& desc)
     {
@@ -148,21 +143,14 @@ namespace qk::gfx::rhi {
         const HDescriptorSet& hDescriptorSet,
         const HShaderUniform& hLocation)
     {
-        QK_ASSERT(hShaderProgram.valid());
-        QK_ASSERT(hDescriptorSet.valid());
-        QK_ASSERT(hLocation.valid());
-
-
         GLuint gl_program = get(hShaderProgram);
+        glUseProgram(gl_program); // REQUIRED
 
-
-        DescriptorSet* pDescriptorSet = get(hDescriptorSet);
+        auto* pDescriptorSet = get(hDescriptorSet);
 
         auto it = pDescriptorSet->m_Descriptors.find(hLocation.value());
         if (it == pDescriptorSet->m_Descriptors.end())
             return;
-
-        glUseProgram(gl_program);
 
         upload_uniform(get(hLocation), it->second);
     }
@@ -184,6 +172,11 @@ namespace qk::gfx::rhi {
         {
             upload_uniform(location, desc);
         }
+    }
+
+    void updateUniform(const HShaderUniform& hLocation, const Descriptor& desc) {
+        auto location = get(hLocation);
+        upload_uniform(location, desc);
     }
 
 }

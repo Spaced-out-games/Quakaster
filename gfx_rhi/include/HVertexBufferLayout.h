@@ -9,6 +9,7 @@ namespace qk::gfx::rhi {
 	struct HVertexBufferLayoutTag {};
 
 	using HVertexBufferLayout = qk::Resource<HVertexBufferLayoutTag>;
+	using HVertexBufferLayoutRef = qk::Ref<HVertexBufferLayoutTag>;
 
 
 	HVertexBufferLayout QK_API VertexBufferLayout_ctor(const VertexBufferLayoutDesc& desc);
