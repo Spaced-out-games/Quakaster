@@ -2,7 +2,7 @@
 #include <Resource.h>
 #include <stdint.h>
 #include "ResourcePool.h"
-
+#include "HShaderUniform.h"
 
 
 
@@ -38,6 +38,8 @@ namespace qk::gfx::rhi {
 	void Texture_bind(const HTexture& hTex, TextureType type, uint8_t slot);
 	
 	void Texture_dtor(HTexture& hTex);
+
+	void Texture_setUniform(HShaderUniform location, uint8_t slot);
 
 	using TextureRegistry = ResourcePool<HTextureTag, Texture_dtor>;
 

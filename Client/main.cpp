@@ -47,7 +47,6 @@ static const char* demoVertShaderSource = R"(
 layout(location = 0) in vec2 aPos;
 layout(location = 1) in vec2 iOffset;
 layout(location = 2) in vec3 iColor;
-uniform vec3 u_Position;
 
 out vec3 fColor;
 out vec2 aUV;
@@ -66,10 +65,10 @@ mat2 rotation2D(float a)
 
 void main()
 {
-	vec2 worldPos = (aPos + iOffset + u_Position.xy) * rotation2D(u_Position.z);
+	vec2 worldPos = (aPos + iOffset);
 	gl_Position = vec4(worldPos, 0.0, 1.0);
 	fColor = iColor;
-	aUV = worldPos;
+	aUV = aPos * 0.5 + 0.5;
 }
 
 )";
@@ -79,17 +78,16 @@ static const char* demoFragShaderSource = R"(
 #version 330 core
 in vec2 aUV;
 
-uniform vec3 u_Color;
-//uniform sampler2D u_Texture;
+uniform sampler2D u_Texture;
 
 in vec3 fColor;
 out vec4 FragColor;
 
 void main()
 {
-	vec4 tex = vec4(1,1,1, 1);
-    //vec4 tex = texture(u_Texture, aUV); // TEMP placeholder UV
-    FragColor = vec4(fColor * u_Color * tex.rgb, tex.a);
+	//vec4 tex = vec4(1,1,1, 1);
+    vec4 tex = texture(u_Texture, aUV); // TEMP placeholder UV
+    FragColor = vec4(tex.rgb, tex.a); // fColor + 
 }
 
 )";
@@ -145,7 +143,6 @@ struct DemoClientApplication : qk::Application {
 	void attach_layers() {
 		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());
 
-		gui.emplace<qk::gfx::gui::Vec3EditWidget>("Color", &m_Color, 0.0f, 1.0f);
 		gui.emplace<qk::gfx::gui::Vec3EditWidget>("Position", &m_Position, -5.0f, 5.0f);
 	}
 
@@ -177,26 +174,19 @@ struct DemoClientApplication : qk::Application {
 
 
 		test_texture.init();
+		test_texture.bind(0);
 		test_texture.upload_2D(img.data(), img.width(), img.height(), img.channels());
-
-		
-
 
 
 		m_DemoMesh.init();
 		m_DemoMesh.pushVertexBuffer(std::span<float>(g_Points), rhi::StaticDraw, vert_layout);
 		m_DemoMesh.pushVertexBuffer(std::span<float>(g_Instances), rhi::StaticDraw, instance_layout);
 		m_DemoMat.init(demoVertShaderSource, demoFragShaderSource);
-		m_DemoMat.pushUniform<glm::vec3>("u_Color", &m_Color);
-		m_DemoMat.pushUniform<glm::vec3>("u_Position", &m_Position);
 		//m_DemoMat.pushUniform<int>("u_Texture", &slot);
 
-		//m_DemoMat.PushTexture(std::move(test_texture), "u_Texture", 0);
 
-		
+		m_DemoMat.pushTexture("u_Texture", std::move(test_texture));
 
-
-		rhi::HShaderUniform u_Texture = rhi::ShaderProgram_getUniform(m_DemoMat.m_hShaderProgram, "u_Texture").value();
 
 		// set clear settings.
 		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::Color | rhi::ClearChannels::Stencil);

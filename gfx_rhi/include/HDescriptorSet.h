@@ -34,7 +34,6 @@ namespace qk::gfx::rhi {
 
 	void DescriptorSet_update(const HShaderProgram& hShaderProgram, const HDescriptorSet& hDescriptorSet);
 
-	// need better name / implementation ngl.
-	void updateUniform(const HShaderUniform& hLocation, const Descriptor& desc);
+
 
 }

@@ -61,9 +61,8 @@ namespace qk::gfx {
 
     struct TextureBinding {
         Texture texture;
-        uint8_t slot;
-        //uint32_t location; // TODO: make use of HShaderUniform for this
         rhi::HShaderUniform location;
+        uint8_t slot;
     };
 
 
@@ -72,7 +71,6 @@ namespace qk::gfx {
 		HShaderProgram m_hShaderProgram;
 		HDescriptorSet m_hDescriptorSet;
         std::vector<TextureBinding> m_TextureBindings;
-        std::vector<uint8_t> m_TextureSlots;
 		int init(const std::string& vertSrc, const std::string& fragSrc);
 
 
@@ -85,15 +83,14 @@ namespace qk::gfx {
         void pushUniform(const std::string& name, T* data)
         {
             auto result = rhi::ShaderProgram_getUniform(m_hShaderProgram, name.c_str());///* your lookup by name */;
-            if (!result.value().valid()) return;
+            if (!result.valid()) return;
             //if (!result.has_error()) return;
 
             //HShaderUniform gl_ShaderLocation(result.value());
             using Traits = MaterialTraits<T>;
-            HShaderUniform gl_ShaderLocation = result.value();
             rhi::DescriptorSet_push(
                 m_hDescriptorSet,
-                gl_ShaderLocation,
+                result,
                 Traits::type,
                 Traits::count,
                 Traits::mult,
@@ -101,8 +98,7 @@ namespace qk::gfx {
             );
         }
 
-        void PushTexture(Texture&& texture, std::string_view name, uint8_t slot = AUTO_TEX_SLOT);
-
+        void pushTexture(std::string_view name, Texture&& texture);
 
 	};
 }

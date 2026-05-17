@@ -13,6 +13,11 @@ namespace qk {
 		using value_type = GLuint;
 	};
 
+	template<>
+	struct ResourceTraits<HShaderUniformTag> {
+		using value_type = GLint;
+	};
+
 }
 
 namespace qk::gfx::rhi {
@@ -77,12 +82,16 @@ namespace qk::gfx::rhi {
 
 	void Texture_upload_2D(const HTexture& hTex, const uint8_t* pData, int width, int height, int channels) {
 		QK_ASSERT(hTex.valid());
-
 		GLuint gl_tex = qk::get(hTex);
 		GLenum format = Channel_cast(channels);
+		glBindTexture(GL_TEXTURE_2D, gl_tex);
 
 		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pData);
 		
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
 	void Texture_upload_1D(const HTexture& hTex, const uint8_t* pData, int size, int channels) {
@@ -137,6 +146,11 @@ namespace qk::gfx::rhi {
 		hTex = nullptr;
 	}
 
+
+	void rhi::Texture_setUniform(HShaderUniform location, uint8_t slot) {
+		glUniform1i(get(location), slot);
+	}
+	
 
 
 

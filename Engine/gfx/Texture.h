@@ -7,10 +7,9 @@ namespace qk::gfx {
 
 	constexpr uint8_t AUTO_TEX_SLOT = 255;
 
-	class Texture {
+	struct Texture {
 		rhi::HTexture m_hTexture;
 		rhi::TextureType m_Type;
-
 		public:
 			void init();
 

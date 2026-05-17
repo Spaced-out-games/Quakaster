@@ -78,7 +78,7 @@ namespace qk::gfx::rhi  {
 
 	}
 
-	Result<HShaderUniform, void_t> ShaderProgram_getUniform(const HShaderProgram& hProgram, const char* uniformName) {
+	HShaderUniform ShaderProgram_getUniform(const HShaderProgram& hProgram, const char* uniformName) {
 
 		QK_ASSERT(hProgram.valid());
 

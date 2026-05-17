@@ -24,7 +24,7 @@ namespace qk::gfx::rhi {
 
 	void ShaderProgram_dtor(HShaderProgram& hProgram);
 
-	Result<HShaderUniform, void_t> ShaderProgram_getUniform(const HShaderProgram& hProgram, const char* uniformName);
+	HShaderUniform ShaderProgram_getUniform(const HShaderProgram& hProgram, const char* uniformName);
 
 
 	// then you'll need EVEN MORE for uploading uniforms.
