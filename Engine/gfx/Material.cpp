@@ -114,6 +114,8 @@ namespace qk::gfx {
 
         auto loc = rhi::ShaderProgram_getUniform(m_hShaderProgram, name.data());
         assert(loc.valid());
+
+
         m_TextureBindings.push_back(TextureBinding {
             std::move(texture),
             loc,

@@ -79,7 +79,7 @@ static const char* demoFragShaderSource = R"(
 in vec2 aUV;
 
 uniform sampler2D u_Texture;
-
+uniform vec3 u_Color;
 in vec3 fColor;
 out vec4 FragColor;
 
@@ -87,7 +87,7 @@ void main()
 {
 	//vec4 tex = vec4(1,1,1, 1);
     vec4 tex = texture(u_Texture, aUV); // TEMP placeholder UV
-    FragColor = vec4(tex.rgb, tex.a); // fColor + 
+    FragColor = vec4(fColor + tex.rgb, tex.a); // fColor + 
 }
 
 )";
@@ -145,7 +145,6 @@ struct DemoClientApplication : qk::Application {
 
 		gui.emplace<qk::gfx::gui::Vec3EditWidget>("Position", &m_Position, -5.0f, 5.0f);
 	}
-
 
 	void init(int argc, char** argv) override {
 
