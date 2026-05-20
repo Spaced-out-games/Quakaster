@@ -4,14 +4,14 @@
 #include "GUIWidget.h"
 #include <vector>
 #include <memory>
-#include "SharedDefs.h"
+//#include "SharedDefs.h"
 
 namespace qk::gfx::gui {
 
 	struct QK_API GUILayer : qk::Layer {
 
 
-		qk::HWindow m_hWindow;
+		void* m_hWindow;
 		std::vector<std::unique_ptr<Widget>> m_Widgets;
 
 		void push(std::unique_ptr<Widget> pWidget)
@@ -30,7 +30,7 @@ namespace qk::gfx::gui {
 			return ref;
 		}
 
-		GUILayer(qk::HWindow hWindow);
+		GUILayer(void* hWindow);
 
 
 		// sorts widgets by their Z

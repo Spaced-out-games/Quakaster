@@ -8,15 +8,6 @@
 
 
 
-namespace qk {
-    template<>
-    struct ResourceTraits<WindowTag> {
-        using value_type = GLFWwindow*;
-    };
-
-}
-
-
 namespace qk::gfx::gui::io {
 
     Key key_cast(int glfw_key)
@@ -176,9 +167,9 @@ namespace qk::gfx::gui::io {
 
 namespace qk::gfx::gui {
 
-    GUILayer::GUILayer(qk::HWindow hWindow) {
+    GUILayer::GUILayer(void* hWindow) {
         
-        qk::set(m_hWindow, qk::get(hWindow));
+        m_hWindow = hWindow;
 
     }
 

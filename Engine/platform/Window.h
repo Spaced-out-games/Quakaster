@@ -4,13 +4,10 @@
 /// ************************************************************************************************** 
 
 #pragma once
-#include "Resource.h"
 #include "core.h"
 #include <string>
 #include <memory>
 #include "../io/EventQueue.h"
-#include "gfx_rhi.h"
-#include "SharedDefs.h"
 
 namespace qk {
 
@@ -22,7 +19,7 @@ namespace qk {
 	
 
 	class QK_API Window {
-		HWindow m_hWindow;
+		void* m_hWindow;
 
 		std::string m_Title;
 
@@ -64,7 +61,7 @@ namespace qk {
 			// Returns whether or not this window wants to close
 			int shouldClose();
 			// Initializes the window
-			void init(Window::Size initial_size, const std::string& title, HMonitor monitor, Window* shared = nullptr);
+			void init(Window::Size initial_size, const std::string& title, Window* shared = nullptr);
 			// Presents the rendered frame and acquires the next swapchain buffer for rendering.
 			void swapBuffers();
 
@@ -74,7 +71,7 @@ namespace qk {
 			Size getSize() const;
 
 			// Gets a platform Resource (GLFWWindow*, SDLWindow*...)
-			HWindowRef handle();
+			void* handle();
 
 			// Explicit destruction
 			void destroy();
@@ -86,7 +83,9 @@ namespace qk {
 			void pollEvents();
 
 
+
+
 	};
 
-	gfx::HLoader getProcAddress();
+	void* getProcAddress();
 }

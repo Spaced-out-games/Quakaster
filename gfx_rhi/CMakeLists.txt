@@ -21,22 +21,25 @@ set(RHI_SOURCES
     external/imgui/imgui_draw.cpp
     external/imgui/imgui_tables.cpp
     external/imgui/imgui_widgets.cpp
-    ${GFX_BACKEND}/gfx_rhi.cpp
-    ${GFX_BACKEND}/VertexBufferLayoutDesc.cpp
-    ${GFX_BACKEND}/HVertexBufferLayout.cpp
-    ${GFX_BACKEND}/HVertexArray.cpp
+    
+    
+    gl/gfx_rhi.cpp
+    gl/gui_rhi_glfw_impl.cpp
+    gl/gui_widget_input.cpp
+    gl/gui_widget_rhi.cpp
+    
 
-    ${GFX_BACKEND}/gui_rhi_glfw_impl.cpp
-    ${GFX_BACKEND}/gui_widget_rhi.cpp
-    ${GFX_BACKEND}/HTexture.cpp
-    ${GFX_BACKEND}/gui_widget_input.cpp
-    ${GFX_BACKEND}/HVertexBuffer.cpp
-    ${GFX_BACKEND}/HShader.cpp
-    ${GFX_BACKEND}/HShaderProgram.cpp
-    ${GFX_BACKEND}/gfx_draw.cpp
-    ${GFX_BACKEND}/HDescriptorSet.cpp
-    ${GFX_BACKEND}/Scalar.cpp
-    ${GFX_BACKEND}/HIndexBuffer.cpp
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
  )
 
 # ------------------------------------------------------------------------------
@@ -53,7 +56,7 @@ if(GFX_BACKEND STREQUAL "gl")
     # Add OpenGL implementation + GLAD loader
     # GLAD is compiled directly into this library (no external dependency leak)
     list(APPEND RHI_SOURCES
-        gl/gfx_rhi.cpp
+        #gl/gfx_rhi.cpp
         external/glad/src/glad.c
         external/imgui/backends/imgui_impl_opengl3.cpp
         external/imgui/backends/imgui_impl_glfw.cpp

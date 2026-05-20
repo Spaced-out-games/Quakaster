@@ -1,10 +1,9 @@
 #pragma once
-#include "SharedDefs.h"
 
 
 namespace qk::gfx::rhi::gui {
 
-	void init(const HWindow& window);
+	void init(const void* window);
 
 	void begin_frame(float DeltaTime);
 

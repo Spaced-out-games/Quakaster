@@ -1,5 +1,4 @@
 #pragma once
-#include "HTexture.h"
 
 namespace qk::gfx::rhi::gui {
 
@@ -88,7 +87,7 @@ namespace qk::gfx::rhi::gui {
 	void end_popup();
 	bool menu_item(const char* label, bool selected = false);
 
-	void image(const HTexture& hTex, const Vec2& size, const Vec2& uv0, const Vec2& uv1);
+	//void image(const HTexture& hTex, const Vec2& size, const Vec2& uv0, const Vec2& uv1);
 	
 
 }

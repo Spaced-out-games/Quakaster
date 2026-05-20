@@ -1,12 +1,6 @@
 #include "gfx_rhi.h"
 #include <glad/glad.h>
 
-namespace qk {
-	template<>
-	struct ResourceTraits<gfx::HLoaderTag> {
-		using value_type = void*;
-	};
-}
 
 namespace qk::gfx::rhi {
 	static inline ClearChannels g_ClearChannels;
@@ -28,8 +22,8 @@ namespace qk::gfx::rhi {
 		return result;
 	}
 
-	int init(HLoader hLoader) {
-		return gladLoadGLLoader((GLADloadproc)get(hLoader));
+	int init(void* hLoader) {
+		return gladLoadGLLoader((GLADloadproc)hLoader);
 	}
 
 	void clear(float r, float g, float b, float a, ClearChannels channels) {

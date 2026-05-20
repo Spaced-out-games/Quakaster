@@ -2,7 +2,6 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 #include "../include/gui_rhi.h"
-#include "Resource.h"
 #include <GLFW\glfw3.h>
 
 
@@ -11,16 +10,6 @@
 
 
 
-
-
-
-namespace qk {
-    template<>
-    struct ResourceTraits<WindowTag> {
-        using value_type = GLFWwindow*;
-    };
-
-}
 
 
 namespace qk::gfx::rhi::gui {
@@ -57,9 +46,9 @@ namespace qk::gfx::rhi::gui {
         }
     }
 
-    void init(const HWindow& window)
+    void init(const void* window)
     {
-        auto* glfw_win = get(window);
+        auto* glfw_win = (GLFWwindow*)(window);
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();

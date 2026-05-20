@@ -1,4 +1,4 @@
-#include "gui_widget_rhi.h"
+#include <gui_widget_rhi.h>
 #include "imgui.h"
 
 namespace qk::gfx::rhi::gui {
@@ -175,7 +175,7 @@ namespace qk::gfx::rhi::gui {
     {
         return ImGui::MenuItem(label, nullptr, selected);
     }
-
+    /*
     void image(const HTexture& hTex, const Vec2& size, const Vec2& uv0, const Vec2& uv1) {
 
         ImGui::Image(
@@ -186,7 +186,7 @@ namespace qk::gfx::rhi::gui {
         );
     }
 
-
+    */
 
 
 } // namespace qk::gfx::rhi::gui

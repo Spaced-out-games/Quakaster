@@ -15,30 +15,19 @@
 #include "io/EventQueue.h"
 #include "io/LayerStack.h"
 
-// gui
-#include "gui_rhi.h"
-#include "gui/GUILayer.h"
-#include "gui/GUIWidget.h"
-//#include "gui_widget_rhi.h"
-
-// rhi
-#include "gfx_draw.h"
-#include "HVertexArray.h"
-#include "VertexBufferLayoutDesc.h"
-
-
-// graphics
-#include "gfx/Material.h"
-#include "gfx/Mesh.h"
+#include <glm/glm.hpp>
 
 // media
 #include "media/Image.h"
 
-
+#include "gfx_rhi.h"
+#include "gui_rhi.h"
+#include "gui_widget_rhi.h"
+#include "gui/GUILayer.h"
+#include "gui/GUIWidget.h"
 
 #define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (54).png"
 
-using namespace qk::gfx;
 
 static const char* demoVertShaderSource = R"(
 
@@ -92,6 +81,7 @@ void main()
 
 )";
 
+using namespace qk::gfx;
 
 struct InstanceData {
 	glm::vec2 pos;
@@ -122,9 +112,7 @@ struct DemoClientApplication : qk::Application {
 	glm::vec3 m_Color = {1,1,1};
 	glm::vec3 m_Position = {};
 
-	VertexBufferLayout m_Layout;
-	Mesh m_DemoMesh;
-	Material m_DemoMat;
+
 	int slot = 0;
 
 	// Can be called before or after render_init()
@@ -148,19 +136,7 @@ struct DemoClientApplication : qk::Application {
 
 	void init(int argc, char** argv) override {
 
-		VertexBufferLayout vert_layout;
-		rhi::VertexBufferLayoutDesc vert_layout_desc;
-		vert_layout_desc.push(rhi::f32, 2, 0, InputRate::Vertex, ScalarMultiplicity::Scalar, 0);
-		vert_layout.init(vert_layout_desc);
 
-		VertexBufferLayout instance_layout;
-		rhi::VertexBufferLayoutDesc instance_layout_desc;
-		instance_layout_desc.push(rhi::f32, 2, 0, InputRate::Instance, ScalarMultiplicity::Scalar, 1);
-		instance_layout_desc.push(rhi::f32, 3, 0, InputRate::Instance, ScalarMultiplicity::Scalar, 2);
-		instance_layout.init(instance_layout_desc);
-
-		media::Image img;
-		media::load_image(img, TEST_IMAGE_PATH);
 
 
 
@@ -169,26 +145,7 @@ struct DemoClientApplication : qk::Application {
 		attach_layers();
 
 
-		Texture test_texture;
 
-
-		test_texture.init();
-		test_texture.bind(0);
-		test_texture.upload_2D(img.data(), img.width(), img.height(), img.channels());
-
-
-		m_DemoMesh.init();
-		m_DemoMesh.pushVertexBuffer(std::span<float>(g_Points), rhi::StaticDraw, vert_layout);
-		m_DemoMesh.pushVertexBuffer(std::span<float>(g_Instances), rhi::StaticDraw, instance_layout);
-		m_DemoMat.init(demoVertShaderSource, demoFragShaderSource);
-		//m_DemoMat.pushUniform<int>("u_Texture", &slot);
-
-
-		m_DemoMat.pushTexture("u_Texture", std::move(test_texture));
-
-
-		// set clear settings.
-		rhi::clear(0, 0, 0, 0, rhi::ClearChannels::Color | rhi::ClearChannels::Stencil);
 
 	}
 
@@ -198,17 +155,15 @@ struct DemoClientApplication : qk::Application {
 		m_Window.pollEvents();
 		// flushes it
 		m_Layers.propagate_events();
-
 		// flushes offscreen image
-		rhi::clear();
-
+		//rhi::clear();
 		// renders to offscreen image
-		m_DemoMesh.bind();
-		m_DemoMat.bind();
-		m_DemoMat.update();
+		//m_DemoMesh.bind();
+		//m_DemoMat.bind();
+		//m_DemoMat.update();
 		m_Layers.render();
 
-		rhi::DrawArraysInstanced(m_DemoMesh.ref(), Triangle, 0, 3, 3);
+		//rhi::DrawArraysInstanced(m_DemoMesh.ref(), Triangle, 0, 3, 3);
 
 
 		// presents offscreen image
@@ -221,7 +176,6 @@ struct DemoClientApplication : qk::Application {
 	}
 
 	void shutdown() override {
-		rhi::gui::shutdown();
 	}
 };
 

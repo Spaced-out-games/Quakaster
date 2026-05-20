@@ -1,7 +1,6 @@
 #pragma once
 #include "core.h"
 #include <stdint.h>
-#include "SharedDefs.h"
 
 namespace qk::gfx::rhi {
 
@@ -50,7 +49,7 @@ namespace qk::gfx::rhi {
 		return a;
 	}
 	// something like glfwGetProcAddress
-	int QK_API init(HLoader hLoader);
+	int QK_API init(void* hLoader);
 
 	void clear(float r, float g, float b, float a, ClearChannels channels);
 
