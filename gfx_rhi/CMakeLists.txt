@@ -27,7 +27,7 @@ set(RHI_SOURCES
     gl/gui_rhi_glfw_impl.cpp
     gl/gui_widget_input.cpp
     gl/gui_widget_rhi.cpp
-    
+    gl/HVertexArray.cpp
 
     
     
@@ -40,7 +40,7 @@ set(RHI_SOURCES
     
     
     
- )
+  "gl/HBuffer.cpp")
 
 # ------------------------------------------------------------------------------
 # Backend selection
@@ -76,7 +76,7 @@ endif()
 # Define the RHI static library
 # This is the module the engine links against
 # ------------------------------------------------------------------------------
-add_library(${PROJECT_NAME} STATIC ${RHI_SOURCES})
+add_library(${PROJECT_NAME} STATIC ${RHI_SOURCES} "gl/HShader.cpp")
 
 # ------------------------------------------------------------------------------
 # PUBLIC include directory:

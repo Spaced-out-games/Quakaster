@@ -1,66 +1,46 @@
 #include "HVertexArray.h"
-#include "HVertexBufferLayout.h"
 #include "glad\glad.h"
+#include <Handle.h>
+#include "Scalar.h"
 
-
-#include <iostream> // temporary
-using qk::gfx::rhi::HVertexArray;
-using qk::gfx::rhi::HVertexArrayTag;
-using qk::gfx::rhi::HVertexBufferLayout;
-using qk::gfx::rhi::HVertexBufferLayoutTag;
-using qk::gfx::rhi::VertexBufferLayoutDesc;
-
-
-
-
-namespace qk {
-	template<>
-	struct ResourceTraits<HVertexArrayTag> {
-		using value_type = GLuint;
-	};
-
-}
-
-namespace qk {
-	template<>
-	struct ResourceTraits<HVertexBufferLayoutTag> {
-		using value_type = VertexBufferLayoutDesc*;
-	};
-
-}
 
 
 
 
 namespace qk::gfx::rhi {
 
-	inline GLenum ScalarType_cast(ScalarType type)
+
+	static inline qk::HandleResourceRegistry<GLuint, HVertexArray> g_VertexArrays;
+
+
+
+	inline GLenum EScalarType_cast(EScalarType type)
 	{
 		switch (type)
 		{
 
-			case ScalarType::i8:
+			case EScalarType::i8:
 				return GL_BYTE;
 
-			case ScalarType::i16:
+			case EScalarType::i16:
 				return GL_SHORT;
 
-			case ScalarType::i32:
+			case EScalarType::i32:
 				return GL_INT;
 
-			case ScalarType::u8:
+			case EScalarType::u8:
 				return GL_UNSIGNED_BYTE;
 
-			case ScalarType::u16:
+			case EScalarType::u16:
 				return GL_UNSIGNED_SHORT;
 
-			case ScalarType::u32:
+			case EScalarType::u32:
 				return GL_UNSIGNED_INT;
 
-			case ScalarType::f32:
+			case EScalarType::f32:
 				return GL_FLOAT;
 
-			case ScalarType::f64:
+			case EScalarType::f64:
 				return GL_DOUBLE;
 
 			default:
@@ -69,25 +49,38 @@ namespace qk::gfx::rhi {
 		}
 	}
 
-	inline bool ScalarType_isInteger(ScalarType type)
-	{
-		switch (type)
-		{
-		case ScalarType::i8:
-		case ScalarType::i16:
-		case ScalarType::i32:
-		case ScalarType::u8:
-		case ScalarType::u16:
-		case ScalarType::u32:
-			return true;
+	HVertexArray VertexArray_ctor() {
+		GLuint GL_vertexArray = 0;
+		glGenVertexArrays(1, &GL_vertexArray);
 
-		default:
-			return false;
-		}
+
+		return Handle_cast<HVertexArray, Handle>(g_VertexArrays.insert(GL_vertexArray));
+
 	}
 
+	void VertexArray_dtor(HVertexArray& hVertexArray) {
+		if (!g_VertexArrays.valid(hVertexArray)) return;
 
+		GLuint target = g_VertexArrays.get(hVertexArray);
+		g_VertexArrays.destroy(hVertexArray);
+		glGenVertexArrays(1, &target);
+		
+	}
 
+	void VertexArray_bind(const HVertexArray& hVertexArray) {
+		
+		if (!g_VertexArrays.valid(hVertexArray)) return;
+		GLuint target = g_VertexArrays.get(hVertexArray);
+
+		glBindVertexArray(target);
+
+	}
+
+	bool VertexArray_valid(const HVertexArray& hVertexArray) {
+		return g_VertexArrays.valid(hVertexArray);
+	}
+
+	/*
 	HVertexArray VertexArray_ctor() {
 		HVertexArray handle;
 		GLuint native = 0;
@@ -115,6 +108,7 @@ namespace qk::gfx::rhi {
 	void VertexArray_unbind() {
 		glBindVertexArray(0);
 	}
+	*/
 	/*
 	HVertexArrayRef VertexArray_get_current_bound() noexcept {
 		GLint h = 0;
@@ -128,7 +122,7 @@ namespace qk::gfx::rhi {
 
 	}
 	*/
-
+	/*
 	void VertexArray_applyLayout(
 		const HVertexArray& hVertexArray,
 		const HVertexBuffer& hVertexBuffer,
@@ -156,12 +150,12 @@ namespace qk::gfx::rhi {
 
 			glEnableVertexAttribArray(elem.location);
 
-			if (ScalarType_isInteger(elem.attr.scalar.type) && !elem.attr.normalize)
+			if (EScalarType_isInteger(elem.attr.scalar.type) && !elem.attr.normalize)
 			{
 				glVertexAttribIPointer(
 					elem.location,
 					elem.attr.scalar.count,
-					ScalarType_cast(elem.attr.scalar.type),
+					EScalarType_cast(elem.attr.scalar.type),
 					layout->stride(elem.binding),
 					(void*)(uintptr_t)elem.offset
 				);
@@ -171,7 +165,7 @@ namespace qk::gfx::rhi {
 				glVertexAttribPointer(
 					elem.location,
 					elem.attr.scalar.count,
-					ScalarType_cast(elem.attr.scalar.type),
+					EScalarType_cast(elem.attr.scalar.type),
 					elem.attr.normalize,
 					layout->stride(elem.binding),
 					(void*)(uintptr_t)elem.offset
@@ -186,7 +180,7 @@ namespace qk::gfx::rhi {
 		}
 
 	}
-
+	*/
 
 
 

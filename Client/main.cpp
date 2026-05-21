@@ -26,6 +26,11 @@
 #include "gui/GUILayer.h"
 #include "gui/GUIWidget.h"
 
+#include "HBuffer.h"
+#include "HVertexArray.h"
+#include "HShader.h"
+#include "HVertexBufferLayoutDesc.h"
+
 #define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (54).png"
 
 
@@ -80,6 +85,8 @@ void main()
 }
 
 )";
+
+#include <HVertexArray.h>
 
 using namespace qk::gfx;
 
@@ -138,14 +145,12 @@ struct DemoClientApplication : qk::Application {
 
 
 
-
-
 		attach_event_queues();
 		render_init();
 		attach_layers();
 
 
-
+		rhi::VertexAttributeDesc attr;
 
 	}
 
