@@ -75,7 +75,7 @@ namespace qk::gfx::rhi {
 			// ============================================================
 			// Descriptor set
 			// ============================================================
-			rhi::HDescriptorSet descriptor_set = rhi::DescriptorSet_ctor(desc);
+			descriptor_set = rhi::DescriptorSet_ctor(desc);
 
 		}
 	};

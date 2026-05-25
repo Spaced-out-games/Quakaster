@@ -189,82 +189,17 @@ struct DemoClientApplication : qk::Application {
 
 		rhi::VertexLayout_apply(hLayout);
 
-		// ============================================================
-		// Vertex Shader
-		// ============================================================
-
-
-		auto vsResult = rhi::Shader_ctor(rhi::ShaderType::Vertex);
-
-
-		rhi::HShader vertexShader = vsResult.value();
-
-
-
-		str vsError = rhi::Shader_upload(vertexShader, vertexSource);
-
-		if (!vsError.empty())
-		{
-			printf("%s\n", vsError.c_str());
-			std::abort();
-		}
-
-
 		
-
-		// ============================================================
-		// Fragment Shader
-		// ============================================================
-
-		auto fsResult = rhi::Shader_ctor(rhi::ShaderType::Fragment);
-
-
-
-		rhi::HShader fragmentShader = fsResult.value();
-
-
-		str fsError =
-			rhi::Shader_upload(fragmentShader, fragmentSource);
-
-		if (!fsError.empty())
-		{
-			printf("%s\n", fsError.c_str());
-			std::abort();
-
-		}
-
-		// ============================================================
-		// Shader Program
-		// ============================================================
-		rhi::HShaderProgram program;
-
-		auto progResult = rhi::ShaderProgram_ctor(fragmentShader, vertexShader);
-
-		if (!progResult)
-		{
-			printf("%s\n", progResult.error().c_str());
-			std::abort();
-
-		}
-
-		program = progResult.value();
-
-
 
 		uniforms = rhi::UniformBuffer_ctor();
 		data.view = glm::translate(data.view, glm::vec3(0.5, 0.5, 0));
 		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
 
-		//rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
 
-		
-		// ============================================================
-		// Descriptor set
-		// ============================================================
 
-		rhi::DescriptorSet_createinfo descriptors;
+		rhi::DescriptorSet_createinfo DescriptorSet_info;
 
-		descriptors.push_back(rhi::UniformBuffer_desc{
+		DescriptorSet_info.push_back(rhi::UniformBuffer_desc{
 			.hBuf = uniforms,
 			.id = "CameraData",
 			.binding = 0,
@@ -275,18 +210,13 @@ struct DemoClientApplication : qk::Application {
 
 
 
-		rhi::HDescriptorSet hDescriptorSet = rhi::DescriptorSet_ctor(descriptors);
 
 
 
 
 
-		rhi::Material_createinfo matinfo;
-		matinfo.program = program;
-		matinfo.descriptor_set = hDescriptorSet;
 
-
-		material = rhi::Material_ctor(matinfo);
+		material = rhi::Material_ctor(rhi::Material_createinfo{ vertexSource, fragmentSource, DescriptorSet_info });
 
 
 
