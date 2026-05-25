@@ -15,16 +15,16 @@
 namespace qk::scripting {
 
 	class QK_API ConvarRegistry {
-		std::unordered_map<std::string, Convar> m_Convars;
+		std::unordered_map<str, Convar> m_Convars;
 
 	public:
-		bool has(const std::string& id);
+		bool has(const str& id);
 
-		bool set(const std::string& id, convar_t new_value);
+		bool set(const str& id, convar_t new_value);
 
 
 		template <class T>
-		T* try_get(const std::string& id) {
+		T* try_get(const str& id) {
 			auto it = m_Convars.find(id);
 			if (it == m_Convars.end()) return nullptr;
 			return it->second.try_get<T>();

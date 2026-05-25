@@ -21,12 +21,12 @@ namespace qk::gfx::gui {
 
 
 
-		std::string m_Label;
+		str m_Label;
 		glm::vec3* m_pTarget = nullptr;
 		float m_Min;
 		float m_Max;
 
-		Vec3EditWidget(const std::string& label, glm::vec3* pTarget, float min, float max) {
+		Vec3EditWidget(const str& label, glm::vec3* pTarget, float min, float max) {
 			m_Label = label;
 			m_pTarget = pTarget;
 			m_Min = min;

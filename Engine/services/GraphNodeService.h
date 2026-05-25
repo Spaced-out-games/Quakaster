@@ -70,7 +70,7 @@ namespace qk::service {
 		void attachChild(entt::entity target, entt::entity new_child);
 
 		void printSubtree(entt::entity target,
-			const std::string& prefix = "", bool is_last = true);
+			const str& prefix = "", bool is_last = true);
 
 		void printTree(entt::entity root);
 	};

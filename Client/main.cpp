@@ -138,6 +138,7 @@ struct DemoClientApplication : qk::Application {
 		//gui.emplace<qk::gfx::gui::Vec3EditWidget>("Position", (glm::vec3*) & m_Color, -5.0f, 5.0f);
 	}
 
+
 	void init(int argc, char** argv) override {
 
 
@@ -200,7 +201,7 @@ struct DemoClientApplication : qk::Application {
 
 
 
-		std::string vsError = rhi::Shader_upload(vertexShader, vertexSource);
+		str vsError = rhi::Shader_upload(vertexShader, vertexSource);
 
 		if (!vsError.empty())
 		{
@@ -222,7 +223,7 @@ struct DemoClientApplication : qk::Application {
 		rhi::HShader fragmentShader = fsResult.value();
 
 
-		std::string fsError =
+		str fsError =
 			rhi::Shader_upload(fragmentShader, fragmentSource);
 
 		if (!fsError.empty())
@@ -249,17 +250,35 @@ struct DemoClientApplication : qk::Application {
 		program = progResult.value();
 
 
+
+		uniforms = rhi::UniformBuffer_ctor();
+		data.view = glm::translate(data.view, glm::vec3(0.5, 0.5, 0));
+		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
+
+		//rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
+
+		
 		// ============================================================
 		// Descriptor set
 		// ============================================================
 
-		rhi::DescriptorSet_desc descriptors;
+		rhi::DescriptorSet_createinfo descriptors;
+
+		descriptors.push_back(rhi::UniformBuffer_desc{
+			.hBuf = uniforms,
+			.id = "CameraData",
+			.binding = 0,
+		});
+
+
+
+
+
 
 		rhi::HDescriptorSet hDescriptorSet = rhi::DescriptorSet_ctor(descriptors);
 
 
 
-		data.view = glm::translate(data.view, glm::vec3(0.5,0.5,0));
 
 
 		rhi::Material_createinfo matinfo;
@@ -269,14 +288,9 @@ struct DemoClientApplication : qk::Application {
 
 		material = rhi::Material_ctor(matinfo);
 
-		uniforms = rhi::UniformBuffer_ctor();
 
 
-		rhi::ShaderProgram_bind_uniform_block(program, "CameraData", 0);
-
-
-		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
-		rhi::UniformBuffer_bind(uniforms, 0);
+		
 
 		// finally, the command buffer
 

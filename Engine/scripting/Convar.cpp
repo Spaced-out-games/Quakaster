@@ -7,12 +7,12 @@
 
 
 namespace qk::scripting {
-	Convar::Convar(convar_t value, const std::string& description, convar_validate_pfn_t validator) :
+	Convar::Convar(convar_t value, const str& description, convar_validate_pfn_t validator) :
 		m_Value(value), m_Validator(validator), m_Description(description) {
 
 	}
 
-	const std::string& Convar::description() { return m_Description; }
+	const str& Convar::description() { return m_Description; }
 
 	bool Convar::set(convar_t new_value) {
 

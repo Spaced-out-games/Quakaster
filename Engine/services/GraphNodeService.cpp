@@ -213,11 +213,11 @@ namespace qk::service {
 		invalidate<CGraphNode::DirtyFlag>(newChild);
 	}
 
-	void GraphNodeService::printSubtree(entt::entity target, const std::string& prefix, bool is_last) {
+	void GraphNodeService::printSubtree(entt::entity target, const str& prefix, bool is_last) {
 		if (target == entt::null || !m_Registry.all_of<CGraphNode>(target)) return;
 
 		// Build the line
-		std::string line = prefix + (is_last ? "\\ " : "T ") + std::to_string(int(target));
+		str line = prefix + (is_last ? "\\ " : "T ") + std::to_string(int(target));
 
 		// Log the line via spdlog raw logger (no timestamp/level)
 		spdlog::default_logger_raw()->info(line);

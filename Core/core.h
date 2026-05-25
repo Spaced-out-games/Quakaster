@@ -4,6 +4,7 @@
 /// **************************************************************************************************
 #include <cassert>
 #include <stdint.h>
+#include <string>
 
 
 #define QK_API_VERSION(variant, major, minor, patch) \
@@ -53,3 +54,4 @@ static_assert((sizeof(float) == 4));
 using f64 = double;
 static_assert((sizeof(double) == 8));
 
+using str = std::string;

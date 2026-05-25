@@ -3,7 +3,7 @@
 namespace qk::gfx {
 
 
-    const std::string vert_src = R"(
+    const str vert_src = R"(
 		#version 330 core
 
 		layout(location = 0) in vec2 aPos;
@@ -26,7 +26,7 @@ namespace qk::gfx {
 			gl_Position = vec4(x, y, 0.0, 1.0);
 		}
 	)";
-    const std::string frag_src = R"(
+    const str frag_src = R"(
 		#version 330 core
 
 		in vec2 vUV;

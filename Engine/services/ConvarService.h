@@ -22,10 +22,10 @@ namespace qk::service {
 		ConvarRegistry m_Registry;
 
 	public:
-		bool has(const std::string& id);
-		bool set(const std::string& id, convar_t new_value);
+		bool has(const str& id);
+		bool set(const str& id, convar_t new_value);
 		template <class T>
-		T* try_get(const std::string& id) {
+		T* try_get(const str& id) {
 			ScopeTimer timer(uptime_ptr());
 			return m_Registry.try_get<T>(id);
 		}

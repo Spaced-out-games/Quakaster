@@ -1,7 +1,7 @@
 #include "DefaultEvents.h"
 
 namespace qk::io {
-	std::string to_string(const Event& evt) {
+	str to_string(const Event& evt) {
 		using enum EEventType;
 		Event& e = const_cast<Event&>(evt);
 
@@ -9,7 +9,7 @@ namespace qk::io {
 		{
 			if (g_EventExToString_pfn)
 			{
-				std::string s = g_EventExToString_pfn(evt);
+				str s = g_EventExToString_pfn(evt);
 				if (!s.empty())
 					return s;
 			}
@@ -81,7 +81,7 @@ namespace qk::io {
 		case DragDrop_evt:
 		{
 			auto& ev = (DragDropEvent&)e;
-			std::string s = std::format("DragDropEvent count={} paths: {{\n", ev.count());
+			str s = std::format("DragDropEvent count={} paths: {{\n", ev.count());
 			for (int i = 0; i < ev.count(); ++i) s += std::format("\t\"{}\"\n", ev.paths(i));
 			s += "}";
 			return s;

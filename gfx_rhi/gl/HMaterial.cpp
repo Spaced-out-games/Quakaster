@@ -21,7 +21,7 @@ namespace qk::gfx::rhi {
 		
 
 
-
+		DescriptorSet_bindProgram(MatInfo.descriptor_set, MatInfo.program);
 
 		return g_Materials.insert(MatInfo);
 	}

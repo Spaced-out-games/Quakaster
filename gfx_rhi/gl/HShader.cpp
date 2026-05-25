@@ -168,13 +168,27 @@ namespace qk::gfx::rhi {
 	bool ShaderProgram_valid(const HShaderProgram& hProgram) {
 		return g_ShaderPrograms.valid(hProgram);
 	}
-
-	bool ShaderProgram_bind_uniform_block(const HShaderProgram& hProgram, const char* id, u8 slot) {
+	
+	bool ShaderProgram_bind_uniform_block(
+		const HShaderProgram& hProgram,
+		const char* id,
+		u8 slot)
+	{
 		QK_ASSERT(g_ShaderPrograms.valid(hProgram));
-		if (!g_ShaderPrograms.valid(hProgram)) return 0;
-		auto program = g_ShaderPrograms.get(hProgram);
-		GLuint blockIndex = glGetUniformBlockIndex(program, "EditArgs");
-		glUniformBlockBinding(program, blockIndex, 0);
+
+		if (!g_ShaderPrograms.valid(hProgram))
+			return false;
+
+		GLuint program = g_ShaderPrograms.get(hProgram);
+
+		GLuint blockIndex = glGetUniformBlockIndex(program, id);
+
+		if (blockIndex == GL_INVALID_INDEX)
+			return false;
+
+		glUniformBlockBinding(program, blockIndex, slot);
+
+		return true;
 	}
 
 

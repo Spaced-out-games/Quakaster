@@ -158,13 +158,13 @@ namespace qk::io {
 	struct PlatformMouseCursorUnavailableError: Error {};
 
 	// Function pointer type to convert custom events to string representations
-	using EventExToString_pfn_t = std::string(*)(const Event&);
+	using EventExToString_pfn_t = str(*)(const Event&);
 
 	// Function pointer to convert custom event to string representation
 	inline EventExToString_pfn_t g_EventExToString_pfn = nullptr;
 
 	// Converts any Event to a string
-	std::string QK_API to_string(const Event& evt);
+	str QK_API to_string(const Event& evt);
 
 
 }

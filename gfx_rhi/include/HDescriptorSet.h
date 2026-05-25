@@ -53,12 +53,12 @@ namespace qk::gfx::rhi {
 
 
 	// note: bind index is derived from the index in the descriptor set.
-	using DescriptorSet_desc = std::vector<Descriptor>;
+	using DescriptorSet_createinfo = std::vector<Descriptor>;
 
 	struct HDescriptorSet: Handle {};
 
 
-	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_desc& info);
+	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_createinfo& info);
 
 	void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet);
 
@@ -66,7 +66,7 @@ namespace qk::gfx::rhi {
 
 	bool DescriptorSet_valid(const HDescriptorSet& hDescriptorSet);
 
-	void DescriptorSet_init_with_shader(const HDescriptorSet& hDescriptorSet, const HShaderProgram& hProgram);
+	void DescriptorSet_bindProgram(const HDescriptorSet& hDescriptorSet, const HShaderProgram& hProgram);
 
 
 	/*

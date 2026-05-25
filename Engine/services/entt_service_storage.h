@@ -17,10 +17,10 @@ namespace qk::service {
         entt::registry* m_pRegistry;
 
         template <typename T, typename... Args>
-        IService* emplace(const std::string& name, ServiceMap& map, Args&&... args) {
+        IService* emplace(const str& name, ServiceMap& map, Args&&... args) {
             T& svc = m_pRegistry->ctx().emplace<T>(std::forward<Args>(args)...);
             map[name].service = &svc;
-            map[name].dtor = [](void* storage, ServiceMap&, const std::string&) {
+            map[name].dtor = [](void* storage, ServiceMap&, const str&) {
                 entt::registry* registry = (entt::registry*)storage;
                 registry->ctx().erase<T>();
             };
@@ -28,13 +28,13 @@ namespace qk::service {
             return &svc;
         }
 
-        IService* get(const std::string& name, ServiceMap& map) {
+        IService* get(const str& name, ServiceMap& map) {
             auto it = map.find(name);
             return it != map.end() ? it->second.service : nullptr;
         }
 
 
-        void erase(const std::string& name, ServiceMap& map) {
+        void erase(const str& name, ServiceMap& map) {
             auto it = map.find(name);
             if (it != map.end()) {
 

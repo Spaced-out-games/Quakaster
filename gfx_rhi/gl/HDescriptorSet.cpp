@@ -13,7 +13,7 @@ namespace qk::gfx::rhi {
 
 	qk::HandleResourceRegistry<DescriptorSet_impl, HDescriptorSet> g_DescriptorSets;
 
-	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_desc& info) {
+	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_createinfo& info) {
 		return g_DescriptorSets.insert(info);
 	}
 
@@ -110,8 +110,8 @@ namespace qk::gfx::rhi {
 		return 1;
 
 	}
-
-	void DescriptorSet_init_with_shader(const HDescriptorSet& hDescriptorSet, const HShaderProgram& hProgram) {
+	
+	void DescriptorSet_bindProgram(const HDescriptorSet& hDescriptorSet, const HShaderProgram& hProgram) {
 		if (!g_DescriptorSets.valid(hDescriptorSet)) return;
 
 		const auto& set = g_DescriptorSets.get(hDescriptorSet);
@@ -127,10 +127,11 @@ namespace qk::gfx::rhi {
 				const auto& hUBuf = Handle_cast<HUniformBuffer>(desc.hBuf);
 				if (!UniformBuffer_valid(hUBuf)) {
 
-					ShaderProgram_bind_uniform_block(hProgram, desc.id, 0);
 					return;
 					
 				}
+				ShaderProgram_bind_uniform_block(hProgram, desc.id, desc.binding);
+
 			}
 			else if constexpr (std::is_same_v<T, StorageBuffer_desc>) {
 				//if (!StorageBuffer_valid(desc.hBuf)) { result = 0; return; }

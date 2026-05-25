@@ -127,7 +127,7 @@ namespace qk::gfx::rhi {
 		return Buffer_dtor(Handle_cast<HBuffer>(hUniformBuffer));
 	}
 	// TODO: deprecate uniform buffer bindings at this layer of the RHI once descriptor sets and
-	// friends are well-defined and proven to work.
+	// friends are well-defined and proven to work. Might be worth removing 'slot'
 	bool UniformBuffer_bind(const HUniformBuffer& hBuf, u8 slot);
 
 	inline bool UniformBuffer_upload(

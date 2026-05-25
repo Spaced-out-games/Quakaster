@@ -12,7 +12,7 @@
 namespace qk::scripting {
 
 	// convar variant type
-	using convar_t = std::variant<int, std::string, float, bool>;
+	using convar_t = std::variant<int, str, float, bool>;
 
 	// function that validates a convar
 	using convar_validate_pfn_t = bool(*)(const convar_t&);
@@ -24,14 +24,14 @@ namespace qk::scripting {
 
 		convar_t m_Value;
 		convar_validate_pfn_t m_Validator = nullptr;
-		std::string m_Description;
+		str m_Description;
 
 	public:
 
-		Convar(convar_t value = 0, const std::string& description = "No Description Provided", convar_validate_pfn_t validator = nullptr);
+		Convar(convar_t value = 0, const str& description = "No Description Provided", convar_validate_pfn_t validator = nullptr);
 
 		// Gets the description of the convar
-		const std::string& description();
+		const str& description();
 
 		/// <summary>
 		/// Gets a pointer to the underlying type, returns nullptr on failure
