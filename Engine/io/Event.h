@@ -16,8 +16,8 @@ namespace qk {
 
 
 
-	// To-do: translate to C-style bitfeild with union with uint32_t for masks.
-	enum class EEventCategory : uint32_t {
+	// To-do: translate to C-style bitfeild with union with u32 for masks.
+	enum class EEventCategory : u32 {
 		cat_null		= 0 << 0,
 		cat_os			= 1 << 0,
 		cat_file		= 1 << 1,
@@ -48,19 +48,19 @@ namespace qk {
 
 	
 	inline EEventCategory operator|(EEventCategory a, EEventCategory b) {
-		return static_cast<EEventCategory>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+		return (EEventCategory)((u32)(a) | (u32)(b));
 	}
 
 	inline EEventCategory operator&(EEventCategory a, EEventCategory b) {
-		return static_cast<EEventCategory>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+		return (EEventCategory)((u32)(a) & (u32)(b));
 	}
 
 	inline bool operator==(EEventCategory a, EEventCategory b) {
-		return static_cast<uint32_t>(a) == static_cast<uint32_t>(b);
+		return (u32)(a) == (u32)(b);
 	}
 
 	inline bool operator!=(EEventCategory a, EEventCategory b) {
-		return static_cast<uint32_t>(a) != static_cast<uint32_t>(b);
+		return (u32)(a) != (u32)(b);
 	}
 	inline bool operator!(EEventCategory cat) {
 		return cat == EEventCategory::cat_null;
@@ -77,11 +77,11 @@ namespace qk {
 	}
 
 	inline EEventCategory operator~(EEventCategory a) {
-		return static_cast<EEventCategory>(~static_cast<uint32_t>(a));
+		return (EEventCategory)(~(u32)(a));
 	}
 
 	
-	enum class EEventType : uint32_t {
+	enum class EEventType : u32 {
 		Null_evt, // Primarily for default construction
 		KeyPress_evt,
 		KeyHold_evt,
@@ -130,23 +130,23 @@ namespace qk {
 
 	};
 
-	// The uint32_t where custom events begin being defined.
-	static constexpr uint32_t CUSTOM_EVENT_BEGIN = 1u << 31;
+	// The u32 where custom events begin being defined.
+	static constexpr u32 CUSTOM_EVENT_BEGIN = 1u << 31;
 
 	
 
 	struct Event {
 		// Denotes the type ID that begins the first custom event
 		// If you create your own custom events and an enum on top
-		//static constexpr uint32_t custom_begin = 1u << 31;
+		//static constexpr u32 custom_begin = 1u << 31;
 		Event() = default;
 		~Event();
 
 		EEventCategory m_Category = {};
 		EEventType m_Type = {};
-		uint64_t timestamp = 0;
+		u64 timestamp = 0;
 		// starts at 128 bit boundary
-		alignas(std::max_align_t) uint8_t m_Payload[16]{};
+		alignas(std::max_align_t) u8 m_Payload[16]{};
 
 		template<typename T>
 		inline T& view(size_t offset = 0)

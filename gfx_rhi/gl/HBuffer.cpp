@@ -34,6 +34,7 @@ namespace qk::gfx::rhi {
 		uint32_t		elem_size	= 0;
 		uint32_t		elem_count	= 0;
 		bool initialized = false;
+
 	};
 
 
@@ -92,16 +93,82 @@ namespace qk::gfx::rhi {
 		return g_Buffers.get(hBuf).initialized;
 	}
 
+	bool VertexBuffer_bind(const HVertexBuffer& hIBuf) {
+		HBuffer hBuf = Handle_cast<HBuffer>(hIBuf);
+		bool ready = Buffer_initialized(hBuf);
+		QK_ASSERT(ready);
+		if (!g_Buffers.valid(hBuf)) return false;
 
-
-
-	bool Buffer_bind(const HBuffer& hBuf) {
-		QK_ASSERT(Buffer_initialized(hBuf));
-		if (!Buffer_initialized(hBuf)) return 0;
 		auto& entry = g_Buffers.get(hBuf);
 
-		glBindBuffer(BufferType_cast(entry.type), entry.hBuffer);
-		return 1;
+		bool typesafe = entry.type == BufferType::Vertex;
+		QK_ASSERT(typesafe);
+
+		glBindBuffer(GL_ARRAY_BUFFER, entry.hBuffer);
+
+		return true;
+	}
+
+
+
+	bool IndexBuffer_bind(const HIndexBuffer& hIBuf) {
+		HBuffer hBuf = Handle_cast<HBuffer>(hIBuf);
+
+		bool ready = Buffer_initialized(hBuf);
+		QK_ASSERT(ready);
+		if (!g_Buffers.valid(hBuf)) return false;
+
+		auto& entry = g_Buffers.get(hBuf);
+
+		bool typesafe = entry.type == BufferType::Index;
+		QK_ASSERT(typesafe);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, entry.hBuffer);
+
+		return true;
+	}
+
+	bool UniformBuffer_bind(const HUniformBuffer& hUBuf, uint8_t slot) {
+		HBuffer hBuf = Handle_cast<HBuffer>(hUBuf);
+		bool ready = Buffer_initialized(hBuf);
+		QK_ASSERT(ready);
+		if (!g_Buffers.valid(hBuf)) return false;
+
+		auto& entry = g_Buffers.get(hBuf);
+
+		bool typesafe = entry.type == BufferType::Uniform;
+		QK_ASSERT(typesafe);
+
+		glBindBufferBase(GL_UNIFORM_BUFFER, slot, entry.hBuffer);
+
+		// WE ALSO NEED THESE:
+
+		// GLuint blockIndex = glGetUniformBlockIndex(programID, "EditArgs");
+		// glUniformBlockBinding(programID, blockIndex, 0);
+
+
+
+		return true;
+	}
+
+	
+
+
+	bool InstanceBuffer_bind(const HInstanceBuffer& hIBuf) {
+		HBuffer hBuf = Handle_cast<HBuffer>(hIBuf);
+
+		bool ready = Buffer_initialized(hBuf);
+		QK_ASSERT(ready);
+		if (!g_Buffers.valid(hBuf)) return false;
+
+		auto& entry = g_Buffers.get(hBuf);
+
+		bool typesafe = entry.type == BufferType::Vertex;
+		QK_ASSERT(typesafe);
+
+		glBindBuffer(GL_ARRAY_BUFFER, entry.hBuffer);
+
+		return true;
 	}
 
 

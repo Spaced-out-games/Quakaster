@@ -15,7 +15,9 @@
 #include "io/EventQueue.h"
 #include "io/LayerStack.h"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 // media
 #include "media/Image.h"
@@ -26,87 +28,76 @@
 #include "gui/GUILayer.h"
 #include "gui/GUIWidget.h"
 
-#include "HBuffer.h"
 #include "HVertexArray.h"
-#include "HShader.h"
-#include "HVertexBufferLayoutDesc.h"
+#include "HVertexLayout.h"
+#include "Draw.h"
+#include "HCommandBuffer.h"
 
-#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (54).png"
+
+#include "HMaterial.h"
 
 
-static const char* demoVertShaderSource = R"(
 
+using namespace qk::gfx;
+
+struct Vertex {
+	float x, y, z;
+};
+
+
+std::vector<Vertex> g_Vertices = {
+		{  0.0f,  0.5f, 0.0f },
+		{ -0.5f, -0.5f, 0.0f },
+		{  0.5f, -0.5f, 0.0f }
+};
+
+
+
+
+const char* vertexSource = R"(
 #version 330 core
 
-layout(location = 0) in vec2 aPos;
-layout(location = 1) in vec2 iOffset;
-layout(location = 2) in vec3 iColor;
+layout(location = 0) in vec3 aPos;
 
-out vec3 fColor;
-out vec2 aUV;
-mat2 rotation2D(float a)
-{
-    float s = sin(a);
-    float c = cos(a);
+layout(std140) uniform CameraData {
+	mat4 view;
+	mat4 proj;
 
-    return mat2(
-         c, -s,
-         s,  c
-    );
-}
-
-
+};
 
 void main()
 {
-	vec2 worldPos = (aPos + iOffset);
-	gl_Position = vec4(worldPos, 0.0, 1.0);
-	fColor = iColor;
-	aUV = aPos * 0.5 + 0.5;
+    gl_Position = view * vec4(aPos, 1.0);
 }
-
 )";
 
-static const char* demoFragShaderSource = R"(
-
+const char* fragmentSource = R"(
 #version 330 core
-in vec2 aUV;
 
-uniform sampler2D u_Texture;
-uniform vec3 u_Color;
-in vec3 fColor;
+
+
+
+
 out vec4 FragColor;
 
 void main()
 {
-	//vec4 tex = vec4(1,1,1, 1);
-    vec4 tex = texture(u_Texture, aUV); // TEMP placeholder UV
-    FragColor = vec4(fColor + tex.rgb, tex.a); // fColor + 
+    FragColor = vec4(
+        1.0,
+        0.2,
+        0.3,
+        1.0);
 }
-
 )";
 
-#include <HVertexArray.h>
 
-using namespace qk::gfx;
+struct CameraData {
+	glm::mat4 view = { 1.0f };
+	glm::mat4 proj = { 1.0f };
 
-struct InstanceData {
-	glm::vec2 pos;
-	glm::vec3 color;
 };
 
 
-std::vector<float> g_Points = {
-	-0.5,-0.5,
-	0.5,-0.5,
-	0.0,0.5
-};
-
-std::vector<float> g_Instances = {
-	-0.5,-0.5,		1,0,0,
-	-0.5,0.5,		0,1,0,
-	0.5,-0.5,		0,0,1
-};
 
 struct DemoClientApplication : qk::Application {
 	
@@ -116,9 +107,15 @@ struct DemoClientApplication : qk::Application {
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
 
-	glm::vec3 m_Color = {1,1,1};
-	glm::vec3 m_Position = {};
+	CameraData data;
 
+	rhi::HVertexArray vao;
+
+	rhi::HMaterial material;
+
+	rhi::HCommandBuffer CmdBuf;
+
+	rhi::HUniformBuffer uniforms;
 
 	int slot = 0;
 
@@ -138,7 +135,7 @@ struct DemoClientApplication : qk::Application {
 	void attach_layers() {
 		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());
 
-		gui.emplace<qk::gfx::gui::Vec3EditWidget>("Position", &m_Position, -5.0f, 5.0f);
+		//gui.emplace<qk::gfx::gui::Vec3EditWidget>("Position", (glm::vec3*) & m_Color, -5.0f, 5.0f);
 	}
 
 	void init(int argc, char** argv) override {
@@ -149,11 +146,143 @@ struct DemoClientApplication : qk::Application {
 		render_init();
 		attach_layers();
 
+		// ============================================================
+		// Vertex Array
+		// ============================================================
 
-		rhi::VertexAttributeDesc attr;
+		vao = rhi::VertexArray_ctor();
+		rhi::VertexArray_bind(vao);
+
+		// ============================================================
+		// Vertex Buffer
+		// ============================================================
+
+		rhi::HVertexBuffer vbo = rhi::VertexBuffer_ctor(rhi::BufferUsage::StaticDraw);
+
+		rhi::VertexBuffer_upload(
+			vbo,
+			g_Vertices.data(),
+			(uint32_t)(g_Vertices.size()),
+			sizeof(Vertex));
+
+		rhi::VertexBuffer_bind(vbo);
+
+		// ============================================================
+		// Vertex Layout
+		// ============================================================
+
+		rhi::VertexLayoutDesc layout;
+
+		rhi::VertexBinding binding =
+			layout.pushBinding(rhi::InputRate::PerVertex, sizeof(Vertex));
+
+		layout.pushVertexAttribute<float>(
+			binding,
+			0,                          // shader location
+			offsetof(Vertex, x),
+			3,                          // vec3
+			rhi::EScalarMultiplicity::Vector,
+			false);
+
+		rhi::HVertexLayout hLayout = rhi::VertexLayout_ctor(layout);
+
+		rhi::VertexLayout_apply(hLayout);
+
+		// ============================================================
+		// Vertex Shader
+		// ============================================================
+
+
+		auto vsResult = rhi::Shader_ctor(rhi::ShaderType::Vertex);
+
+
+		rhi::HShader vertexShader = vsResult.value();
+
+
+
+		std::string vsError = rhi::Shader_upload(vertexShader, vertexSource);
+
+		if (!vsError.empty())
+		{
+			printf("%s\n", vsError.c_str());
+			std::abort();
+		}
+
+
+		
+
+		// ============================================================
+		// Fragment Shader
+		// ============================================================
+
+		auto fsResult = rhi::Shader_ctor(rhi::ShaderType::Fragment);
+
+
+
+		rhi::HShader fragmentShader = fsResult.value();
+
+
+		std::string fsError =
+			rhi::Shader_upload(fragmentShader, fragmentSource);
+
+		if (!fsError.empty())
+		{
+			printf("%s\n", fsError.c_str());
+			std::abort();
+
+		}
+
+		// ============================================================
+		// Shader Program
+		// ============================================================
+		rhi::HShaderProgram program;
+
+		auto progResult = rhi::ShaderProgram_ctor(fragmentShader, vertexShader);
+
+		if (!progResult)
+		{
+			printf("%s\n", progResult.error().c_str());
+			std::abort();
+
+		}
+
+		program = progResult.value();
+
+
+		// ============================================================
+		// Descriptor set
+		// ============================================================
+
+		rhi::DescriptorSet_desc descriptors;
+
+		rhi::HDescriptorSet hDescriptorSet = rhi::DescriptorSet_ctor(descriptors);
+
+
+
+		data.view = glm::rotate(data.view, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+		rhi::Material_createinfo matinfo;
+		matinfo.program = program;
+		matinfo.descriptor_set = hDescriptorSet;
+
+
+		material = rhi::Material_ctor(matinfo);
+
+		uniforms = rhi::UniformBuffer_ctor();
+		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
+		rhi::UniformBuffer_bind(uniforms, 0);
+
+		// finally, the command buffer
+
+		rhi::CommandBuffer_desc desc;
+		desc.push_preexecute(rhi::ClearCommand_desc{ 0.0,0.0,0.0,0.0, rhi::Color });
+		desc.push(rhi::DrawArrays_desc{material, vao, rhi::Triangle, 0, 3});
+
+		CmdBuf = rhi::CommandBuffer_ctor(desc);
+
 
 	}
-
 	void run() override {
 
 		// populates event m_EventQueue
@@ -166,9 +295,19 @@ struct DemoClientApplication : qk::Application {
 		//m_DemoMesh.bind();
 		//m_DemoMat.bind();
 		//m_DemoMat.update();
+
+		//rhi::UniformBuffer_upload(uniforms, &m_Color, 1, sizeof(m_Color));
+
+
+		rhi::Material_bind(material);
+
+		//rhi::ShaderProgram_bind(program);
+
+		rhi::CommandBuffer_execute(CmdBuf);
 		m_Layers.render();
 
-		//rhi::DrawArraysInstanced(m_DemoMesh.ref(), Triangle, 0, 3, 3);
+
+
 
 
 		// presents offscreen image

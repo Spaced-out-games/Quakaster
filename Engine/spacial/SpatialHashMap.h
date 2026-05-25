@@ -31,9 +31,9 @@ namespace qk::spacial {
 
 		SpacialGridCell cell(const glm::vec3& position) {
 			return {
-				static_cast<int>(std::floor(position.x / grid_size)),
-				static_cast<int>(std::floor(position.y / grid_size)),
-				static_cast<int>(std::floor(position.z / grid_size))
+				(int)(std::floor(position.x / grid_size)),
+				(int)(std::floor(position.y / grid_size)),
+				(int)(std::floor(position.z / grid_size))
 			};
 		}
 

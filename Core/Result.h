@@ -4,6 +4,61 @@
 
 namespace qk {
 
+
+	template <typename... Args>
+	class Variant {
+		std::variant<Args...> m_Value;
+
+	public:
+
+
+
+		template <class T>
+		bool is() const {
+			return std::holds_alternative<T>(m_Value);
+		}
+
+		template <class T>
+		const T& get() const {
+			return std::get<T>(m_Value);
+		}
+
+		template <class T>
+		T& get() {
+			return std::get<T>(m_Value);
+		}
+
+		template <class T>
+		const T* try_get() const {
+			return std::get_if<T>(&m_Value);
+		}
+
+		template <class T>
+		T* try_get() {
+			return std::get_if<T>(&m_Value);
+		}
+
+		template <class Visitor>
+		auto visit(Visitor&& v) {
+			return std::visit(std::forward<Visitor>(v), m_Value);
+		}
+
+		template <class Visitor>
+		auto visit(Visitor&& v) const {
+			return std::visit(std::forward<Visitor>(v), m_Value);
+		}
+
+		template <class T>
+		Variant(const T& value): m_Value(value) {}
+
+		//template <class T>
+		//Variant(T&& value)
+		//	: m_Value(std::forward<T>(value)) {}
+	};
+
+
+
+
 	template <class T, class E>
 	class Result {
 		std::variant<T, E> m_Result;

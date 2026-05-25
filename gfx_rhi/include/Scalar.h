@@ -3,7 +3,7 @@
 
 namespace qk::gfx::rhi {
 
-    enum EScalarType : uint8_t {
+    enum class EScalarType : uint8_t {
 
         unknown,
         i8,
@@ -31,10 +31,11 @@ namespace qk::gfx::rhi {
     };
 
 
-    struct ScalarDesc {
-        EScalarMultiplicity multiplicity = EScalarMultiplicity::Scalar;
-        EScalarType type = f32;
-        uint16_t count = 3;
+    struct ComponentDesc {
+        EScalarMultiplicity comp_multiplicity;
+        bool                comp_normalize;
+        uint32_t            comp_count;
+        EScalarType         comp_type;
     };
 
 
@@ -164,7 +165,7 @@ namespace qk::gfx::rhi {
     }
 
 
-
+    
 
 
 

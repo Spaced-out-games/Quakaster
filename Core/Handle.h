@@ -69,7 +69,7 @@ namespace qk {
 			}
 
 			// Allocate new slot
-			uint32_t index = static_cast<uint32_t>(m_Storage.size());
+			uint32_t index = (uint32_t)(m_Storage.size());
 
 			Node node;
 			node.value = value;
@@ -83,23 +83,24 @@ namespace qk {
 			};
 		}
 
-		void destroy(const THandle& handle) {
+		bool destroy(const THandle& handle) {
 
 			if (handle.index >= m_Storage.size()) {
-				return;
+				return 0;
 			}
 
 			Node& node = m_Storage[handle.index];
 
 			if (!node.alive ||
 				node.generation != handle.generation) {
-				return;
+				return 0;
 			}
 
 			node.alive = false;
 			++node.generation;
 
 			m_Freelist.push_back(handle.index);
+			return 1;
 		}
 
 		T* try_get(const THandle& handle) {

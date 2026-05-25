@@ -3,6 +3,7 @@
 #include <Handle.h>
 #include <Result.h>
 #include <string>
+#include <core.h>
 
 using qk::Result;
 
@@ -38,8 +39,9 @@ namespace qk::gfx::rhi {
 	bool ShaderProgram_dtor(HShaderProgram& hProgram);
 	bool ShaderProgram_bind(const HShaderProgram& hProgram);
 	bool ShaderProgram_valid(const HShaderProgram& hProgram);
-	
+	bool ShaderProgram_bind_uniform_block(const HShaderProgram& hProgram, const char* id, u8 slot);
 
+	struct HUniformBlock : Handle {};
 
 
 

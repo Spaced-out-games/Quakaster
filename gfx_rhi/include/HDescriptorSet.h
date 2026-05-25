@@ -1,0 +1,94 @@
+#pragma once
+#include <Handle.h>
+#include <stdint.h>
+#include "HTexture.h"
+#include "HBuffer.h"
+#include "HShader.h"
+#include "Result.h"
+#include "core.h"
+
+
+namespace qk::gfx::rhi {
+	/*
+		NOTE TO SELF: In the Vulkan spec, descriptors are effectively just polymorphic
+		pointers to buffers/textures (including vertex/indexbuffers) with some metadata
+
+		A descriptor set is just an array of these with no repeats.
+
+		A descriptor pool is an array of descriptor sets.
+
+
+		For now, since IndexBuffers and VertexBuffers are automatically bound in GL, we'll just ignore those
+		from the rhi's DescriptorSet specification. 
+
+	*/
+
+
+	struct Texture_desc{
+		HTexture	hTex;
+		u8 binding;
+	};
+
+	struct UniformBuffer_desc {
+		HUniformBuffer hBuf;
+		const char* id = nullptr;
+		u8 binding;
+		// need more metadata that isn't supplied in the implementation
+	};
+
+	// Not implemented in GL 3.3
+	struct StorageBuffer_desc{
+		HBuffer hBuf;
+		u8 binding;
+	};
+
+
+
+
+	
+	using Descriptor = Variant<Texture_desc, UniformBuffer_desc>;
+
+	
+
+
+
+	// note: bind index is derived from the index in the descriptor set.
+	using DescriptorSet_desc = std::vector<Descriptor>;
+
+	struct HDescriptorSet: Handle {};
+
+
+	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_desc& info);
+
+	void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet);
+
+	bool DescriptorSet_bind(const HDescriptorSet& hDescriptorSet);
+
+	bool DescriptorSet_valid(const HDescriptorSet& hDescriptorSet);
+
+	void DescriptorSet_init_with_shader(const HDescriptorSet& hDescriptorSet, const HShaderProgram& hProgram);
+
+
+	/*
+		TODO: Work on developing a DescriptorSetLayout so that we don't have to bind in-order. In case you forget,
+		a binding is conceptually just a u8 + Descriptor:
+
+		struct DescriptorBinding {
+			uint8_t slot;
+			Descriptor descriptor;
+		}
+
+		then a descriptor set, at least in a GL implementation, can just be a vector of those OR a side-by side vector:
+
+		std::vector<Descriptor> descriptors;
+		std::vector<u8>			bindings;
+
+
+		neither one is wrong.
+	
+	
+	
+	*/
+
+
+}

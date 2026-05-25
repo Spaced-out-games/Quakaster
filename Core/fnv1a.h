@@ -16,7 +16,7 @@ namespace qk {
         fnv1a_hash_t hash = FNV1A_OFFSET_BASIS;
 
         for (char c : value) {
-            hash ^= static_cast<uint8_t>(c);
+            hash ^= (uint8_t)(c);
             hash *= FNV1A_PRIME;
         }
 

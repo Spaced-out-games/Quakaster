@@ -5,7 +5,7 @@ namespace qk {
 		using enum EEventType;
 		Event& e = const_cast<Event&>(evt);
 
-		if ((uint32_t)e.m_Type >= CUSTOM_EVENT_BEGIN)
+		if ((u32)e.m_Type >= CUSTOM_EVENT_BEGIN)
 		{
 			if (g_EventExToString_pfn)
 			{
@@ -14,7 +14,7 @@ namespace qk {
 					return s;
 			}
 
-			return std::format("Custom Event #{}", (uint32_t)(evt.m_Type) - CUSTOM_EVENT_BEGIN);
+			return std::format("Custom Event #{}", (u32)(evt.m_Type) - CUSTOM_EVENT_BEGIN);
 		}
 
 
@@ -113,7 +113,7 @@ namespace qk {
 			return "PlatformError";
 		}
 		default:
-			return std::format("Unknown Event ({})", static_cast<uint32_t>(evt.m_Type));
+			return std::format("Unknown Event ({})", (u32)(evt.m_Type));
 		}
 	}
 

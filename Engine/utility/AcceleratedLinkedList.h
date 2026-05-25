@@ -17,7 +17,7 @@
 namespace qk::util {
 
     // Describes a raw index in the vector
-    using index_t = uint32_t;
+    using index_t = u32;
     // Describes a pointer to another node, at least conceptually. 
     using node_ptr_t = index_t;
 

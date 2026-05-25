@@ -113,7 +113,7 @@ namespace qk::gfx::rhi {
 	HVertexArrayRef VertexArray_get_current_bound() noexcept {
 		GLint h = 0;
 		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &h);
-		GLuint native = static_cast<GLuint>(h);
+		GLuint native = (GLuint)(h);
 
 		HVertexArray handle;
 		set<HVertexArrayTag, GLuint>(handle, native);

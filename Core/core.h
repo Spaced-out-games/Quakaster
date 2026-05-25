@@ -7,7 +7,7 @@
 
 
 #define QK_API_VERSION(variant, major, minor, patch) \
-    ((((uint32_t)(variant)) << 29U) | (((uint32_t)(major)) << 22U) | (((uint32_t)(minor)) << 12U) | ((uint32_t)(patch)))
+    ((((u32)(variant)) << 29U) | (((u32)(major)) << 22U) | (((u32)(minor)) << 12U) | ((u32)(patch)))
 // pre-release
 #define QK_VERSION QK_API_VERSION(0,0,0)
 

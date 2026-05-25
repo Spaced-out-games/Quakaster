@@ -7,7 +7,7 @@ namespace qk::gfx::rhi {
 	float						g_ClearColor[4];
 
 
-	GLbitfield ClearChannels_cast(qk::gfx::rhi::ClearChannels channels) {
+	inline GLbitfield ClearChannels_cast(qk::gfx::rhi::ClearChannels channels) {
 		GLbitfield result = 0;
 
 		if ((channels & qk::gfx::rhi::ClearChannels::Color) == qk::gfx::rhi::ClearChannels::Color)

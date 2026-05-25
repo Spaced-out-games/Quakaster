@@ -37,7 +37,7 @@ namespace qk::gfx::rhi {
 		GLuint gl_shader = glCreateShader(ShaderType_cast(type));
 
 		if (gl_shader == 0)
-			return std::string{ "glCreateShader failed (invalid context or out of resources)" };
+			return { "glCreateShader failed (invalid context or out of resources)"};
 
 
 		HShader hShader = g_Shaders.insert(gl_shader);
@@ -66,7 +66,7 @@ namespace qk::gfx::rhi {
 	std::string Shader_upload(const HShader& hShader, const std::string& source) {
 		QK_ASSERT(g_Shaders.valid(hShader));
 
-		if (g_Shaders.valid(hShader)) return "Invalid shader handle!";
+		if (!g_Shaders.valid(hShader)) return "Invalid shader handle!";
 
 		GLuint gl_shader = g_Shaders.get(hShader);
 
@@ -83,7 +83,7 @@ namespace qk::gfx::rhi {
 			glGetShaderiv(gl_shader, GL_INFO_LOG_LENGTH, &logLength);
 
 			std::string log;
-			log.resize(static_cast<size_t>(logLength));
+			log.resize((size_t)(logLength));
 
 			glGetShaderInfoLog(gl_shader, logLength, nullptr, log.data());
 
@@ -132,7 +132,7 @@ namespace qk::gfx::rhi {
 				logLen = 1;
 
 			std::string log;
-			log.resize(static_cast<size_t>(logLen));
+			log.resize((size_t)(logLen));
 
 			glGetProgramInfoLog(program, logLen, nullptr, log.data());
 
@@ -167,6 +167,14 @@ namespace qk::gfx::rhi {
 	}
 	bool ShaderProgram_valid(const HShaderProgram& hProgram) {
 		return g_ShaderPrograms.valid(hProgram);
+	}
+
+	bool ShaderProgram_bind_uniform_block(const HShaderProgram& hProgram, const char* id, u8 slot) {
+		QK_ASSERT(g_ShaderPrograms.valid(hProgram));
+		if (!g_ShaderPrograms.valid(hProgram)) return 0;
+		auto program = g_ShaderPrograms.get(hProgram);
+		GLuint blockIndex = glGetUniformBlockIndex(program, "EditArgs");
+		glUniformBlockBinding(program, blockIndex, 0);
 	}
 
 

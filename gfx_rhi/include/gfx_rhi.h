@@ -11,26 +11,26 @@ namespace qk::gfx::rhi {
 	};
 
 	inline constexpr ClearChannels operator|(ClearChannels a, ClearChannels b) {
-		return static_cast<ClearChannels>(
-			static_cast<uint32_t>(a) | static_cast<uint32_t>(b)
+		return (ClearChannels)(
+			(uint32_t)(a) | (uint32_t)(b)
 			);
 	}
 
 	inline constexpr ClearChannels operator&(ClearChannels a, ClearChannels b) {
-		return static_cast<ClearChannels>(
-			static_cast<uint32_t>(a) & static_cast<uint32_t>(b)
+		return (ClearChannels)(
+			(uint32_t)(a) & (uint32_t)(b)
 			);
 	}
 
 	inline constexpr ClearChannels operator^(ClearChannels a, ClearChannels b) {
-		return static_cast<ClearChannels>(
-			static_cast<uint32_t>(a) ^ static_cast<uint32_t>(b)
+		return (ClearChannels)(
+			(uint32_t)(a) ^ (uint32_t)(b)
 			);
 	}
 
 	inline constexpr ClearChannels operator~(ClearChannels a) {
-		return static_cast<ClearChannels>(
-			~static_cast<uint32_t>(a)
+		return (ClearChannels)(
+			~(uint32_t)(a)
 			);
 	}
 
