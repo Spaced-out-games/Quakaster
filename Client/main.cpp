@@ -259,7 +259,7 @@ struct DemoClientApplication : qk::Application {
 
 
 
-		data.view = glm::rotate(data.view, glm::radians(45.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		data.view = glm::translate(data.view, glm::vec3(0.5,0.5,0));
 
 
 		rhi::Material_createinfo matinfo;
@@ -270,6 +270,11 @@ struct DemoClientApplication : qk::Application {
 		material = rhi::Material_ctor(matinfo);
 
 		uniforms = rhi::UniformBuffer_ctor();
+
+
+		rhi::ShaderProgram_bind_uniform_block(program, "CameraData", 0);
+
+
 		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
 		rhi::UniformBuffer_bind(uniforms, 0);
 
@@ -280,7 +285,6 @@ struct DemoClientApplication : qk::Application {
 		desc.push(rhi::DrawArrays_desc{material, vao, rhi::Triangle, 0, 3});
 
 		CmdBuf = rhi::CommandBuffer_ctor(desc);
-
 
 	}
 	void run() override {
@@ -296,7 +300,8 @@ struct DemoClientApplication : qk::Application {
 		//m_DemoMat.bind();
 		//m_DemoMat.update();
 
-		//rhi::UniformBuffer_upload(uniforms, &m_Color, 1, sizeof(m_Color));
+		//rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
+
 
 
 		rhi::Material_bind(material);
