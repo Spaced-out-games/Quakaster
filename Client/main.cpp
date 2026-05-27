@@ -67,15 +67,16 @@ const char* vertexSource = R"(
 
 layout(location = 0) in vec3 aPos;
 
-layout(std140) uniform CameraData {
-	mat4 view;
-	mat4 proj;
-
-};
+//layout(std140) uniform CameraData {
+//	mat4 view;
+//	mat4 proj;
+//
+//};
 
 void main()
 {
-    gl_Position = view * vec4(aPos, 1.0);
+	// view * 
+    gl_Position = vec4(aPos, 1.0);
 }
 )";
 
@@ -132,7 +133,6 @@ struct DemoClientApplication : qk::Application {
 	}
 
 
-
 	// Can be called before or after render_init()
 	void attach_event_queues() {
 		m_Layers.attachQueue(&m_EventQueue);
@@ -157,9 +157,6 @@ struct DemoClientApplication : qk::Application {
 		add_symlinks();
 
 
-
-
-
 		attach_event_queues();
 		render_init();
 		attach_layers();
@@ -167,47 +164,37 @@ struct DemoClientApplication : qk::Application {
 		// ============================================================
 		// Vertex Layout
 		// ============================================================
-		rhi::HVertexLayout hLayout;
 		auto res = VertexLayoutsFromJSON(loadJSON("assets/pipeline.jsonc")["layouts"]);
 
 		if (!res) {
 			spdlog::error("{}", res.error());
 			std::abort();
 		}
+		rhi::HVertexLayout hLayout = rhi::VertexLayout_ctor(res.value()["Vertex"]);
 
-		// uniform buffer
-		rhi::HUniformBuffer uniforms = rhi::UniformBuffer_ctor();
-		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
-
-
+		rhi::HVertexArray vao = rhi::VertexArray_ctor();
+		rhi::VertexArray_bind(vao);
 
 
-		rhi::DescriptorSet_createinfo DescriptorSet_info;
-		DescriptorSet_info.push_back(rhi::UniformBuffer_desc{
-			.hBuf = uniforms,
-			.id = "CameraData",
-			.binding = 0,
-		});
+
+		
+		rhi::HVertexBuffer vbo = rhi::VertexBuffer_ctor(rhi::StaticDraw);
+		rhi::VertexBuffer_upload(vbo, g_Vertices);
+
+		rhi::VertexLayout_apply(hLayout);
 
 
-		rhi::HMaterial material = rhi::Material_ctor(rhi::Material_createinfo{ vertexSource, fragmentSource, DescriptorSet_info });
+
+		rhi::HMaterial material = rhi::Material_ctor(
+			rhi::Material_createinfo{ vertexSource, fragmentSource, {} }
+		);
 
 
-		rhi::Mesh_createinfo createinfo = {
-			.hVertexBuffers = {rhi::VertexBuffer_ctor(rhi::StaticDraw, g_Vertices)},
-			.hIndexBuffer = {},
-			.layout_info = res.value()["Vertex"],
-			.hMaterial = material
-		};
-
-
-		rhi::HMesh mesh;
-		mesh = rhi::Mesh_ctor(createinfo);
 
 		rhi::CommandBuffer_createinfo CmdBufDesc;
 		CmdBufDesc
 			.preexecute(rhi::ClearCommand_desc{ 0.0,0.0,0.0,0.0, rhi::Color })
-			.push(rhi::DrawArrays_desc{ material, rhi::Mesh_getVertexArray(mesh), rhi::Triangle, 0, 3 });
+			.push(rhi::DrawArrays_desc{ material, vao, rhi::Triangle, 0, 3 });
 
 
 		CmdBuf = rhi::CommandBuffer_ctor(CmdBufDesc);

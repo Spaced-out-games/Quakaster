@@ -34,33 +34,39 @@ namespace qk::gfx::rhi {
 
 	struct Texture_desc{
 		HTexture	hTex;
-		u8 binding;
 	};
 
 	struct UniformBuffer_desc {
 		HUniformBuffer hBuf;
 		const char* id = nullptr;
-		u8 binding;
 		// need more metadata that isn't supplied in the implementation
 	};
 
 	// Not implemented in GL 3.3
-	struct StorageBuffer_desc{
+	struct StorageBuffer_desc {
 		HBuffer hBuf;
-		u8 binding;
 	};
 
 
 
 	
 	 
+	struct Descriptor {
+		EDescriptorType type;
+		u8 binding = 0;
 
+		union {
+			Texture_desc		texture;
+			UniformBuffer_desc	uniform;
+			StorageBuffer_desc	storage;
+		};
+	};
 
 
 
 
 	// TODO: Transfer to union. 
-	using Descriptor = Variant<Texture_desc, UniformBuffer_desc>;
+	//using Descriptor = Variant<Texture_desc, UniformBuffer_desc>;
 
 	
 

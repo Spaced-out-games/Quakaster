@@ -26,85 +26,72 @@ namespace qk::gfx::rhi {
 	}
 
 	bool DescriptorSet_bind(const HDescriptorSet& hDescriptorSet) {
-
+		return true; // TEMPORARY
 		QK_ASSERT(g_DescriptorSets.valid(hDescriptorSet));
 
 		const auto& DescriptorSet = g_DescriptorSets.get(hDescriptorSet);
 
 		//u8 binding = 0;
 		bool result = 0;
-		for (auto& descriptor : DescriptorSet) {
+		for (auto& desc : DescriptorSet) {
 
-			descriptor.visit([&result](auto&& desc) {
-				using T = std::decay_t<decltype(desc)>;
 
-				if constexpr (std::is_same_v<T, Texture_desc>) {
-					QK_ASSERT(Texture_valid(desc.hTex));
-					if (!Texture_valid(desc.hTex)) { result = 0; return; }
-					Texture_bind(desc.hTex, desc.binding);
-				}
-				else if constexpr (std::is_same_v<T, UniformBuffer_desc>) {
-					const auto hUBuf = Handle_cast<HUniformBuffer>(desc.hBuf);
-					QK_ASSERT(UniformBuffer_valid(Handle_cast<HUniformBuffer>(desc.hBuf)));
-					if (!UniformBuffer_valid(hUBuf)) { result = 0; return; }
+			switch (desc.type)
+			{
+				case EDescriptorType::Texture:
+					QK_ASSERT(Texture_valid(desc.texture.hTex));
+					if (!Texture_valid(desc.texture.hTex)) { return 0; }
+					Texture_bind(desc.texture.hTex, desc.binding);
+					break;
+				case EDescriptorType::UniformBuffer:
+					const auto hUBuf = Handle_cast<HUniformBuffer>(desc.uniform.hBuf);
+					QK_ASSERT(UniformBuffer_valid(Handle_cast<HUniformBuffer>(hUBuf)));
+					if (!UniformBuffer_valid(hUBuf)) { return 0; }
 					UniformBuffer_bind(hUBuf, desc.binding);
-				}
-				else if constexpr (std::is_same_v<T, StorageBuffer_desc>) {
-					// QK_ASSERT(StorageBuffer_valid(desc.hBuf));
-					//if (!StorageBuffer_valid(desc.hBuf)) { result = 0; return; }
-
+					break;
+				case EDescriptorType::StorageBuffer:
 					throw std::runtime_error("SSBO not implemented.");
-				}
-
-				result = 1;
-
+					break;
+				
+			default:
+				break;
 			}
-			);
-
 			if (!result) return 0;
 
-			//descriptor.
 		}
 
-		return 1;
 
 	}
 
 
 	bool DescriptorSet_valid(const HDescriptorSet& hDescriptorSet) {
-		if (!g_DescriptorSets.valid(hDescriptorSet)) return 0;
+		if (!g_DescriptorSets.valid(hDescriptorSet))
+			return 0;
 
 		const auto& DescriptorSet = g_DescriptorSets.get(hDescriptorSet);
 
-		bool result = 0;
 
-		for (auto& descriptor : DescriptorSet) {
+		for (auto& desc : DescriptorSet) {
 
-				
-			descriptor.visit([&result](auto&& desc) {
-				using T = std::decay_t<decltype(desc)>;
 
-			if constexpr (std::is_same_v<T, Texture_desc>) {
-				if (!Texture_valid(desc.hTex)) { result = 0; return; }
-				}
-				else if constexpr (std::is_same_v<T, UniformBuffer_desc>) {
-					const auto hUBuf = Handle_cast<HUniformBuffer>(desc.hBuf);
-					if (!UniformBuffer_valid(hUBuf)) { result = 0; return; }
-				}
-				else if constexpr (std::is_same_v<T, StorageBuffer_desc>) {
-					//if (!StorageBuffer_valid(desc.hBuf)) { result = 0; return; }
-
-					throw std::runtime_error("SSBO not implemented.");
-				}
-
-				result = 1;
-				
+			switch (desc.type)
+			{
+			case EDescriptorType::Texture:
+				if (!Texture_valid(desc.texture.hTex))
+					return 0;
+				break;
+			case EDescriptorType::UniformBuffer:
+				if(!Buffer_valid(Handle_cast<HBuffer>(desc.uniform.hBuf)))
+					return 0;
+				break;
+			case EDescriptorType::StorageBuffer:
+				return 0;
+				break;
+			
+			default:
+				break;
 			}
-			);
 
-			if (!result) return 0;
-
-			//descriptor.
 		}
 
 		return 1;
@@ -117,31 +104,28 @@ namespace qk::gfx::rhi {
 		const auto& set = g_DescriptorSets.get(hDescriptorSet);
 
 		for (const auto& desc : set) {
-			desc.visit([&](auto&& desc) {
-				using T = std::decay_t<decltype(desc)>;
 
-			if constexpr (std::is_same_v<T, Texture_desc>) {
-				if (!Texture_valid(desc.hTex)) { return; }
-			}
-			else if constexpr (std::is_same_v<T, UniformBuffer_desc>) {
-				const auto& hUBuf = Handle_cast<HUniformBuffer>(desc.hBuf);
-				if (!UniformBuffer_valid(hUBuf)) {
 
-					return;
-					
-				}
-				ShaderProgram_bind_uniform_block(hProgram, desc.id, desc.binding);
-
-			}
-			else if constexpr (std::is_same_v<T, StorageBuffer_desc>) {
-				//if (!StorageBuffer_valid(desc.hBuf)) { result = 0; return; }
-
-				throw std::runtime_error("SSBO not implemented.");
+			switch (desc.type) {
+				case EDescriptorType::Texture:
+					if (!Texture_valid(desc.texture.hTex))
+						return;
+				case EDescriptorType::UniformBuffer:
+					const auto hUBuf = Handle_cast<HUniformBuffer>(desc.uniform.hBuf);
+					if (!UniformBuffer_valid(hUBuf))
+						return;
+					ShaderProgram_bind_uniform_block(hProgram, desc.uniform.id, desc.binding);
+					break;
+				case EDescriptorType::StorageBuffer:
+					throw std::runtime_error("SSBO not implemented.");
+				default:
+					break;
 			}
 
 
-			}
-			);
+
+
+			
 		}
 	}
 
