@@ -42,7 +42,7 @@ namespace qk::gfx::rhi {
 
 	using DrawCommand_desc = Variant<NullCommand_desc, ClearCommand_desc, DrawArrays_desc>;
 
-	class CommandBuffer_desc {
+	class CommandBuffer_createinfo {
 
 		std::vector<DrawCommand_desc> m_Preexecute;
 		std::vector<DrawCommand_desc> m_Commands;
@@ -69,7 +69,7 @@ namespace qk::gfx::rhi {
 
 	struct HCommandBuffer : Handle {};
 
-	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_desc& desc);
+	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_createinfo& desc);
 
 	void CommandBuffer_dtor(const HCommandBuffer& hCmdBuf);
 

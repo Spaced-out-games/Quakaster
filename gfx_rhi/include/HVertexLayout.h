@@ -8,7 +8,7 @@ namespace qk::gfx::rhi {
 
 	struct HVertexLayout : Handle {};
 
-	HVertexLayout	VertexLayout_ctor(const VertexLayoutDesc& desc);
+	HVertexLayout	VertexLayout_ctor(const VertexLayout_createinfo& desc);
 
 	bool			VertexLayout_dtor(const HVertexLayout& hLayout);
 

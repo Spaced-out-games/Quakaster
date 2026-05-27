@@ -23,7 +23,7 @@ namespace qk::gfx::rhi {
 
     };
 
-    enum class EScalarMultiplicity : uint8_t {
+    enum EScalarMultiplicity : uint8_t {
         None,
         Scalar,
         Vector,

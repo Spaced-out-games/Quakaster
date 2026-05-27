@@ -4,7 +4,7 @@
 
 namespace qk::gfx::rhi {
 
-	using CommandBuffer_impl = CommandBuffer_desc;
+	using CommandBuffer_impl = CommandBuffer_createinfo;
 
 
 	static inline qk::HandleResourceRegistry<CommandBuffer_impl, HCommandBuffer> g_CommandBuffers;
@@ -92,7 +92,7 @@ namespace qk::gfx::rhi {
 
 
 
-	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_desc& desc) {
+	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_createinfo& desc) {
 		return g_CommandBuffers.insert(desc);
 	}
 

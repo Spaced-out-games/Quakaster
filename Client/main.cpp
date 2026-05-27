@@ -40,6 +40,10 @@
 
 using namespace qk::gfx;
 
+
+
+
+
 struct Vertex {
 	float x, y, z;
 };
@@ -117,7 +121,10 @@ struct DemoClientApplication : qk::Application {
 
 	rhi::HUniformBuffer uniforms;
 
-	int slot = 0;
+	rhi::VertexLayout_createinfo layout_createinfo;
+
+	rhi::CommandBuffer_createinfo CmdBufDesc;
+
 
 	// Can be called before or after render_init()
 	void attach_event_queues() {
@@ -135,8 +142,8 @@ struct DemoClientApplication : qk::Application {
 	void attach_layers() {
 		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());
 
-		//gui.emplace<qk::gfx::gui::Vec3EditWidget>("Position", (glm::vec3*) & m_Color, -5.0f, 5.0f);
 	}
+
 
 
 	void init(int argc, char** argv) override {
@@ -147,10 +154,9 @@ struct DemoClientApplication : qk::Application {
 		render_init();
 		attach_layers();
 
-		// ============================================================
-		// Vertex Array
-		// ============================================================
 
+
+		// Vertex Array
 		vao = rhi::VertexArray_ctor();
 		rhi::VertexArray_bind(vao);
 
@@ -158,41 +164,20 @@ struct DemoClientApplication : qk::Application {
 		// Vertex Buffer
 		// ============================================================
 
-		rhi::HVertexBuffer vbo = rhi::VertexBuffer_ctor(rhi::BufferUsage::StaticDraw);
-
-		rhi::VertexBuffer_upload(
-			vbo,
-			g_Vertices.data(),
-			(uint32_t)(g_Vertices.size()),
-			sizeof(Vertex));
-
+		rhi::HVertexBuffer vbo = rhi::VertexBuffer_ctor(rhi::StaticDraw, g_Vertices);
 		rhi::VertexBuffer_bind(vbo);
 
 		// ============================================================
 		// Vertex Layout
 		// ============================================================
-
-		rhi::VertexLayoutDesc layout;
-
-		rhi::VertexBinding binding =
-			layout.pushBinding(rhi::InputRate::PerVertex, sizeof(Vertex));
-
-		layout.pushVertexAttribute<float>(
-			binding,
-			0,                          // shader location
-			offsetof(Vertex, x),
-			3,                          // vec3
-			rhi::EScalarMultiplicity::Vector,
-			false);
-
-		rhi::HVertexLayout hLayout = rhi::VertexLayout_ctor(layout);
-
+		rhi::VertexBinding binding = layout_createinfo.pushBinding(rhi::PerVertex, sizeof(Vertex));
+		layout_createinfo.push(binding, 0, 0, rhi::layout::vec3f);
+		rhi::HVertexLayout hLayout = rhi::VertexLayout_ctor(layout_createinfo);
 		rhi::VertexLayout_apply(hLayout);
 
 		
 
 		uniforms = rhi::UniformBuffer_ctor();
-		data.view = glm::translate(data.view, glm::vec3(0.5, 0.5, 0));
 		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
 
 
@@ -209,13 +194,6 @@ struct DemoClientApplication : qk::Application {
 
 
 
-
-
-
-
-
-
-
 		material = rhi::Material_ctor(rhi::Material_createinfo{ vertexSource, fragmentSource, DescriptorSet_info });
 
 
@@ -223,12 +201,11 @@ struct DemoClientApplication : qk::Application {
 		
 
 		// finally, the command buffer
+		CmdBufDesc.push_preexecute(rhi::ClearCommand_desc{ 0.0,0.0,0.0,0.0, rhi::Color });
+		CmdBufDesc.push(rhi::DrawArrays_desc{ material, vao, rhi::Triangle, 0, 3 });
 
-		rhi::CommandBuffer_desc desc;
-		desc.push_preexecute(rhi::ClearCommand_desc{ 0.0,0.0,0.0,0.0, rhi::Color });
-		desc.push(rhi::DrawArrays_desc{material, vao, rhi::Triangle, 0, 3});
 
-		CmdBuf = rhi::CommandBuffer_ctor(desc);
+		CmdBuf = rhi::CommandBuffer_ctor(CmdBufDesc);
 
 	}
 	void run() override {
@@ -237,27 +214,16 @@ struct DemoClientApplication : qk::Application {
 		m_Window.pollEvents();
 		// flushes it
 		m_Layers.propagate_events();
-		// flushes offscreen image
-		//rhi::clear();
-		// renders to offscreen image
-		//m_DemoMesh.bind();
-		//m_DemoMat.bind();
-		//m_DemoMat.update();
 
-		//rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
-
-
-
-		rhi::Material_bind(material);
-
-		//rhi::ShaderProgram_bind(program);
+		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
+		data.view = glm::translate(data.view, glm::vec3{ 0.00001f,0,0 });
 
 		rhi::CommandBuffer_execute(CmdBuf);
 		m_Layers.render();
 
+		//rhi::Material_dtor(material);
 
-
-
+		//rhi::VertexArray_dtor(vao);
 
 		// presents offscreen image
 		m_Window.swapBuffers();

@@ -6,7 +6,7 @@ using qk::Handle;
 
 namespace qk::gfx::rhi {
 
-	enum class BufferUsage {
+	enum BufferUsage {
 		StaticDraw,
 		DynamicDraw,
 		StreamDraw
@@ -93,6 +93,8 @@ namespace qk::gfx::rhi {
 		return Buffer_dtor(Handle_cast<HBuffer>(hVertexBuffer));
 	}
 
+
+
 	bool VertexBuffer_bind(const HVertexBuffer& hBuf);
 
 	inline bool VertexBuffer_upload(
@@ -103,6 +105,11 @@ namespace qk::gfx::rhi {
 		return Buffer_upload(Handle_cast<HBuffer>(hVertexBuffer), data, count, elem_size);
 	}
 
+	template <class vertex_t>
+	inline bool VertexBuffer_upload(const HVertexBuffer& hVertexBuffer, const std::vector<vertex_t>& vertices) {
+		return VertexBuffer_upload(hVertexBuffer, vertices.data(), vertices.size(), sizeof(vertex_t));
+	}
+
 	inline bool VertexBuffer_valid(const HVertexBuffer& hVertexBuffer) {
 		return Buffer_valid(Handle_cast<HBuffer>(hVertexBuffer));
 	}
@@ -110,6 +117,14 @@ namespace qk::gfx::rhi {
 	inline bool VertexBuffer_initialized(const HVertexBuffer& hVertexBuffer) {
 		return Buffer_initialized(Handle_cast<HBuffer>(hVertexBuffer));
 	}
+
+	template <class vertex_t>
+	HVertexBuffer VertexBuffer_ctor(BufferUsage usage, const std::vector<vertex_t>& vertices) {
+		HVertexBuffer hVertexBuffer = VertexBuffer_ctor(usage);
+		VertexBuffer_upload(hVertexBuffer, vertices);
+		return hVertexBuffer;
+	}
+
 
 	// ============================================================
 	// Uniform Buffer API

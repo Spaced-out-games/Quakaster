@@ -4,7 +4,7 @@
 
 namespace qk::gfx::rhi {
 
-	static inline qk::HandleResourceRegistry<VertexLayoutDesc, HVertexLayout> g_VertexLayouts;
+	static inline qk::HandleResourceRegistry<VertexLayout_createinfo, HVertexLayout> g_VertexLayouts;
 
 
 	inline GLenum ScalarType_cast(EScalarType type)
@@ -43,7 +43,7 @@ namespace qk::gfx::rhi {
 	}
 
 
-	HVertexLayout	VertexLayout_ctor(const VertexLayoutDesc& desc) {
+	HVertexLayout	VertexLayout_ctor(const VertexLayout_createinfo& desc) {
 		return g_VertexLayouts.insert(desc);
 	}
 
@@ -61,7 +61,7 @@ namespace qk::gfx::rhi {
 		QK_ASSERT(g_VertexLayouts.valid(hLayout));
 		if (!g_VertexLayouts.valid(hLayout)) return 0;
 
-		VertexLayoutDesc& desc = g_VertexLayouts.get(hLayout);
+		VertexLayout_createinfo& desc = g_VertexLayouts.get(hLayout);
 
 		for (auto& binding : desc.bindings()) {
 			for (auto& attr : binding.attributes) {

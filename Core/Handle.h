@@ -140,10 +140,8 @@ namespace qk {
 		}
 
 		bool valid(const THandle& handle) const {
+			if (handle.index >= m_Storage.size()) return false;
 
-			if (handle.index >= m_Storage.size()) {
-				return false;
-			}
 
 			const Node& node = m_Storage[handle.index];
 

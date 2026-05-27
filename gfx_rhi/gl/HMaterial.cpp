@@ -32,6 +32,8 @@ namespace qk::gfx::rhi {
 
 	bool Material_bind(const HMaterial& hMaterial) {
 
+		QK_ASSERT(g_Materials.valid(hMaterial));
+		if (!g_Materials.valid(hMaterial)) return 0;
 		Material_impl& mat = g_Materials.get(hMaterial);
 
 		if(!ShaderProgram_bind(mat.program)) return 0;
