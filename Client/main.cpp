@@ -21,6 +21,8 @@
 
 // media
 #include "media/Image.h"
+#include "media/LoadModel.h"
+#include "media/json.h"
 
 #include "gfx_rhi.h"
 #include "gui_rhi.h"
@@ -35,12 +37,14 @@
 
 
 #include "HMaterial.h"
+#include "HMesh.h"
+#include <spdlog/spdlog.h>
 
-
+#include <filesystem>
 
 using namespace qk::gfx;
 
-
+using namespace qk::media;
 
 
 
@@ -112,18 +116,21 @@ struct DemoClientApplication : qk::Application {
 	qk::LayerStack m_Layers;
 
 	CameraData data;
-
-	rhi::HVertexArray vao;
-
-	rhi::HMaterial material;
-
 	rhi::HCommandBuffer CmdBuf;
 
-	rhi::HUniformBuffer uniforms;
 
-	rhi::VertexLayout_createinfo layout_createinfo;
+	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
+	void add_symlinks() {
 
-	rhi::CommandBuffer_createinfo CmdBufDesc;
+		namespace fs = std::filesystem;
+		#ifdef _DEBUG
+		// NOTE: Requires admin priviledges. 
+		if (!fs::exists("assets")) fs::create_directory_symlink("../../../../assets/", "assets/");
+
+
+		#endif
+	}
+
 
 
 	// Can be called before or after render_init()
@@ -147,6 +154,9 @@ struct DemoClientApplication : qk::Application {
 
 
 	void init(int argc, char** argv) override {
+		add_symlinks();
+
+
 
 
 
@@ -154,36 +164,25 @@ struct DemoClientApplication : qk::Application {
 		render_init();
 		attach_layers();
 
-
-
-		// Vertex Array
-		vao = rhi::VertexArray_ctor();
-		rhi::VertexArray_bind(vao);
-
-		// ============================================================
-		// Vertex Buffer
-		// ============================================================
-
-		rhi::HVertexBuffer vbo = rhi::VertexBuffer_ctor(rhi::StaticDraw, g_Vertices);
-		rhi::VertexBuffer_bind(vbo);
-
 		// ============================================================
 		// Vertex Layout
 		// ============================================================
-		rhi::VertexBinding binding = layout_createinfo.pushBinding(rhi::PerVertex, sizeof(Vertex));
-		layout_createinfo.push(binding, 0, 0, rhi::layout::vec3f);
-		rhi::HVertexLayout hLayout = rhi::VertexLayout_ctor(layout_createinfo);
-		rhi::VertexLayout_apply(hLayout);
+		rhi::HVertexLayout hLayout;
+		auto res = VertexLayoutsFromJSON(loadJSON("assets/pipeline.jsonc")["layouts"]);
 
-		
+		if (!res) {
+			spdlog::error("{}", res.error());
+			std::abort();
+		}
 
-		uniforms = rhi::UniformBuffer_ctor();
+		// uniform buffer
+		rhi::HUniformBuffer uniforms = rhi::UniformBuffer_ctor();
 		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
 
 
 
-		rhi::DescriptorSet_createinfo DescriptorSet_info;
 
+		rhi::DescriptorSet_createinfo DescriptorSet_info;
 		DescriptorSet_info.push_back(rhi::UniformBuffer_desc{
 			.hBuf = uniforms,
 			.id = "CameraData",
@@ -191,18 +190,24 @@ struct DemoClientApplication : qk::Application {
 		});
 
 
+		rhi::HMaterial material = rhi::Material_ctor(rhi::Material_createinfo{ vertexSource, fragmentSource, DescriptorSet_info });
 
 
+		rhi::Mesh_createinfo createinfo = {
+			.hVertexBuffers = {rhi::VertexBuffer_ctor(rhi::StaticDraw, g_Vertices)},
+			.hIndexBuffer = {},
+			.layout_info = res.value()["Vertex"],
+			.hMaterial = material
+		};
 
-		material = rhi::Material_ctor(rhi::Material_createinfo{ vertexSource, fragmentSource, DescriptorSet_info });
 
+		rhi::HMesh mesh;
+		mesh = rhi::Mesh_ctor(createinfo);
 
-
-		
-
-		// finally, the command buffer
-		CmdBufDesc.push_preexecute(rhi::ClearCommand_desc{ 0.0,0.0,0.0,0.0, rhi::Color });
-		CmdBufDesc.push(rhi::DrawArrays_desc{ material, vao, rhi::Triangle, 0, 3 });
+		rhi::CommandBuffer_createinfo CmdBufDesc;
+		CmdBufDesc
+			.preexecute(rhi::ClearCommand_desc{ 0.0,0.0,0.0,0.0, rhi::Color })
+			.push(rhi::DrawArrays_desc{ material, rhi::Mesh_getVertexArray(mesh), rhi::Triangle, 0, 3 });
 
 
 		CmdBuf = rhi::CommandBuffer_ctor(CmdBufDesc);
@@ -215,15 +220,13 @@ struct DemoClientApplication : qk::Application {
 		// flushes it
 		m_Layers.propagate_events();
 
-		rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data));
-		data.view = glm::translate(data.view, glm::vec3{ 0.00001f,0,0 });
+		//rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data)); !
+		//data.view = glm::translate(data.view, glm::vec3{ 0.00001f,0,0 }); !
 
-		rhi::CommandBuffer_execute(CmdBuf);
+		rhi::CommandBuffer_execute(CmdBuf);// !
 		m_Layers.render();
 
-		//rhi::Material_dtor(material);
 
-		//rhi::VertexArray_dtor(vao);
 
 		// presents offscreen image
 		m_Window.swapBuffers();

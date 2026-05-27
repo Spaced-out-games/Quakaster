@@ -59,7 +59,7 @@ set(ENGINE_SOURCES
     
     
 
-     )
+      "media/LoadModel.cpp")
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})
@@ -72,9 +72,9 @@ target_link_libraries(${PROJECT_NAME}
         glm::glm
         EnTT::EnTT
         nlohmann_json::nlohmann_json
+        spdlog::spdlog
 
     PRIVATE
-        spdlog::spdlog
         glfw
 )
 

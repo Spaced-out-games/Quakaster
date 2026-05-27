@@ -32,10 +32,10 @@ namespace qk::gfx::rhi {
 
 
     struct ComponentDesc {
-        EScalarMultiplicity comp_multiplicity;
-        bool                comp_normalize;
-        uint32_t            comp_count;
-        EScalarType         comp_type;
+        EScalarMultiplicity multiplicity;
+        bool                normalize;
+        uint32_t            count;
+        EScalarType         type;
     };
 
 

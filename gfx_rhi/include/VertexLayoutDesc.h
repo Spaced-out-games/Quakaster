@@ -54,7 +54,8 @@ namespace qk::gfx::rhi {
 
 	enum InputRate : uint8_t {
 		PerVertex,
-		PerInstance
+		PerInstance,
+		Unknown
 	};
 
 
@@ -84,93 +85,9 @@ namespace qk::gfx::rhi {
 		bool normalized;
 	};
 
-	class VertexLayout_createinfo {
-		std::vector<VertexAttributeBinding> m_Bindings;
-
-		public:
-			VertexBinding pushBinding(InputRate rate, uint32_t stride = 0) {
-				VertexBinding binding = (VertexBinding)(m_Bindings.size());
-
-				VertexAttributeBinding newBinding{};
-				newBinding.input_rate = rate;
-				newBinding.stride = stride;
-
-				m_Bindings.push_back(std::move(newBinding));
-
-				return binding;
-			}
-			void push(
-				VertexBinding binding,
-				uint32_t location,
-				uintptr_t offset,
-				EScalarType comp_type,
-				uint32_t comp_count,
-				EScalarMultiplicity comp_multiplicity,
-				bool comp_normalize
-			) {
-				QK_ASSERT(!m_Bindings.empty());
-
-				QK_ASSERT(binding < m_Bindings.size());
-
-				auto& target = m_Bindings[binding];
-
-				target.attributes.emplace_back(location, ComponentDesc{ comp_multiplicity, comp_normalize, comp_count, comp_type }, offset);
-
-			}
+	using VertexLayout_createinfo = std::vector<VertexAttributeBinding>;
 
 
-
-			VertexLayout_createinfo& push(VertexBinding binding, u32 location, uintptr_t offset, const VertexAttributePreset& preset) {
-				push(binding, location, offset, preset.type, preset.count, preset.multiplicity, preset.normalized);
-				return *this;
-			}
-
-			template <class T>
-			VertexLayout_createinfo& push (
-				VertexBinding binding, u32 location, u32 comp_offset, u32 comp_count,
-				EScalarMultiplicity comp_multiplicity, bool comp_normalize) {
-				
-
-
-				EScalarType comp_type = EScalarType_cast<T>();
-				push(binding, location, comp_offset, comp_type, comp_count, comp_multiplicity, comp_normalize);
-				return *this;
-			}
-
-			const std::vector<VertexAttributeBinding>& bindings() {
-				return m_Bindings;
-			}
-
-
-
-
-	};
-
-
-	namespace layout {
-
-		constexpr VertexAttributePreset vec2f = {
-			.type = EScalarType::f32,
-			.count = 2,
-			.multiplicity = Vector,
-			.normalized = false
-		};
-
-
-		constexpr VertexAttributePreset vec3f = {
-			.type = EScalarType::f32,
-			.count = 3,
-			.multiplicity = Vector,
-			.normalized = false
-		};
-
-		constexpr VertexAttributePreset vec4f = {
-			.type = EScalarType::f32,
-			.count = 4,
-			.multiplicity = Vector,
-			.normalized = false
-		};
-	}
 
 
 

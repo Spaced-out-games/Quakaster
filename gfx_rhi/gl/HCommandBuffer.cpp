@@ -68,7 +68,6 @@ namespace qk::gfx::rhi {
 		{
 			if (!VertexArray_valid(desc.mesh))
 				return false;
-
 			VertexArray_bind(desc.mesh);
 
 			if (!Material_bind(desc.material))

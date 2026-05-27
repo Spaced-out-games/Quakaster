@@ -24,6 +24,14 @@ namespace qk::gfx::rhi {
 	*/
 
 
+	enum class EDescriptorType {
+		Unknown,
+		Texture,
+		UniformBuffer,
+		StorageBuffer
+	};
+
+
 	struct Texture_desc{
 		HTexture	hTex;
 		u8 binding;
@@ -44,8 +52,14 @@ namespace qk::gfx::rhi {
 
 
 
-
 	
+	 
+
+
+
+
+
+	// TODO: Transfer to union. 
 	using Descriptor = Variant<Texture_desc, UniformBuffer_desc>;
 
 	
@@ -54,6 +68,13 @@ namespace qk::gfx::rhi {
 
 	// note: bind index is derived from the index in the descriptor set.
 	using DescriptorSet_createinfo = std::vector<Descriptor>;
+
+
+	/*
+	struct DescriptorSet_createinfo {
+		std::vector<Descriptor> descriptors;
+	};
+	*/
 
 	struct HDescriptorSet: Handle {};
 

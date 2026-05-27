@@ -63,14 +63,14 @@ namespace qk::gfx::rhi {
 
 		VertexLayout_createinfo& desc = g_VertexLayouts.get(hLayout);
 
-		for (auto& binding : desc.bindings()) {
+		for (auto& binding : desc) {
 			for (auto& attr : binding.attributes) {
 
-				if (EScalarType_isInteger(attr.component.comp_type) && !attr.component.comp_normalize) {
-					glVertexAttribIPointer(attr.location, attr.component.comp_count, ScalarType_cast(attr.component.comp_type), binding.stride, (const void*)attr.offset);
+				if (EScalarType_isInteger(attr.component.type) && !attr.component.normalize) {
+					glVertexAttribIPointer(attr.location, attr.component.count, ScalarType_cast(attr.component.type), binding.stride, (const void*)attr.offset);
 				}
 				else {
-					glVertexAttribPointer(attr.location, attr.component.comp_count, ScalarType_cast(attr.component.comp_type), attr.component.comp_normalize, binding.stride, (const void*)attr.offset);
+					glVertexAttribPointer(attr.location, attr.component.count, ScalarType_cast(attr.component.type), attr.component.normalize, binding.stride, (const void*)attr.offset);
 				}
 
 				glEnableVertexAttribArray(attr.location);

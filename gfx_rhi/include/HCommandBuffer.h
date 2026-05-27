@@ -48,17 +48,19 @@ namespace qk::gfx::rhi {
 		std::vector<DrawCommand_desc> m_Commands;
 		std::vector<DrawCommand_desc> m_Postexecute;
 		public:
-			void push_preexecute(const DrawCommand_desc& cmd) {
+			CommandBuffer_createinfo& preexecute(const DrawCommand_desc& cmd) {
 				m_Preexecute.push_back(cmd);
-
+				return *this;
 			}
 
-			void push_postexecute(const DrawCommand_desc& cmd) {
+			CommandBuffer_createinfo& postexecute(const DrawCommand_desc& cmd) {
 				m_Postexecute.push_back(cmd);
+				return *this;
 			}
 
-			void push(const DrawCommand_desc& cmd) {
+			CommandBuffer_createinfo& push(const DrawCommand_desc& cmd) {
 				m_Commands.push_back(cmd);
+				return *this;
 			}
 
 			const std::vector<DrawCommand_desc>& preexec() const { return m_Preexecute; }
