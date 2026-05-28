@@ -21,8 +21,10 @@
 	},
 
 	"descriptor_sets": {
-		"CameraData": [
+		
+		"CameraDataDescriptorSet": [
 			{
+				"id": "CameraData",
 				"type": "uniform",
 				"binding": 0
 			}
@@ -35,7 +37,7 @@
 			"vert_shader_path": "mat_solid.vert",
 			"frag_shader_path": "mat_solid.frag",
 			"descriptor_set_labels": [
-				"CameraData"
+				"CameraDataDescriptorSet"
 			]
 		}
 	}
