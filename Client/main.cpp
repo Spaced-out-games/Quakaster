@@ -67,16 +67,16 @@ const char* vertexSource = R"(
 
 layout(location = 0) in vec3 aPos;
 
-//layout(std140) uniform CameraData {
-//	mat4 view;
-//	mat4 proj;
-//
-//};
+layout(std140) uniform CameraData {
+	mat4 view;
+	mat4 proj;
+
+};
 
 void main()
 {
-	// view * 
-    gl_Position = vec4(aPos, 1.0);
+	// 
+    gl_Position = view * vec4(aPos, 1.0);
 }
 )";
 
@@ -118,7 +118,7 @@ struct DemoClientApplication : qk::Application {
 
 	CameraData data;
 	rhi::HCommandBuffer CmdBuf;
-
+	rhi::HUniformBuffer ubo;
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
 	void add_symlinks() {
@@ -156,7 +156,7 @@ struct DemoClientApplication : qk::Application {
 	void init(int argc, char** argv) override {
 		add_symlinks();
 
-
+		data.view = glm::translate(data.view, { 0,0.5,0 });
 		attach_event_queues();
 		render_init();
 		attach_layers();
@@ -174,6 +174,10 @@ struct DemoClientApplication : qk::Application {
 
 		rhi::HVertexArray vao = rhi::VertexArray_ctor();
 		rhi::VertexArray_bind(vao);
+
+		ubo = rhi::UniformBuffer_ctor();
+		
+		rhi::UniformBuffer_upload(ubo, &data, 1, sizeof(data));
 
 
 
@@ -209,7 +213,7 @@ struct DemoClientApplication : qk::Application {
 
 		//rhi::UniformBuffer_upload(uniforms, &data, 1, sizeof(data)); !
 		//data.view = glm::translate(data.view, glm::vec3{ 0.00001f,0,0 }); !
-
+		rhi::UniformBuffer_bind(ubo, 0);
 		rhi::CommandBuffer_execute(CmdBuf);// !
 		m_Layers.render();
 
