@@ -112,7 +112,7 @@ namespace qk::gfx::rhi {
 					const auto hUBuf = Handle_cast<HUniformBuffer>(desc.uniform.hBuf);
 					if (!UniformBuffer_valid(hUBuf))
 						return;
-					ShaderProgram_bind_uniform_block(hProgram, desc.uniform.id, desc.binding);
+					ShaderProgram_bind_uniform_block(hProgram, desc.id.c_str(), desc.binding);
 					break;
 				case EDescriptorType::StorageBuffer:
 					throw std::runtime_error("SSBO not implemented.");

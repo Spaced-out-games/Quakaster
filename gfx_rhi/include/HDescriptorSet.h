@@ -31,14 +31,14 @@ namespace qk::gfx::rhi {
 		StorageBuffer
 	};
 
-
+	// todo: move ids into the descriptor. UniformBuffer was the only one with it inside
 	struct Texture_desc{
 		HTexture	hTex;
 	};
 
 	struct UniformBuffer_desc {
 		HUniformBuffer hBuf;
-		const char* id = nullptr;
+		// NOTE: this has NOT been made memory safe! Consider using std::string instead!
 		// need more metadata that isn't supplied in the implementation
 	};
 
@@ -54,12 +54,14 @@ namespace qk::gfx::rhi {
 	struct Descriptor {
 		EDescriptorType type;
 		u8 binding = 0;
+		str id;
 
 		union {
 			Texture_desc		texture;
 			UniformBuffer_desc	uniform;
 			StorageBuffer_desc	storage;
 		};
+
 	};
 
 

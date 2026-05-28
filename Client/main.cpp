@@ -163,7 +163,10 @@ struct DemoClientApplication : qk::Application {
 		// ============================================================
 		// Vertex Layout
 		// ============================================================
-		auto res = VertexLayoutsFromJSON(loadJSON("assets/pipeline.jsonc")["layouts"]);
+
+		auto j = loadJSON("assets/pipeline.jsonc");
+
+		auto res = VertexLayoutsFromJSON(j["layouts"]);
 
 		if (!res) {
 			spdlog::error("{}", res.error());
@@ -180,6 +183,7 @@ struct DemoClientApplication : qk::Application {
 
 		ubo = rhi::UniformBuffer_ctor();
 		rhi::UniformBuffer_upload(ubo, &data, 1, sizeof(data));
+		//rhi::UniformBuffer_bind(ubo, 0); // test
 
 
 
@@ -191,22 +195,47 @@ struct DemoClientApplication : qk::Application {
 		rhi::VertexLayout_apply(hLayout);
 
 		
-		rhi::DescriptorSet_createinfo info;
-		info.push_back(rhi::Descriptor{
+
+		auto materials = qk::media::MaterialsFromJSON(j["materials"]).value();
+
+
+		auto sets = qk::media::DescriptorSetsFromJSON(j["descriptor_sets"]).value();
+
+		//sets["CameraData"]
+		//rhi::DescriptorSet_createinfo descinfo;
+		/*
+		descinfo.push_back(rhi::Descriptor{
 			
 			.type = rhi::EDescriptorType::UniformBuffer,
 			.binding = 0,
+			.id = "CameraData",
 			.uniform = {
 				.hBuf = ubo,
-				.id = "CameraData"
 			}
 		});
+		*/
+		
+		const auto& a = sets["CameraDataDescriptorSet"];
+		
+		
+		
+		
 
+
+		
+		rhi::UniformBuffer_upload(a[0].uniform.hBuf, &data, 1, sizeof(data));
+
+
+		materials["mat_solid"].descriptor_set = rhi::DescriptorSet_ctor(sets["CameraDataDescriptorSet"]);
+
+
+		//materials["mat_solid"].descriptor_set = rhi::DescriptorSet_ctor(descinfo);
 
 		rhi::HMaterial material = rhi::Material_ctor(
-			rhi::Material_createinfo{ vertexSource, fragmentSource, info }
+			materials["mat_solid"]
+			//rhi::Material_createinfo{ vertexSource, fragmentSource, descinfo }
 		);
-
+		
 
 
 		rhi::CommandBuffer_createinfo CmdBufDesc;

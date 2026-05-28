@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <Result.h>
 #include "json.h"
+#include "core.h" // for str
 
 using namespace qk::gfx;
 
@@ -13,16 +14,21 @@ namespace qk::media {
 
 	// todo: give actual allocated assets instead.
 
-	using VertexLayoutMap = std::unordered_map<std::string, rhi::VertexLayout_createinfo>;
+	using VertexLayoutMap = std::unordered_map<str, rhi::VertexLayout_createinfo>;
 
-	using MaterialLayoutMap = std::unordered_map<std::string, rhi::Material_createinfo>;
+	using MaterialLayoutMap = std::unordered_map<str, rhi::Material_createinfo>;
+
+	using DescriptorSetLayoutMap = std::unordered_map<str, rhi::DescriptorSet_createinfo>;
 
 
 	// Expects ["layouts"] 
-	Result<VertexLayoutMap, std::string> VertexLayoutsFromJSON(const json& j);
+	Result<VertexLayoutMap, str> VertexLayoutsFromJSON(const json& j);
 
 	// Expects ["materials"]
-	Result <MaterialLayoutMap, std::string> MaterialsFromJSON(const json& j);
+	Result <MaterialLayoutMap, str> MaterialsFromJSON(const json& j);
+
+	// Expects ["descriptor_sets"]
+	Result<DescriptorSetLayoutMap, str> DescriptorSetsFromJSON(const json& j);
 
 
 }

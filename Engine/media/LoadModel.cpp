@@ -2,19 +2,20 @@
 #include <iostream>
 #include <format>
 
+using std::format;
 
 
 namespace qk::media {
 
 	// TODO: handle empty checks.
 
-	inline rhi::InputRate InputRate_cast(const std::string& v) {
+	inline rhi::InputRate InputRate_cast(const str& v) {
 		if (v == "vertex") return rhi::PerVertex;
 		if (v == "instance") return rhi::PerInstance;
 		return rhi::InputRate::Unknown;
 	}
 
-	inline rhi::EScalarType EScalarType_cast(const std::string& v) {
+	inline rhi::EScalarType EScalarType_cast(const str& v) {
 		if (v == "i8") return rhi::EScalarType::i8;
 		if (v == "i16") return rhi::EScalarType::i16;
 		if (v == "i32") return rhi::EScalarType::i32;
@@ -31,7 +32,7 @@ namespace qk::media {
 		return rhi::EScalarType::unknown;
 	}
 
-	inline rhi::EScalarMultiplicity EScalarMultiplicity_cast(const std::string& v) {
+	inline rhi::EScalarMultiplicity EScalarMultiplicity_cast(const str& v) {
 		if (v == "scalar") return rhi::Scalar;
 		if (v == "vector") return rhi::Vector;
 		if (v == "matrix") return rhi::Matrix;
@@ -39,7 +40,7 @@ namespace qk::media {
 		return rhi::EScalarMultiplicity::None;
 	}
 
-	inline rhi::EDescriptorType EDescriptorType_cast(const std::string& v) {
+	inline rhi::EDescriptorType EDescriptorType_cast(const str& v) {
 		if (v == "texture") return rhi::EDescriptorType::Texture;
 		if (v == "uniform") return rhi::EDescriptorType::UniformBuffer;
 		if (v == "storage") return rhi::EDescriptorType::StorageBuffer;
@@ -52,7 +53,7 @@ namespace qk::media {
 	// Vertex buffer layouts
 	// ---------------------------------------------------------------------------------------------------
 
-	Result<rhi::VertexAttribute_createinfo, std::string> VertexAttributeFromJSON(const json& j, u32& location) {
+	Result<rhi::VertexAttribute_createinfo, str> VertexAttributeFromJSON(const json& j, u32& location) {
 		assert(j.is_object() && j.contains("type"));
 
 		// rename to `result`
@@ -60,7 +61,7 @@ namespace qk::media {
 		// location
 		if (j.contains("location")) {
 			if (!j["location"].is_number_unsigned()) {
-				return std::string{ "`location` must be a uint. " };
+				return str{ "`location` must be a uint. " };
 			}
 
 			info.location = j["location"];
@@ -72,31 +73,31 @@ namespace qk::media {
 		}
 
 		// offset
-		if (!j.contains("offset")) return std::string{ "`offset` is required!" };
-		if (!j["offset"].is_number_unsigned()) return std::string{ "`offset` must be a uint." };
+		if (!j.contains("offset")) return str{ "`offset` is required!" };
+		if (!j["offset"].is_number_unsigned()) return str{ "`offset` must be a uint." };
 
 		info.offset = j["offset"];
 
 		// type
-		if (!j.contains("type")) return std::string{ "`type` is required!" };
-		if (!j["type"].is_string()) return std::string{ "`type` must be a string" };
+		if (!j.contains("type")) return str{ "`type` is required!" };
+		if (!j["type"].is_string()) return str{ "`type` must be a string" };
 
 		info.component.type = EScalarType_cast(j["type"]);
 
 		// multiplicity
-		if (!j.contains("multiplicity")) return std::string{ "`multiplicity` is required!" };
-		if (!j["multiplicity"].is_string()) return std::string{ "`multiplicity` must be a string!" };
+		if (!j.contains("multiplicity")) return str{ "`multiplicity` is required!" };
+		if (!j["multiplicity"].is_string()) return str{ "`multiplicity` must be a string!" };
 		info.component.multiplicity = EScalarMultiplicity_cast(j["multiplicity"]);
 
 		// count
-		if (!j.contains("count")) return std::string{ "`count` is required!" };
-		if (!j["count"].is_number_unsigned()) return std::string{ "`count` must be a uint." };
+		if (!j.contains("count")) return str{ "`count` is required!" };
+		if (!j["count"].is_number_unsigned()) return str{ "`count` must be a uint." };
 		info.component.count = j["count"];
 
 		// normalize
 		if (j.contains("normalize")) {
 			const auto& norm = j["normalize"];
-			if (!norm.is_boolean() || norm.is_number_unsigned()) return std::string{ "`normalize` must be a bool or uint." };
+			if (!norm.is_boolean() || norm.is_number_unsigned()) return str{ "`normalize` must be a bool or uint." };
 			info.component.normalize = (bool)norm;
 		}
 
@@ -104,7 +105,7 @@ namespace qk::media {
 	}
 	
 
-	Result <rhi::VertexAttributeBinding, std::string> VertexAttributeBindingFromJSON(const json& j) {
+	Result <rhi::VertexAttributeBinding, str> VertexAttributeBindingFromJSON(const json& j) {
 		u32 location = 0;
 		assert(j.is_object());
 		assert(j.contains("stride"));
@@ -118,13 +119,13 @@ namespace qk::media {
 			result.input_rate = rhi::PerVertex;
 
 		// stride
-		if (!j.contains("stride")) return std::string{ "Missing `stride` value!" };
+		if (!j.contains("stride")) return str{ "Missing `stride` value!" };
 
-		if (!j["stride"].is_number_unsigned()) return std::string{ "`stride` must be a uint." };
+		if (!j["stride"].is_number_unsigned()) return str{ "`stride` must be a uint." };
 
 		result.stride = j["stride"];
 
-		if (!j.contains("attributes")) return std::string{ "No attributes!" };
+		if (!j.contains("attributes")) return str{ "No attributes!" };
 
 		const auto& attribute_list = j["attributes"];
 
@@ -132,7 +133,7 @@ namespace qk::media {
 
 			const auto& attr_result = VertexAttributeFromJSON(attribute_contents, location);
 
-			if (attr_result.has_error()) return std::string{ attr_result.error() };
+			if (attr_result.has_error()) return str{ attr_result.error() };
 
 			result.attributes.push_back(attr_result.value());
 
@@ -148,7 +149,7 @@ namespace qk::media {
 	// ---------------------------------------------------------------------------------------------------
 
 
-	Result<VertexLayoutMap, std::string> VertexLayoutsFromJSON(const json& j) {
+	Result<VertexLayoutMap, str> VertexLayoutsFromJSON(const json& j) {
 
 		assert(j.is_object());
 
@@ -160,7 +161,7 @@ namespace qk::media {
 
 			for (const auto& binding_info : layout_info["bindings"]) {
 				const auto& layout_res = VertexAttributeBindingFromJSON(binding_info);
-				if (layout_res.has_error()) return std::string{ layout_res.error() };
+				if (layout_res.has_error()) return str{ layout_res.error() };
 				result[layout_name].push_back(layout_res.value());
 
 			}
@@ -175,29 +176,7 @@ namespace qk::media {
 
 
 
-	Result<rhi::Descriptor, std::string> DescriptorFromJSON(size_t id, const json& j) {
-		if (j.empty()) return std::string{ std::format("Descriptor id={} was empty", id) };
 
-		if (!j.contains("type")) return std::string{std::format("Descriptor id={} did not have a type", id)};
-
-		return std::string{};
-	}
-
-
-
-
-	Result<rhi::DescriptorSet_createinfo, std::string> DescriptorSetFromJSON(const std::string& id, const json& j) {
-		if (j.empty()) return std::string{ std::format("Descriptor set `{}` was empty", id) };
-		
-		return std::string{};
-	}
-
-
-
-
-	Result<rhi::DescriptorSet_createinfo, std::string> DescriptorSetsFromJSON(const json& j) {
-		return std::string{};
-	}
 
 
 
@@ -227,50 +206,53 @@ namespace qk::media {
 	// ---------------------------------------------------------------------------------------------------
 
 
-	Result<rhi::Material_createinfo, std::string> MaterialFromJSON(const std::string& mat_name, const json& j) {
+	Result<rhi::Material_createinfo, str> MaterialFromJSON(const str& mat_name, const json& j) {
 
-		if (j.empty()) return std::string{ std::format("Material `{}` was empty.", mat_name) };
+		if (j.empty()) return str{ format("Material `{}` was empty.", mat_name) };
 
 		// get the vertex shader source code
-		std::string vertSrc = "";
+		str vertSrc = "";
 		if (j.contains("vert_shader_path")) {
-			if (!j["vert_shader_path"].is_string()) return std::string{ "key `vert_shader_path` must be a string." };
+			if (!j["vert_shader_path"].is_string()) return str{ "key `vert_shader_path` must be a string." };
 			vertSrc = loadText(j["vert_shader_path"]);
 		}
 		else if (j.contains("vert_shader_source")) {
-			if (!j["vert_shader_path"].is_string()) return std::string{ "key `vert_shader_source` must be a string." };
+			if (!j["vert_shader_path"].is_string()) return str{ "key `vert_shader_source` must be a string." };
 			vertSrc = j["vert_shader_path"];
 
 		}
 		else {
-			return std::string{ "Material must contain vertex shader source code or path" };
+			return str{ "Material must contain vertex shader source code or path" };
 		}
 
 
 		// get the frag shader source code
-		std::string fragSrc = "";
+		str fragSrc = "";
 		if (j.contains("frag_shader_path")) {
-			if (!j["frag_shader_path"].is_string()) return std::string{ "key `frag_shader_path` must be a string." };
+			if (!j["frag_shader_path"].is_string()) return str{ "key `frag_shader_path` must be a string." };
 			fragSrc = loadText(j["frag_shader_path"]);
 		}
 		else if (j.contains("frag_shader_source")) {
-			if (!j["frag_shader_path"].is_string()) return std::string{ "key `frag_shader_source` must be a string." };
+			if (!j["frag_shader_path"].is_string()) return str{ "key `frag_shader_source` must be a string." };
 			fragSrc = j["frag_shader_path"];
 
 		}
 		else {
-			return std::string{ "Material must contain vertex shader source code or path" };
+			return str{ "Material must contain vertex shader source code or path" };
 		}
+
+		return rhi::Material_createinfo{ vertSrc, fragSrc, {} };
+
 	}
 
 
 
 
-	Result <MaterialLayoutMap, std::string> MaterialsFromJSON(const json& j) {
+	Result <MaterialLayoutMap, str> MaterialsFromJSON(const json& j) {
 
 		assert(j.contains("mat_solid"));
 
-		if (!j.is_object()) return std::string{ "All Material descriptions must be objects." };
+		if (!j.is_object()) return str{ "All Material descriptions must be objects." };
 
 		MaterialLayoutMap result;
 
@@ -282,7 +264,7 @@ namespace qk::media {
 				result[mat_name] = material.value();
 			}
 			else {
-				return std::string{ material.error() };
+				return str{ material.error() };
 			}
 
 		}
@@ -293,7 +275,123 @@ namespace qk::media {
 	}
 
 
+	Result<rhi::Descriptor, str> DescriptorFromJSON(const json& j, u32 index, const str& name) {
+		assert(j.is_object());
+		assert(j.contains("type") && j["type"].is_string());
+		assert(j.contains("binding") && j["binding"].is_number_unsigned());
 
+		if (!j.is_object())
+			return str{format("Descriptor set `{}`, index {}: Descriptor is a non-object.", name, index)};
+
+		if (!j.contains("type"))
+			return str{ format("Descriptor set `{}`, index {}: Descriptor does not have required `type` field.", name, index) };
+		if (!j["type"].is_string())
+			return str{ format("Descriptor set `{}`, index {}: Descriptor has a non-string `type` field.", name, index) };
+
+		if (!j.contains("binding"))
+			return str{ format("Descriptor set `{}`, index {}: Descriptor does not have required `binding` field.", name, index) };
+		if (!j["binding"].is_number_unsigned())
+			return str{ format("Descriptor (set `{}`, index {}): Descriptor has a non-uint `type` field.", name, index) };
+
+		if (!j.contains("id"))
+			return str{ format("Descriptor set `{}`, index {}: Descriptor does not have required `id` field.", name, index) };
+		if (!j["id"].is_string())
+			return str{ format("Descriptor (set `{}`, index {}): Descriptor has a non-string `id` field.", name, index) };
+
+
+		rhi::Descriptor result = {};
+
+		result.type = EDescriptorType_cast(j["type"]);
+		result.binding = j["binding"];
+
+		switch (result.type)
+		{
+			case rhi::EDescriptorType::Texture:
+
+				return str{ "Texture not implemented yet." };
+
+
+
+
+
+
+
+
+
+			case rhi::EDescriptorType::UniformBuffer:
+
+				result.uniform.hBuf = rhi::UniformBuffer_ctor();
+				result.id = str{j["id"]}.c_str();
+				return result;
+
+
+
+			case rhi::EDescriptorType::StorageBuffer:
+				return str{ "SSBO not supported." };
+
+			default:
+				return str{ "Unsupported descriptor type" };
+		}
+
+
+	}
+
+
+	Result<rhi::DescriptorSet_createinfo, str> DescriptorSetFromJSON(const json& j, const str& name) {
+
+		std::cout << j;
+
+
+		assert(j.is_array());
+		u32 i = 0;
+		rhi::DescriptorSet_createinfo descriptor_set = {};
+		for (const auto& descriptor : j) {
+			auto desc = DescriptorFromJSON(descriptor, i, name);
+
+			if (!desc) return str{ desc.error() };
+			descriptor_set.push_back(desc.value());
+
+			i++;
+		}
+
+		return descriptor_set;
+
+
+	}
+
+
+	Result<DescriptorSetLayoutMap, str> DescriptorSetsFromJSON(const json& j) {
+		
+		
+		
+		assert(j.is_object());
+		assert(!j.empty());
+
+		assert(j.contains("CameraDataDescriptorSet"));
+
+
+
+
+
+
+
+		DescriptorSetLayoutMap result;
+
+
+		for (const auto& [descriptorSetName, descriptors] : j.items()) {
+			
+			auto res = DescriptorSetFromJSON(descriptors, descriptorSetName);
+
+			if (!res) return str{ res.error() };
+
+			result[descriptorSetName] = res.value();
+
+		}
+
+		return result;
+
+
+	}
 
 
 

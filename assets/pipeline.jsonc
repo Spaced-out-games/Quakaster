@@ -34,8 +34,8 @@
 	
 	"materials": {
 		"mat_solid": {
-			"vert_shader_path": "mat_solid.vert",
-			"frag_shader_path": "mat_solid.frag",
+			"vert_shader_path": "assets/mat_solid.vert",
+			"frag_shader_path": "assets/mat_solid.frag",
 			"descriptor_set_labels": [
 				"CameraDataDescriptorSet"
 			]
