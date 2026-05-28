@@ -26,13 +26,10 @@ namespace qk::gfx::rhi {
 	}
 
 	bool DescriptorSet_bind(const HDescriptorSet& hDescriptorSet) {
-		return true; // TEMPORARY
 		QK_ASSERT(g_DescriptorSets.valid(hDescriptorSet));
 
 		const auto& DescriptorSet = g_DescriptorSets.get(hDescriptorSet);
 
-		//u8 binding = 0;
-		bool result = 0;
 		for (auto& desc : DescriptorSet) {
 
 
@@ -56,9 +53,10 @@ namespace qk::gfx::rhi {
 			default:
 				break;
 			}
-			if (!result) return 0;
+			
 
 		}
+		return 1;
 
 
 	}
