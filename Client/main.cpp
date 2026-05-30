@@ -41,7 +41,6 @@
 #include <spdlog/spdlog.h>
 
 #include <filesystem>
-
 using namespace qk::gfx;
 
 using namespace qk::media;

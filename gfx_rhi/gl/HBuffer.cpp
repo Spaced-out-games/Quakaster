@@ -151,25 +151,6 @@ namespace qk::gfx::rhi {
 		return true;
 	}
 
-	
-
-
-	bool InstanceBuffer_bind(const HInstanceBuffer& hIBuf) {
-		HBuffer hBuf = Handle_cast<HBuffer>(hIBuf);
-
-		bool ready = Buffer_initialized(hBuf);
-		QK_ASSERT(ready);
-		if (!g_Buffers.valid(hBuf)) return false;
-
-		auto& entry = g_Buffers.get(hBuf);
-
-		bool typesafe = entry.type == BufferType::Vertex;
-		QK_ASSERT(typesafe);
-
-		glBindBuffer(GL_ARRAY_BUFFER, entry.hBuffer);
-
-		return true;
-	}
 
 
 

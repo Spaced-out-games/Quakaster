@@ -44,7 +44,7 @@ set(RHI_SOURCES
   "gl/HVertexLayout.cpp"
 
 
- "gl/Draw.cpp" "gl/HTexture.cpp" "gl/HDescriptorSet.cpp" "gl/HMaterial.cpp" "gl/HCommandBuffer.cpp" "gl/HMesh.cpp")
+ "gl/Draw.cpp" "gl/HTexture.cpp" "gl/HDescriptorSet.cpp" "gl/HMaterial.cpp" "gl/HCommandBuffer.cpp" "gl/HMesh.cpp" "gl/rhi_Handle.cpp")
 
 # ------------------------------------------------------------------------------
 # Backend selection

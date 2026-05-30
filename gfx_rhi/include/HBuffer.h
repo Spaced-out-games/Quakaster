@@ -2,7 +2,10 @@
 #include <Handle.h>
 #include <cstdint>
 #include "core.h"
+//#include <rhi_Handle.h>
 using qk::Handle;
+
+
 
 namespace qk::gfx::rhi {
 
@@ -164,41 +167,6 @@ namespace qk::gfx::rhi {
 
 
 
-
-	// ============================================================
-	// Storage Buffer API
-	// ============================================================
-	// using HStorageBuffer = HBuffer;
-
-
-
-
-
-	// ============================================================
-	// Instance Buffer API
-	// ============================================================
-
-	struct HInstanceBuffer : Handle {};
-
-
-	inline HInstanceBuffer InstanceBuffer_ctor() {
-		return Handle_cast<HInstanceBuffer>(Buffer_ctor(BufferType::Vertex, BufferUsage::StreamDraw));
-	}
-
-	inline bool InstanceBuffer_dtor(const HInstanceBuffer& hInstanceBuffer) {
-		return Buffer_dtor(Handle_cast<HBuffer>(hInstanceBuffer));
-	}
-
-	bool InstanceBuffer_bind(const HInstanceBuffer& hBuf);
-
-
-	inline bool InstanceBuffer_upload(const HInstanceBuffer& hInstanceBuffer, const void* data, u32 count, u32 elem_size) {
-		return Buffer_upload(Handle_cast<HBuffer>(hInstanceBuffer), data, count, elem_size);
-	}
-
-
-	// TODO: deprecate any future buffer bindings at this layer of the RHI once descriptor sets and
-	// friends are well-defined and proven.
 
 
 

@@ -4,6 +4,7 @@
 /// **************************************************************************************************
 #include <cassert>
 #include <stdint.h>
+#include <string_view>
 #include <string>
 
 
@@ -55,3 +56,4 @@ using f64 = double;
 static_assert((sizeof(double) == 8));
 
 using str = std::string;
+using str_view = std::string_view;
