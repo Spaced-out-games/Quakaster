@@ -8,8 +8,8 @@
 namespace qk::gfx::rhi {
 
 	struct Mesh_createinfo {
-		std::vector<HVertexBuffer>	hVertexBuffers;
-		HIndexBuffer				hIndexBuffer;
+		std::vector<RVertexBuffer>	hVertexBuffers;
+		RIndexBuffer				hIndexBuffer;
 		VertexLayout_createinfo		layout_info;
 		HMaterial					hMaterial;
 	};
@@ -24,9 +24,9 @@ namespace qk::gfx::rhi {
 
 	HMaterial Mesh_getMaterial(const HMesh& hMesh);
 
-	HIndexBuffer Mesh_getIndexBuffer(const HMesh& hMesh);
+	RIndexBuffer Mesh_getIndexBuffer(const HMesh& hMesh);
 
-	const std::vector<HVertexBuffer>& const Mesh_getVertexBuffers(const HMesh& hMesh);
+	const std::vector<RVertexBuffer>& const Mesh_getVertexBuffers(const HMesh& hMesh);
 
 	bool Mesh_valid(const HMesh& hMesh);
 

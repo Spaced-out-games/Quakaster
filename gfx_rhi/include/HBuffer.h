@@ -1,9 +1,9 @@
 #pragma once
-#include <Handle.h>
+//#include <Handle.h>
 #include <cstdint>
 #include "core.h"
-//#include <rhi_Handle.h>
-using qk::Handle;
+#include <rhi_Resource.h>
+//using qk::Handle;
 
 
 
@@ -23,62 +23,65 @@ namespace qk::gfx::rhi {
 		Storage
 	};
 
-	struct HBuffer : Handle {};
 
+	struct RBuffer : Resource {};
 
 
 	// ============================================================
 	// Core API
 	// ============================================================
 
-	HBuffer Buffer_ctor(BufferType type, BufferUsage usage = BufferUsage::StaticDraw);
+	RBuffer Buffer_ctor(const str_view& label, BufferType type, BufferUsage usage = BufferUsage::StaticDraw);
+	
+	str_view Buffer_name(const RBuffer& hUniformBuffer);
 
-	bool Buffer_dtor(const HBuffer& hBuf);
-
+	bool Buffer_dtor(const RBuffer& rBuf);
 	bool Buffer_upload(
-		const HBuffer& hBuf,
+		const RBuffer& hBuf,
 		const void* data,
 		u32 count,
 		u32 elem_size);
 
-	bool Buffer_valid(const HBuffer& hBuf);
+	bool Buffer_upload(const RBuffer& rBuf, const void* pIndices, u32 count, u32 size);
 
-	bool Buffer_initialized(const HBuffer& hBuf);
+	bool Buffer_valid(const RBuffer& rBuf);
 
-	BufferType Buffer_type(const HBuffer& hBuf);
+
+	bool Buffer_initialized(const RBuffer& hBuf);
+
+	BufferType Buffer_type(const RBuffer& hBuf);
 
 	// ============================================================
 	// Index Buffer API
 	// ============================================================
 
-	// using HIndexBuffer = HBuffer;
 
-	struct HIndexBuffer: Handle {};
 
-	inline HIndexBuffer IndexBuffer_ctor(BufferUsage usage = BufferUsage::StaticDraw) {
-		return Handle_cast<HIndexBuffer>(Buffer_ctor(BufferType::Index, usage));
+	struct RIndexBuffer : Resource {};
+	
+
+	inline RIndexBuffer IndexBuffer_ctor(str_view label, BufferUsage usage = BufferUsage::StaticDraw) {
+		return RIndexBuffer(Buffer_ctor(label, BufferType::Index, usage));
 	}
 
-	inline bool IndexBuffer_dtor(const HIndexBuffer& hIndexBuffer) {
-		return Buffer_dtor(Handle_cast<HBuffer>(hIndexBuffer));
-	}
 
-	bool IndexBuffer_bind(const HIndexBuffer& hBuf);
+
+	bool IndexBuffer_bind(const RIndexBuffer& hBuf);
 
 	inline bool IndexBuffer_upload(
-		const HIndexBuffer& hIndexBuffer,
+		const RIndexBuffer& hIndexBuffer,
 		const void* data,
 		u32 count,
 		u32 elem_size) {
-		return Buffer_upload(Handle_cast<HBuffer>(hIndexBuffer), data, count, elem_size);
+		return Buffer_upload(RBuffer(hIndexBuffer), data, count, elem_size);
 	}
 
-	inline bool IndexBuffer_valid(const HIndexBuffer& hIndexBuffer) {
-		return Buffer_valid(Handle_cast<HBuffer>(hIndexBuffer));
+	inline bool IndexBuffer_valid(const RIndexBuffer& hIndexBuffer) {
+		return Buffer_valid(RBuffer(hIndexBuffer));
 	}
 
-	inline bool IndexBuffer_initialized(const HIndexBuffer& hIndexBuffer) {
-		return Buffer_initialized(Handle_cast<HBuffer>(hIndexBuffer));
+	inline bool IndexBuffer_initialized(const RIndexBuffer& hIndexBuffer) {
+		return Buffer_initialized(RBuffer(hIndexBuffer));
 	}
 
 	// ============================================================
@@ -86,88 +89,94 @@ namespace qk::gfx::rhi {
 	// ============================================================
 
 
-	struct HVertexBuffer : Handle {};
+	struct RVertexBuffer : Resource {};
 
-	inline HVertexBuffer VertexBuffer_ctor(BufferUsage usage = BufferUsage::StaticDraw) {
-		return Handle_cast<HVertexBuffer>(Buffer_ctor(BufferType::Vertex, usage));
+
+
+	inline RVertexBuffer VertexBuffer_ctor(str_view label, BufferUsage usage = BufferUsage::StaticDraw) {
+		return RVertexBuffer(Buffer_ctor(label, BufferType::Vertex, usage));
 	}
 
-	inline bool VertexBuffer_dtor(const HVertexBuffer& hVertexBuffer) {
-		return Buffer_dtor(Handle_cast<HBuffer>(hVertexBuffer));
+
+	inline bool VertexBuffer_dtor(const RVertexBuffer& hVertexBuffer) {
+		return Buffer_dtor(RBuffer(hVertexBuffer));
 	}
 
 
 
-	bool VertexBuffer_bind(const HVertexBuffer& hBuf);
+	bool VertexBuffer_bind(const RVertexBuffer& hBuf);
+
+	bool VertexBuffer_bind(const RVertexBuffer& hVBuf);
+
 
 	inline bool VertexBuffer_upload(
-		const HVertexBuffer& hVertexBuffer,
+		const RVertexBuffer& hVertexBuffer,
 		const void* data,
 		u32 count,
 		u32 elem_size) {
-		return Buffer_upload(Handle_cast<HBuffer>(hVertexBuffer), data, count, elem_size);
+		
+		return Buffer_upload(RBuffer(hVertexBuffer), data, count, elem_size);
 	}
 
+
+
 	template <class vertex_t>
-	inline bool VertexBuffer_upload(const HVertexBuffer& hVertexBuffer, const std::vector<vertex_t>& vertices) {
+	inline bool VertexBuffer_upload(const RVertexBuffer& hVertexBuffer, const std::vector<vertex_t>& vertices) {
 		return VertexBuffer_upload(hVertexBuffer, vertices.data(), vertices.size(), sizeof(vertex_t));
 	}
 
-	inline bool VertexBuffer_valid(const HVertexBuffer& hVertexBuffer) {
-		return Buffer_valid(Handle_cast<HBuffer>(hVertexBuffer));
+	inline bool VertexBuffer_valid(const RVertexBuffer& hVertexBuffer) {
+		return Buffer_valid(RBuffer(hVertexBuffer));
 	}
 
-	inline bool VertexBuffer_initialized(const HVertexBuffer& hVertexBuffer) {
-		return Buffer_initialized(Handle_cast<HBuffer>(hVertexBuffer));
+	inline bool VertexBuffer_initialized(const RVertexBuffer& hVertexBuffer) {
+		return Buffer_initialized(RBuffer(hVertexBuffer));
 	}
 
 	template <class vertex_t>
-	HVertexBuffer VertexBuffer_ctor(BufferUsage usage, const std::vector<vertex_t>& vertices) {
-		HVertexBuffer hVertexBuffer = VertexBuffer_ctor(usage);
+	RVertexBuffer VertexBuffer_ctor(str_view label, BufferUsage usage, const std::vector<vertex_t>& vertices) {
+		RVertexBuffer hVertexBuffer = VertexBuffer_ctor(label, usage);
 		VertexBuffer_upload(hVertexBuffer, vertices);
 		return hVertexBuffer;
 	}
 
 
 	// ============================================================
-	// Uniform Buffer API
+	// Uniform Buffer API: needs converted into a raw descriptor tbh
 	// ============================================================
 
 
-	struct HUniformBuffer : Handle {};
+	struct RUniformBuffer : Resource {};
 
 
-	inline HUniformBuffer UniformBuffer_ctor() {
-		return Handle_cast<HUniformBuffer>(Buffer_ctor(BufferType::Uniform, BufferUsage::DynamicDraw));
+	inline RUniformBuffer UniformBuffer_ctor(str_view label) {
+		return RUniformBuffer(Buffer_ctor(label, BufferType::Uniform, BufferUsage::DynamicDraw));
 	}
 
-	inline bool UniformBuffer_dtor(const HUniformBuffer& hUniformBuffer) {
-		return Buffer_dtor(Handle_cast<HBuffer>(hUniformBuffer));
+	inline bool UniformBuffer_dtor(const RUniformBuffer& hUniformBuffer) {
+		return Buffer_dtor(RBuffer(hUniformBuffer));
 	}
 	// TODO: deprecate uniform buffer bindings at this layer of the RHI once descriptor sets and
 	// friends are well-defined and proven to work. Might be worth removing 'slot'
-	bool UniformBuffer_bind(const HUniformBuffer& hBuf, u8 slot);
+	bool UniformBuffer_bind(const RUniformBuffer& hUBuf, uint8_t slot);
+
 
 	inline bool UniformBuffer_upload(
-		const HUniformBuffer& hUniformBuffer,
+		const RUniformBuffer& hUniformBuffer,
 		const void* data,
 		u32 count,
 		u32 elem_size) {
-		return Buffer_upload(Handle_cast<HBuffer>(hUniformBuffer), data, count, elem_size);
+		return Buffer_upload(RBuffer(hUniformBuffer), data, count, elem_size);
 	}
 
 
-	inline bool UniformBuffer_valid(const HUniformBuffer& hUniformBuffer) {
-		return Buffer_valid(Handle_cast<HBuffer>(hUniformBuffer));
+	inline bool UniformBuffer_valid(const RUniformBuffer& hUniformBuffer) {
+		return Buffer_valid(RBuffer(hUniformBuffer));
 	}
 
-	inline bool UniformBuffer_initialized(const HUniformBuffer& hUniformBuffer) {
-		return Buffer_initialized(Handle_cast<HBuffer>(hUniformBuffer));
+	inline bool UniformBuffer_initialized(const RUniformBuffer& hUniformBuffer) {
+		return Buffer_initialized(RBuffer(hUniformBuffer));
 	}
-
-
-
-
 
 
 

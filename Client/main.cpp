@@ -60,7 +60,7 @@ std::vector<Vertex> g_Vertices = {
 
 
 
-
+/*
 const char* vertexSource = R"(
 #version 330 core
 
@@ -97,7 +97,7 @@ void main()
         1.0);
 }
 )";
-
+*/
 
 struct CameraData {
 	glm::mat4 view = { 1.0f };
@@ -117,7 +117,7 @@ struct DemoClientApplication : qk::Application {
 
 	CameraData data;
 	rhi::HCommandBuffer CmdBuf;
-	rhi::HUniformBuffer ubo;
+	rhi::RUniformBuffer ubo;
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
 	void add_symlinks() {
@@ -173,22 +173,20 @@ struct DemoClientApplication : qk::Application {
 		}
 		rhi::HVertexLayout hLayout = rhi::VertexLayout_ctor(res.value()["Vertex"]);
 
-		rhi::HVertexArray vao = rhi::VertexArray_ctor();
+		rhi::HVertexArray vao = rhi::VertexArray_ctor("placeholder");
 		rhi::VertexArray_bind(vao);
 
 
 
 		data.view = glm::translate(data.view, { 0,0.5,0 });
 
-		ubo = rhi::UniformBuffer_ctor();
-		rhi::UniformBuffer_upload(ubo, &data, 1, sizeof(data));
-		//rhi::UniformBuffer_bind(ubo, 0); // test
+
 
 
 
 
 		
-		rhi::HVertexBuffer vbo = rhi::VertexBuffer_ctor(rhi::StaticDraw);
+		rhi::RVertexBuffer vbo = rhi::VertexBuffer_ctor("vbo", rhi::StaticDraw);
 		rhi::VertexBuffer_upload(vbo, g_Vertices);
 
 		rhi::VertexLayout_apply(hLayout);
@@ -200,25 +198,14 @@ struct DemoClientApplication : qk::Application {
 
 		auto sets = qk::media::DescriptorSetsFromJSON(j["descriptor_sets"]).value();
 
-		//sets["CameraData"]
-		//rhi::DescriptorSet_createinfo descinfo;
-		/*
-		descinfo.push_back(rhi::Descriptor{
-			
-			.type = rhi::EDescriptorType::UniformBuffer,
-			.binding = 0,
-			.id = "CameraData",
-			.uniform = {
-				.hBuf = ubo,
-			}
-		});
-		*/
+
 		
 		const auto& a = sets["CameraDataDescriptorSet"];
 		
 		
-		
-		
+		rhi::RUniformBuffer ubo = rhi::UniformBuffer_ctor("CameraData");
+
+		//const u64 placeholder_hash = 7016179244599996666ul;
 
 
 		

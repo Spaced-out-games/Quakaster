@@ -14,6 +14,7 @@ namespace qk {
 		uint32_t generation;
 	};
 
+	
 	template <typename To, typename From>
 	To Handle_cast(const From& from) {
 

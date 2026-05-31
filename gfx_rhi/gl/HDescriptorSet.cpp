@@ -41,10 +41,9 @@ namespace qk::gfx::rhi {
 					Texture_bind(desc.texture.hTex, desc.binding);
 					break;
 				case EDescriptorType::UniformBuffer:
-					const auto hUBuf = Handle_cast<HUniformBuffer>(desc.uniform.hBuf);
-					QK_ASSERT(UniformBuffer_valid(Handle_cast<HUniformBuffer>(hUBuf)));
-					if (!UniformBuffer_valid(hUBuf)) { return 0; }
-					UniformBuffer_bind(hUBuf, desc.binding);
+					QK_ASSERT(UniformBuffer_valid(desc.uniform.hBuf));
+					if (!UniformBuffer_valid(desc.uniform.hBuf)) { return 0; }
+					UniformBuffer_bind(desc.uniform.hBuf, desc.binding);
 					break;
 				case EDescriptorType::StorageBuffer:
 					throw std::runtime_error("SSBO not implemented.");
@@ -79,7 +78,7 @@ namespace qk::gfx::rhi {
 					return 0;
 				break;
 			case EDescriptorType::UniformBuffer:
-				if(!Buffer_valid(Handle_cast<HBuffer>(desc.uniform.hBuf)))
+				if(!Buffer_valid(RBuffer(desc.uniform.hBuf)))
 					return 0;
 				break;
 			case EDescriptorType::StorageBuffer:
@@ -109,8 +108,7 @@ namespace qk::gfx::rhi {
 					if (!Texture_valid(desc.texture.hTex))
 						return;
 				case EDescriptorType::UniformBuffer:
-					const auto hUBuf = Handle_cast<HUniformBuffer>(desc.uniform.hBuf);
-					if (!UniformBuffer_valid(hUBuf))
+					if (!UniformBuffer_valid(desc.uniform.hBuf))
 						return;
 					ShaderProgram_bind_uniform_block(hProgram, desc.id.c_str(), desc.binding);
 					break;

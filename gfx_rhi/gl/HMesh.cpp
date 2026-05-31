@@ -4,8 +4,8 @@
 namespace qk::gfx::rhi {
 
 	struct Mesh_meta {
-		std::vector<HVertexBuffer>	hVertexBuffers;
-		HIndexBuffer				hIndexBuffer;
+		std::vector<RVertexBuffer>	hVertexBuffers;
+		RIndexBuffer				hIndexBuffer;
 		HVertexArray				hVertexArray;
 		HMaterial					hMaterial;
 
@@ -19,7 +19,7 @@ namespace qk::gfx::rhi {
 		Mesh_meta meta;
 
 		// first, make the VertexArray
-		meta.hVertexArray = rhi::VertexArray_ctor();
+		meta.hVertexArray = rhi::VertexArray_ctor("placeholder");
 		rhi::VertexArray_bind(meta.hVertexArray);
 
 		
@@ -66,12 +66,12 @@ namespace qk::gfx::rhi {
 		return {};
 	}
 
-	HIndexBuffer Mesh_getIndexBuffer(const HMesh& hMesh) {
+	RIndexBuffer Mesh_getIndexBuffer(const HMesh& hMesh) {
 		if (Mesh_valid(hMesh)) return g_Meshes.get(hMesh).hIndexBuffer;
 		return {};
 	}
 
-	const std::vector<HVertexBuffer>& const Mesh_getVertexBuffers(const HMesh& hMesh) {
+	const std::vector<RVertexBuffer>& const Mesh_getVertexBuffers(const HMesh& hMesh) {
 		QK_ASSERT(Mesh_valid(hMesh));
 		return g_Meshes.get(hMesh).hVertexBuffers;
 

@@ -9,9 +9,14 @@
 
 namespace qk::gfx::rhi {
 
+	struct VertexArray_impl {
+		GLuint hVertexArray = 0;
+	};
 
-	static inline qk::HandleResourceRegistry<GLuint, HVertexArray> g_VertexArrays;
 
+	//static inline qk::HandleResourceRegistry<GLuint, HVertexArray> g_VertexArrays;
+
+	static inline rhi::ResourceCache<VertexArray_impl, HVertexArray> g_VertexArrays;
 
 
 	inline GLenum EScalarType_cast(EScalarType type)
@@ -49,138 +54,37 @@ namespace qk::gfx::rhi {
 		}
 	}
 
-	HVertexArray VertexArray_ctor() {
-		GLuint GL_vertexArray = 0;
-		glGenVertexArrays(1, &GL_vertexArray);
+	HVertexArray VertexArray_ctor(str_view label) {
+		GLuint hVertexArray = 0;
+		glGenVertexArrays(1, &hVertexArray);
 
 
-		return Handle_cast<HVertexArray, Handle>(g_VertexArrays.insert(GL_vertexArray));
+		return HVertexArray(g_VertexArrays.insert(label, VertexArray_impl{hVertexArray}));
 
 	}
 
 	void VertexArray_dtor(HVertexArray& hVertexArray) {
 		if (!g_VertexArrays.valid(hVertexArray)) return;
 
-		GLuint target = g_VertexArrays.get(hVertexArray);
+		auto* pVertexArray = g_VertexArrays.try_get(hVertexArray);
+
+		if (!pVertexArray) return;
+		glDeleteVertexArrays(1, &pVertexArray->hVertexArray);
 		g_VertexArrays.destroy(hVertexArray);
-		glGenVertexArrays(1, &target);
 		
 	}
 
 	void VertexArray_bind(const HVertexArray& hVertexArray) {
-		
-		if (!g_VertexArrays.valid(hVertexArray)) return;
-		GLuint target = g_VertexArrays.get(hVertexArray);
+		auto* pVertexArray = g_VertexArrays.try_get(hVertexArray);
+		if (!pVertexArray) return;
 
-		glBindVertexArray(target);
+		glBindVertexArray(pVertexArray->hVertexArray);
 
 	}
 
 	bool VertexArray_valid(const HVertexArray& hVertexArray) {
 		return g_VertexArrays.valid(hVertexArray);
 	}
-
-	/*
-	HVertexArray VertexArray_ctor() {
-		HVertexArray handle;
-		GLuint native = 0;
-
-		glGenVertexArrays(1, &native);
-
-		set(handle, native);
-
-		return handle;
-
-	}
-
-	void VertexArray_dtor(HVertexArray& hVertexArray) {
-		QK_ASSERT(hVertexArray.valid());
-		GLuint gl_vao = get(hVertexArray);
-		glDeleteVertexArrays(1, &gl_vao);
-		hVertexArray = nullptr;
-	}
-
-	void VertexArray_bind(const HVertexArray& hVertexArray) {
-		QK_ASSERT(hVertexArray.valid());
-		glBindVertexArray(get(hVertexArray));
-	}
-
-	void VertexArray_unbind() {
-		glBindVertexArray(0);
-	}
-	*/
-	/*
-	HVertexArrayRef VertexArray_get_current_bound() noexcept {
-		GLint h = 0;
-		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &h);
-		GLuint native = (GLuint)(h);
-
-		HVertexArray handle;
-		set<HVertexArrayTag, GLuint>(handle, native);
-
-		return handle.copy();
-
-	}
-	*/
-	/*
-	void VertexArray_applyLayout(
-		const HVertexArray& hVertexArray,
-		const HVertexBuffer& hVertexBuffer,
-		const HVertexBufferLayout& hLayout
-	) {
-		QK_ASSERT(hVertexBuffer.valid());
-		QK_ASSERT(hVertexArray.valid());
-		QK_ASSERT(hLayout.valid());
-
-
-		VertexArray_bind(hVertexArray);
-		VertexBuffer_bind(hVertexBuffer);
-
-
-		VertexBufferLayoutDesc* layout = get(hLayout);
-
-		if (!layout) return;
-
-		for (const auto& elem : layout->attributes())
-		{
-
-			std::cout << "location: " << elem.location;
-			std::cout << "\nbinding: " << elem.binding;
-			std::cout << "\noffset: " <<elem.offset << "\n\n";
-
-			glEnableVertexAttribArray(elem.location);
-
-			if (EScalarType_isInteger(elem.attr.scalar.type) && !elem.attr.normalize)
-			{
-				glVertexAttribIPointer(
-					elem.location,
-					elem.attr.scalar.count,
-					EScalarType_cast(elem.attr.scalar.type),
-					layout->stride(elem.binding),
-					(void*)(uintptr_t)elem.offset
-				);
-			}
-			else
-			{
-				glVertexAttribPointer(
-					elem.location,
-					elem.attr.scalar.count,
-					EScalarType_cast(elem.attr.scalar.type),
-					elem.attr.normalize,
-					layout->stride(elem.binding),
-					(void*)(uintptr_t)elem.offset
-				);
-			}
-
-			glVertexAttribDivisor(
-				elem.location,
-				elem.rate == InputRate::Instance ? 1 : 0
-			);
-
-		}
-
-	}
-	*/
 
 
 

@@ -37,14 +37,14 @@ namespace qk::gfx::rhi {
 	};
 
 	struct UniformBuffer_desc {
-		HUniformBuffer hBuf;
+		RUniformBuffer hBuf;
 		// NOTE: this has NOT been made memory safe! Consider using std::string instead!
 		// need more metadata that isn't supplied in the implementation
 	};
 
 	// Not implemented in GL 3.3
 	struct StorageBuffer_desc {
-		HBuffer hBuf;
+		RBuffer hBuf;
 	};
 
 

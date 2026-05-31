@@ -1,14 +1,18 @@
 #pragma once
-#include <Handle.h>
+#include <rhi_Resource.h>
+//#include <Handle.h>
 
-using qk::Handle;
+
+//using qk::Handle;
 
 namespace qk::gfx::rhi {
 
 
-	struct HVertexArray : Handle {};
 
-	HVertexArray VertexArray_ctor();
+	struct HVertexArray : Resource {};
+	//struct HVertexArray : Handle {};
+
+	HVertexArray VertexArray_ctor(str_view label);
 
 	void VertexArray_dtor(HVertexArray& hVertexArray);
 

@@ -1,4 +1,5 @@
 #include "HBuffer.h"
+#include <stdexcept>
 #include "glad/glad.h"
 #include "core.h"
 
@@ -39,114 +40,87 @@ namespace qk::gfx::rhi {
 
 
 
-	static inline qk::HandleResourceRegistry<BufferEntry, HBuffer> g_Buffers;
+	//static inline qk::HandleResourceRegistry<BufferEntry, HBuffer> g_Buffers;
+	static rhi::ResourceCache<BufferEntry, RBuffer> g_Rbuffers;
+	
 
 
-	HBuffer Buffer_ctor(BufferType type, BufferUsage usage) {
-
+	// new!
+	RBuffer Buffer_ctor(const str_view& label, BufferType type, BufferUsage usage) {
 		BufferEntry entry = {
 			.type = type,
 			.usage = usage,
 			.initialized = false
 		};
-
 		glGenBuffers(1, &entry.hBuffer);
-		return g_Buffers.insert(entry);
-	}
+		return g_Rbuffers.insert(label, entry);
 
-	bool Buffer_dtor(const HBuffer& hBuf) {
-		QK_ASSERT(g_Buffers.valid(hBuf));
-		if (!g_Buffers.valid(hBuf))
-			return false;
-
-		auto& entry = g_Buffers.get(hBuf);
-
-		glDeleteBuffers(1, &entry.hBuffer);
-		g_Buffers.destroy(hBuf);
-
-		return true;
 	}
 
 
 
-	bool Buffer_upload(const HBuffer& hBuf, const void* pIndices, uint32_t count, uint32_t elem_size) {
-		QK_ASSERT(g_Buffers.valid(hBuf));
-		if (!g_Buffers.valid(hBuf)) return 0;
-		auto& entry = g_Buffers.get(hBuf);
-		entry.elem_count = count;
-		entry.elem_size = elem_size;
+	str_view Buffer_name(const RBuffer& hUniformBuffer) {
+		return g_Rbuffers.label(hUniformBuffer);
+	}
 
-		glBindBuffer(BufferType_cast(entry.type), entry.hBuffer);
-		glBufferData(BufferType_cast(entry.type), count * elem_size, pIndices, BufferUsage_cast(entry.usage));
-		entry.initialized = true;
+
+	// new!
+	bool Buffer_dtor(const RBuffer& rBuf) {
+		QK_ASSERT(g_Rbuffers.valid(rBuf));
+		auto* pEntry = g_Rbuffers.try_get(rBuf);
+
+		if (!pEntry) return false;
+
+		glDeleteBuffers(1, &pEntry->hBuffer);
+		g_Rbuffers.destroy(rBuf);
 		return 1;
-	}
 
-	bool Buffer_valid(const HBuffer& hBuf) {
-		return g_Buffers.valid(hBuf);
-	}
-
-	bool Buffer_initialized(const HBuffer& hBuf) {
-		if (!g_Buffers.valid(hBuf))
-			return false;
-
-		return g_Buffers.get(hBuf).initialized;
-	}
-
-	bool VertexBuffer_bind(const HVertexBuffer& hIBuf) {
-		HBuffer hBuf = Handle_cast<HBuffer>(hIBuf);
-		bool ready = Buffer_initialized(hBuf);
-		QK_ASSERT(ready);
-		if (!g_Buffers.valid(hBuf)) return false;
-
-		auto& entry = g_Buffers.get(hBuf);
-
-		bool typesafe = entry.type == BufferType::Vertex;
-		QK_ASSERT(typesafe);
-
-		glBindBuffer(GL_ARRAY_BUFFER, entry.hBuffer);
-
-		return true;
 	}
 
 
 
-	bool IndexBuffer_bind(const HIndexBuffer& hIBuf) {
-		HBuffer hBuf = Handle_cast<HBuffer>(hIBuf);
 
-		bool ready = Buffer_initialized(hBuf);
-		QK_ASSERT(ready);
-		if (!g_Buffers.valid(hBuf)) return false;
 
-		auto& entry = g_Buffers.get(hBuf);
+	// new!
+	bool Buffer_upload(const RBuffer& rBuf, const void* pIndices, u32 count, u32 size) {
+		//QK_ASSERT(g_Rbuffers.valid(rBuf));
+		auto* pEntry = g_Rbuffers.try_get(rBuf);
+		if (!pEntry) return 0;
+		pEntry->elem_count = count;
+		pEntry->elem_size = size;
+		pEntry->initialized = true;
+		glBindBuffer(BufferType_cast(pEntry->type), pEntry->hBuffer);
+		glBufferData(BufferType_cast(pEntry->type), count * size, pIndices, BufferUsage_cast(pEntry->usage));
 
-		bool typesafe = entry.type == BufferType::Index;
-		QK_ASSERT(typesafe);
+		return 1;
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, entry.hBuffer);
 
-		return true;
 	}
 
-	bool UniformBuffer_bind(const HUniformBuffer& hUBuf, uint8_t slot) {
-		HBuffer hBuf = Handle_cast<HBuffer>(hUBuf);
-		bool ready = Buffer_initialized(hBuf);
-		QK_ASSERT(ready);
-		if (!g_Buffers.valid(hBuf)) return false;
-
-		auto& entry = g_Buffers.get(hBuf);
-
-		bool typesafe = entry.type == BufferType::Uniform;
-		QK_ASSERT(typesafe);
-
-		glBindBufferBase(GL_UNIFORM_BUFFER, slot, entry.hBuffer);
-
-		// WE ALSO NEED THESE:
-
-		// GLuint blockIndex = glGetUniformBlockIndex(programID, "EditArgs");
-		// glUniformBlockBinding(programID, blockIndex, 0);
+	// new!
+	bool Buffer_valid(const RBuffer& rBuf) {
+		auto res = g_Rbuffers.valid(rBuf);
+		return res;
+	}
 
 
+	// new!
+	bool Buffer_initialized(const RBuffer& hBuf) {
+		auto* pEntry = g_Rbuffers.try_get(hBuf);
+		if (!pEntry) return false;
+		return pEntry->initialized;
+	}
+
+
+	
+	bool VertexBuffer_bind(const RVertexBuffer& hVBuf) {
+		RBuffer rBuf(hVBuf);
+
+		auto* pEntry = g_Rbuffers.try_get(rBuf);
+
+		if (!pEntry || !pEntry->initialized || pEntry->type != BufferType::Vertex) return false;
+
+		glBindBuffer(GL_ARRAY_BUFFER, pEntry->hBuffer);
 
 		return true;
 	}
@@ -154,9 +128,45 @@ namespace qk::gfx::rhi {
 
 
 
-	BufferType Buffer_type(const HBuffer& hBuf) {
-		if (!g_Buffers.valid(hBuf)) return BufferType::Unknown;
-		return g_Buffers.get(hBuf).type;
+	bool IndexBuffer_bind(const RIndexBuffer& hIBuf) {
+		RBuffer rBuf(hIBuf);
+
+		auto* pEntry = g_Rbuffers.try_get(rBuf);
+
+		if (!pEntry || !pEntry->initialized || pEntry->type != BufferType::Index) return false;
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pEntry->hBuffer);
+
+		return true;
+
+	}
+
+	// these should be moved to descriptors tbh
+
+
+	bool UniformBuffer_bind(const RUniformBuffer& hUBuf, uint8_t slot) {
+		RBuffer rBuf(hUBuf);
+
+		auto* pEntry = g_Rbuffers.try_get(rBuf);
+
+		if (!pEntry || !pEntry->initialized || pEntry->type != BufferType::Uniform) return false;
+		
+		glBindBufferBase(GL_UNIFORM_BUFFER, slot, pEntry->hBuffer);
+
+		return true;
+
+	}
+
+
+
+	
+
+
+
+	BufferType Buffer_type(const RBuffer& hBuf) {
+		auto* pEntry = g_Rbuffers.try_get(hBuf);
+		if (!pEntry) return BufferType::Unknown;
+		return pEntry->type;
 	}
 
 }
