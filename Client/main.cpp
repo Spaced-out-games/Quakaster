@@ -159,24 +159,23 @@ struct DemoClientApplication : qk::Application {
 		render_init();
 		attach_layers();
 
-		// ============================================================
-		// Vertex Layout
-		// ============================================================
 
+
+		// Load Vertex Layouts from disk
 		auto j = loadJSON("assets/pipeline.jsonc");
+		auto layouts = VertexLayoutsFromJSON(j["layouts"]);
 
-		auto res = VertexLayoutsFromJSON(j["layouts"]);
-
-		if (!res) {
-			spdlog::error("{}", res.error());
+		if (!layouts) {
+			spdlog::critical("{}", layouts.error());
 			std::abort();
 		}
-		rhi::HVertexLayout hLayout = rhi::VertexLayout_ctor(res.value()["Vertex"]);
 
+
+		/*
 		rhi::HVertexArray vao = rhi::VertexArray_ctor("placeholder");
 		rhi::VertexArray_bind(vao);
 
-
+		*/
 
 		data.view = glm::translate(data.view, { 0,0.5,0 });
 
@@ -189,7 +188,6 @@ struct DemoClientApplication : qk::Application {
 		rhi::RVertexBuffer vbo = rhi::VertexBuffer_ctor("vbo", rhi::StaticDraw);
 		rhi::VertexBuffer_upload(vbo, g_Vertices);
 
-		rhi::VertexLayout_apply(hLayout);
 
 		
 
@@ -219,8 +217,17 @@ struct DemoClientApplication : qk::Application {
 
 		rhi::HMaterial material = rhi::Material_ctor(
 			materials["mat_solid"]
-			//rhi::Material_createinfo{ vertexSource, fragmentSource, descinfo }
 		);
+
+		rhi::HMesh mesh = rhi::Mesh_ctor(rhi::Mesh_createinfo{
+			.hVertexBuffers = {vbo},
+			.hIndexBuffer = rhi::RIndexBuffer(rhi::NULL_RESOURCE),
+			.layout_info = layouts.value()["Vertex"],
+			.hMaterial = material
+		});
+
+
+		auto vao = rhi::Mesh_getVertexArray(mesh);
 		
 
 
