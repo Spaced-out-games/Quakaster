@@ -162,7 +162,7 @@ namespace qk::media {
 			for (const auto& binding_info : layout_info["bindings"]) {
 				const auto& layout_res = VertexAttributeBindingFromJSON(binding_info);
 				if (layout_res.has_error()) return str{ layout_res.error() };
-				result[layout_name].push_back(layout_res.value());
+				result[layout_name].bindings.push_back(layout_res.value());
 
 			}
 		}
@@ -206,7 +206,7 @@ namespace qk::media {
 	// ---------------------------------------------------------------------------------------------------
 
 
-	Result<rhi::Material_createinfo, str> MaterialFromJSON(const str& mat_name, const json& j) {
+	Result<rhi::Material_recipe, str> MaterialFromJSON(const str& mat_name, const json& j) {
 
 		if (j.empty()) return str{ format("Material `{}` was empty.", mat_name) };
 
@@ -241,7 +241,7 @@ namespace qk::media {
 			return str{ "Material must contain vertex shader source code or path" };
 		}
 
-		return rhi::Material_createinfo{ vertSrc, fragSrc, {} };
+		return rhi::Material_recipe{ vertSrc, fragSrc };
 
 	}
 

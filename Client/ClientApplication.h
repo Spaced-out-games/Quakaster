@@ -42,7 +42,6 @@
 #include "HCommandBuffer.h"
 #include "HMaterial.h"
 #include "gfx_rhi.h"
-#include "HMesh.h"
 
 struct Vertex {
 	float x, y, z;

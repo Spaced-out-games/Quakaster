@@ -85,9 +85,13 @@ namespace qk::gfx::rhi {
 		bool normalized;
 	};
 
-	using VertexLayout_createinfo = std::vector<VertexAttributeBinding>;
+	
 
+	//using VertexLayout_createinfo = std::vector<VertexAttributeBinding>;
 
+	struct VertexLayout_createinfo {
+		std::vector<VertexAttributeBinding> bindings;
+	};
 
 
 

@@ -28,6 +28,8 @@ void Sandbox::init(int argc, char** argv) {
 		std::abort();
 	}
 
+	auto hLayout = rhi::VertexLayout_ctor("Vertex", layouts.value()["Vertex"]);
+
 
 	// update the camera UBO
 	g_Camera.view = glm::translate(g_Camera.view, { 0,0.5,0 });
@@ -44,27 +46,27 @@ void Sandbox::init(int argc, char** argv) {
 
 	rhi::UniformBuffer_upload(ubo, &g_Camera, 1, sizeof(g_Camera));
 
-	materials["mat_solid"].descriptor_set = rhi::DescriptorSet_ctor(sets["CameraDataDescriptorSet"]);
+
+	materials["mat_solid"].set_recipe = sets["CameraDataDescriptorSet"];
 
 	rhi::HMaterial material = rhi::Material_ctor(
 		materials["mat_solid"]
-	);
-
-	rhi::HMesh mesh = rhi::Mesh_ctor(rhi::Mesh_createinfo{
-		.hVertexBuffers = {vbo},
-		.hIndexBuffer = rhi::RIndexBuffer(rhi::NULL_RESOURCE),
-		.layout_info = layouts.value()["Vertex"],
-		.hMaterial = material
-		});
+	).value();
 
 
-	auto vao = rhi::Mesh_getVertexArray(mesh);
+	rhi::HVertexArray vao = rhi::VertexArray_ctor("tri_mesh");
+	rhi::VertexArray_bind(vao);
+
+	rhi::VertexBuffer_bind(vbo);
+
+	rhi::VertexLayout_apply(hLayout);
+	
 
 
 
 	rhi::CommandBuffer_createinfo CmdBufDesc;
 	CmdBufDesc
-		.preexecute(rhi::ClearCommand_desc{ 0.0,0.0,0.0,0.0, rhi::Color })
+		.preexecute(rhi::ClearCommand_desc{ 0.0,1.0,0.0,0.0, rhi::Color })
 		.push(rhi::DrawArrays_desc{ material, vao, rhi::Triangle, 0, 3 });
 
 

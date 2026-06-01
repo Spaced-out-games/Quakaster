@@ -16,7 +16,7 @@ namespace qk::media {
 
 	using VertexLayoutMap = std::unordered_map<str, rhi::VertexLayout_createinfo>;
 
-	using MaterialLayoutMap = std::unordered_map<str, rhi::Material_createinfo>;
+	using MaterialLayoutMap = std::unordered_map<str, rhi::Material_recipe>;
 
 	using DescriptorSetLayoutMap = std::unordered_map<str, rhi::DescriptorSet_createinfo>;
 

@@ -4,7 +4,15 @@
 
 namespace qk::gfx::rhi {
 
-	static inline qk::HandleResourceRegistry<VertexLayout_createinfo, HVertexLayout> g_VertexLayouts;
+
+	struct VertexLayout_impl {
+		std::vector<VertexAttributeBinding> bindings;
+	};
+
+
+	//static inline qk::HandleResourceRegistry<VertexLayout_createinfo, HVertexLayout> g_VertexLayouts;
+	static inline rhi::ResourceCache<VertexLayout_impl, RVertexLayout> g_VertexLayouts2;
+
 
 
 	inline GLenum ScalarType_cast(EScalarType type)
@@ -43,27 +51,24 @@ namespace qk::gfx::rhi {
 	}
 
 
-	HVertexLayout	VertexLayout_ctor(const VertexLayout_createinfo& desc) {
-		return g_VertexLayouts.insert(desc);
+	RVertexLayout	VertexLayout_ctor(str_view label, const VertexLayout_createinfo& desc) {
+		return g_VertexLayouts2.insert(label, VertexLayout_impl{ .bindings = desc.bindings });
 	}
 
-	bool			VertexLayout_dtor(const HVertexLayout& hLayout) {
-		return g_VertexLayouts.destroy(hLayout);
+	bool			VertexLayout_dtor(const RVertexLayout& hLayout) {
+		return g_VertexLayouts2.destroy(hLayout);
 	}
 
-	bool			VertexLayout_valid(const HVertexLayout& hLayout) {
-		return g_VertexLayouts.valid(hLayout);
+	bool			VertexLayout_valid(const RVertexLayout& hLayout) {
+		return g_VertexLayouts2.valid(hLayout);
 	}
 
+	bool VertexLayout_apply(const RVertexLayout& hLayout) {
+		auto* pLayout = g_VertexLayouts2.try_get(hLayout);
 
+		if (!pLayout) return 0;
 
-	bool			VertexLayout_apply(const HVertexLayout& hLayout) {
-		QK_ASSERT(g_VertexLayouts.valid(hLayout));
-		if (!g_VertexLayouts.valid(hLayout)) return 0;
-
-		VertexLayout_createinfo& desc = g_VertexLayouts.get(hLayout);
-
-		for (auto& binding : desc) {
+		for (auto& binding : pLayout->bindings) {
 			for (auto& attr : binding.attributes) {
 
 				if (EScalarType_isInteger(attr.component.type) && !attr.component.normalize) {
@@ -77,13 +82,12 @@ namespace qk::gfx::rhi {
 				glVertexAttribDivisor(attr.location, binding.input_rate == InputRate::PerInstance ? 1 : 0);
 			}
 		}
-		
-
-
-
 
 
 		return 1;
+
+
 	}
+
 
 } // namespace qk::gfx::rhi

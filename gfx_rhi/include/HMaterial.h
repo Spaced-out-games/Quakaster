@@ -8,13 +8,44 @@ namespace qk::gfx::rhi {
 
 	
 
-	struct Material_createinfo {
+	struct Material_recipe {
+
+
+		str matName, vertName, fragName;
+
+		str vertSrc, fragSrc;
+
+		DescriptorSet_createinfo set_recipe;
+
+		Material_recipe(const str& name,
+			const str& vertName,
+			const str& vertSrc,
+			const str& fragName,
+			const str& fragSrc,
+			const DescriptorSet_createinfo& setRecipe = {}
+		);
+
+		Material_recipe(const str& vertSrc, const str& fragSrc);
+
+		Material_recipe() = default;
+
+	};
+
+	
+
+	
+
+
+
+
+	/*
+	struct Material_recipe {
 		HShaderProgram program;
 		HDescriptorSet descriptor_set;
-		Material_createinfo() = default;
-		Material_createinfo(HShaderProgram hProgram, HDescriptorSet hDescriptorSet):
+		Material_recipe() = default;
+		Material_recipe(HShaderProgram hProgram, HDescriptorSet hDescriptorSet):
 			program(hProgram), descriptor_set(hDescriptorSet) {}
-		Material_createinfo(const str& vertSrc, const str& fragSrc, DescriptorSet_createinfo desc) {
+		Material_recipe(const str& vertSrc, const str& fragSrc, DescriptorSet_createinfo desc) {
 
 			// ============================================================
 			// Vertex Shader
@@ -79,12 +110,13 @@ namespace qk::gfx::rhi {
 
 		}
 	};
+	*/
 
 
 	struct HMaterial : Handle {};
 
 
-	HMaterial Material_ctor(const Material_createinfo& MatInfo);
+	Result<HMaterial, str> Material_ctor(const Material_recipe& MatInfo);
 
 	void Material_dtor(const HMaterial& hMaterial);
 
