@@ -89,7 +89,7 @@ namespace qk::gfx::rhi {
 
 	//using VertexLayout_createinfo = std::vector<VertexAttributeBinding>;
 
-	struct VertexLayout_createinfo {
+	struct VertexLayout_recipe {
 		std::vector<VertexAttributeBinding> bindings;
 	};
 

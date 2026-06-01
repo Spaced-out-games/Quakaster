@@ -10,7 +10,7 @@ namespace qk::gfx::rhi {
 	struct HVertexLayout : Handle {};
 
 	/*
-	HVertexLayout	VertexLayout_ctor(const VertexLayout_createinfo& desc);
+	HVertexLayout	VertexLayout_ctor(const VertexLayout_recipe& desc);
 
 	bool			VertexLayout_dtor(const HVertexLayout& hLayout);
 
@@ -24,7 +24,7 @@ namespace qk::gfx::rhi {
 
 	struct RVertexLayout : Resource{};
 
-	RVertexLayout	VertexLayout_ctor(str_view label, const VertexLayout_createinfo& desc);
+	RVertexLayout	VertexLayout_ctor(str_view label, const VertexLayout_recipe& desc);
 
 	bool			VertexLayout_dtor(const RVertexLayout& hLayout);
 

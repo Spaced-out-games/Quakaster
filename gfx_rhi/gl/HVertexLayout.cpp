@@ -10,7 +10,7 @@ namespace qk::gfx::rhi {
 	};
 
 
-	//static inline qk::HandleResourceRegistry<VertexLayout_createinfo, HVertexLayout> g_VertexLayouts;
+	//static inline qk::HandleResourceRegistry<VertexLayout_recipe, HVertexLayout> g_VertexLayouts;
 	static inline rhi::ResourceCache<VertexLayout_impl, RVertexLayout> g_VertexLayouts2;
 
 
@@ -51,7 +51,7 @@ namespace qk::gfx::rhi {
 	}
 
 
-	RVertexLayout	VertexLayout_ctor(str_view label, const VertexLayout_createinfo& desc) {
+	RVertexLayout	VertexLayout_ctor(str_view label, const VertexLayout_recipe& desc) {
 		return g_VertexLayouts2.insert(label, VertexLayout_impl{ .bindings = desc.bindings });
 	}
 

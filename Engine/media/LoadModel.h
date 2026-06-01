@@ -14,7 +14,7 @@ namespace qk::media {
 
 	// todo: give actual allocated assets instead.
 
-	using VertexLayoutMap = std::unordered_map<str, rhi::VertexLayout_createinfo>;
+	using VertexLayoutMap = std::unordered_map<str, rhi::VertexLayout_recipe>;
 
 	using MaterialLayoutMap = std::unordered_map<str, rhi::Material_recipe>;
 
