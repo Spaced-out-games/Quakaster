@@ -32,17 +32,6 @@ namespace qk::gfx::rhi {
 	// --------------------------------------------- SHADER PROGRAM --------------------------------------------- //
 
 
-	//struct HShaderProgram : Handle {};
-
-	/*
-	Result<HShaderProgram, std::string>
-	ShaderProgram_ctor(const HShader& hFragment, const HShader& hVertex);
-	bool ShaderProgram_dtor(HShaderProgram& hProgram);
-	bool ShaderProgram_bind(const HShaderProgram& hProgram);
-	bool ShaderProgram_valid(const HShaderProgram& hProgram);
-	bool ShaderProgram_bind_uniform_block(const HShaderProgram& hProgram, const char* id, u8 slot);
-	*/
-
 	struct HUniformBlock : Handle {};
 
 
