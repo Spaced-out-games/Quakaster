@@ -95,7 +95,7 @@ namespace qk::gfx::rhi {
 
 	}
 	
-	void DescriptorSet_bindProgram(const HDescriptorSet& hDescriptorSet, const HShaderProgram& hProgram) {
+	void DescriptorSet_bindProgram(const HDescriptorSet& hDescriptorSet, const RShaderProgram& hProgram) {
 		if (!g_DescriptorSets.valid(hDescriptorSet)) return;
 
 		const auto& set = g_DescriptorSets.get(hDescriptorSet);

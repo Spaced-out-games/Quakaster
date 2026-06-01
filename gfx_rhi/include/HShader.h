@@ -2,6 +2,7 @@
 //#include "Uniform.h" we need this!!!
 #include <Handle.h>
 #include <Result.h>
+#include <rhi_Resource.h>
 #include <string>
 #include <core.h>
 
@@ -31,17 +32,30 @@ namespace qk::gfx::rhi {
 	// --------------------------------------------- SHADER PROGRAM --------------------------------------------- //
 
 
-	struct HShaderProgram : Handle {};
+	//struct HShaderProgram : Handle {};
 
-
+	/*
 	Result<HShaderProgram, std::string>
 	ShaderProgram_ctor(const HShader& hFragment, const HShader& hVertex);
 	bool ShaderProgram_dtor(HShaderProgram& hProgram);
 	bool ShaderProgram_bind(const HShaderProgram& hProgram);
 	bool ShaderProgram_valid(const HShaderProgram& hProgram);
 	bool ShaderProgram_bind_uniform_block(const HShaderProgram& hProgram, const char* id, u8 slot);
+	*/
 
 	struct HUniformBlock : Handle {};
+
+
+	struct RShaderProgram: Resource {};
+
+
+	Result<RShaderProgram, std::string>
+	ShaderProgram_ctor(const HShader& hFragment, const HShader& hVertex, bool);
+	bool ShaderProgram_dtor(RShaderProgram& hProgram);
+	bool ShaderProgram_bind(const RShaderProgram& hProgram);
+	bool ShaderProgram_valid(const RShaderProgram& hProgram);
+	bool ShaderProgram_bind_uniform_block(const RShaderProgram& hProgram, const char* id, u8 slot);
+
 
 
 

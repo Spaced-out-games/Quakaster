@@ -6,7 +6,7 @@ namespace qk::gfx::rhi {
 
 
 	struct Material_impl {
-		HShaderProgram program;
+		RShaderProgram program;
 		HDescriptorSet descriptor_set;
 	};
 
@@ -63,7 +63,7 @@ namespace qk::gfx::rhi {
 		if (!fragUploadCode.empty()) return fragUploadCode;
 
 		// Program
-		auto program = rhi::ShaderProgram_ctor(frag.value(), vert.value());
+		auto program = rhi::ShaderProgram_ctor(frag.value(), vert.value(), 0);
 		if (!program) return program.error();
 
 
