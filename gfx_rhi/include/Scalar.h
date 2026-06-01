@@ -40,23 +40,6 @@ namespace qk::gfx::rhi {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     inline size_t EScalarType_size(EScalarType type)
     {
         switch (type)
@@ -163,10 +146,6 @@ namespace qk::gfx::rhi {
     constexpr EScalarType EScalarType_cast<double>() {
         return EScalarType::f64;
     }
-
-
-    
-
 
 
 

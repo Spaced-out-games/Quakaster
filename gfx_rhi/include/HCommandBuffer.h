@@ -1,29 +1,65 @@
 #pragma once
 #include "HMaterial.h"
 #include "HVertexArray.h"
-#include <gfx_rhi.h> // for ClearChannels. Move here eventually.
-#include "Draw.h" // for PrimitiveTopology. Move here eventually.
 
 
 
 namespace qk::gfx::rhi {
 
 
+	enum PrimitiveTopology {
+		Triangle,
+		Lines,
+		Points,
+		TriangleStrip,
+		LineStrip
+	};
 
-	/*
-	
-	void clear(float r, float g, float b, float a, ClearChannels channels) {
-		g_ClearChannels = channels;
-		g_ClearColor[0] = r; g_ClearColor[1] = g;
-		g_ClearColor[2] = b; g_ClearColor[3] = a;
 
-		glClearColor(r, g, b, a);
-		glClear(ClearChannels_cast(g_ClearChannels));
-		
+	enum ClearChannels : uint32_t {
+		Color = 1u << 0,
+		Depth = 1u << 1,
+		Stencil = 1u << 2
+	};
 
+	inline constexpr ClearChannels operator|(ClearChannels a, ClearChannels b) {
+		return (ClearChannels)(
+			(uint32_t)(a) | (uint32_t)(b)
+			);
 	}
 
-	*/
+	inline constexpr ClearChannels operator&(ClearChannels a, ClearChannels b) {
+		return (ClearChannels)(
+			(uint32_t)(a) & (uint32_t)(b)
+			);
+	}
+
+	inline constexpr ClearChannels operator^(ClearChannels a, ClearChannels b) {
+		return (ClearChannels)(
+			(uint32_t)(a) ^ (uint32_t)(b)
+			);
+	}
+
+	inline constexpr ClearChannels operator~(ClearChannels a) {
+		return (ClearChannels)(
+			~(uint32_t)(a)
+			);
+	}
+
+	inline ClearChannels& operator|=(ClearChannels& a, ClearChannels b) {
+		a = a | b;
+		return a;
+	}
+
+	inline ClearChannels& operator&=(ClearChannels& a, ClearChannels b) {
+		a = a & b;
+		return a;
+	}
+
+	inline ClearChannels& operator^=(ClearChannels& a, ClearChannels b) {
+		a = a ^ b;
+		return a;
+	}
 
 	struct NullCommand_desc {};
 
