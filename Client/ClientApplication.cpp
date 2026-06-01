@@ -49,7 +49,7 @@ void Sandbox::init(int argc, char** argv) {
 
 	materials["mat_solid"].set_recipe = sets["CameraDataDescriptorSet"];
 
-	rhi::HMaterial material = rhi::Material_ctor(
+	rhi::RMaterial material = rhi::Material_ctor(
 		materials["mat_solid"]
 	).value();
 

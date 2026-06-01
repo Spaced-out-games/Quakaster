@@ -10,7 +10,9 @@ namespace qk::gfx::rhi {
 		HDescriptorSet descriptor_set;
 	};
 
-	HandleResourceRegistry< Material_impl, HMaterial> g_Materials;
+	//HandleResourceRegistry< Material_impl, HMaterial> g_Materials;
+	
+	ResourceCache<Material_impl, RMaterial> g_Materials2;
 
 	
 	static inline u32 generated_material_index = 0;
@@ -85,7 +87,7 @@ namespace qk::gfx::rhi {
 
 
 
-
+	/*
 	Result<HMaterial, str> Material_ctor(const Material_recipe& MatInfo) {
 		auto mat_res = make_material(MatInfo, MatInfo.set_recipe);
 
@@ -105,11 +107,39 @@ namespace qk::gfx::rhi {
 
 		return g_Materials.insert(mat);
 	}
+	*/
 
+	Result<RMaterial, str> Material_ctor(const Material_recipe& MatInfo) {
+		auto mat_res = make_material(MatInfo, MatInfo.set_recipe);
+
+		if (!mat_res) return str{ mat_res.error() };
+
+		const auto& mat = mat_res.value();
+
+		// first, validate
+		if (!ShaderProgram_valid(mat.program)) {
+			throw std::runtime_error("Shader Program was invalid");
+		}
+		if (!DescriptorSet_valid(mat.descriptor_set)) {
+			throw std::runtime_error("Descriptor Set was invalid");
+		}
+
+		DescriptorSet_bindProgram(mat.descriptor_set, mat.program);
+
+		return g_Materials2.insert(MatInfo.matName, mat);
+	}
+
+	/*
 	void Material_dtor(const HMaterial& hMaterial) {
 		g_Materials.destroy(hMaterial);
 	}
+	*/
 
+	void Material_dtor(const RMaterial& hMaterial) {
+		g_Materials2.destroy(hMaterial);
+	}
+
+	/*
 	bool Material_bind(const HMaterial& hMaterial) {
 
 		QK_ASSERT(g_Materials.valid(hMaterial));
@@ -123,6 +153,21 @@ namespace qk::gfx::rhi {
 		return 1;
 
 	}
+	*/
+
+	bool Material_bind(const RMaterial& hMaterial) {
+		auto* pMat = g_Materials2.try_get(hMaterial);
+		if (!pMat) return 0;
+
+		if (!ShaderProgram_bind(pMat->program)) return 0;
+
+		if (!DescriptorSet_bind(pMat->descriptor_set)) return 0;
+
+		return 1;
+
+	}
+
+	/*
 
 	bool Material_valid(const HMaterial& hMaterial) {
 
@@ -132,6 +177,20 @@ namespace qk::gfx::rhi {
 
 
 		return DescriptorSet_valid(mat.descriptor_set) && ShaderProgram_valid(mat.program);
+
+	}
+	*/
+
+
+
+
+
+
+	bool Material_valid(const RMaterial& hMaterial) {
+		auto* pMat = g_Materials2.try_get(hMaterial);
+		if (!pMat) return 0;
+
+		return DescriptorSet_valid(pMat->descriptor_set) && ShaderProgram_valid(pMat->program);
 
 	}
 

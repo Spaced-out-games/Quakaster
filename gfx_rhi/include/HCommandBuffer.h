@@ -69,7 +69,7 @@ namespace qk::gfx::rhi {
 	};
 
 	struct DrawArrays_desc {
-		HMaterial material;
+		RMaterial material;
 		HVertexArray mesh;
 		PrimitiveTopology topology;
 		int offset;

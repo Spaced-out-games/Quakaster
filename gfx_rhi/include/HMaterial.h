@@ -1,7 +1,8 @@
 #pragma once
 #include <HDescriptorSet.h>
-#include <Handle.h>
+#include <rhi_Resource.h>
 #include <HShader.h>
+#include <Handle.h>
 
 
 namespace qk::gfx::rhi {
@@ -37,17 +38,31 @@ namespace qk::gfx::rhi {
 
 
 
-	struct HMaterial : Handle {};
-
-	Result<HMaterial, str> Material_ctor(const Material_recipe& MatInfo);
-
-	void Material_dtor(const HMaterial& hMaterial);
+	//struct HMaterial : Handle {};
 
 
-	bool Material_bind(const HMaterial& hMaterial);
+	//Result<HMaterial, str> Material_ctor(const Material_recipe& MatInfo);
+
+	//void Material_dtor(const HMaterial& hMaterial);
+
+
+	//bool Material_bind(const HMaterial& hMaterial);
 	
-	bool Material_valid(const HMaterial& hMaterial);
+	//bool Material_valid(const HMaterial& hMaterial);
 
+
+
+	struct RMaterial : Resource {};
+
+
+	Result<RMaterial, str> Material_ctor(const Material_recipe& MatInfo);
+
+	void Material_dtor(const RMaterial& hMaterial);
+
+
+	bool Material_bind(const RMaterial& hMaterial);
+
+	bool Material_valid(const RMaterial& hMaterial);
 
 
 
