@@ -4,7 +4,7 @@
 
 namespace qk {
 
-
+	// ergonomic std::variant
 	template <typename... Args>
 	class Variant {
 		std::variant<Args...> m_Value;
@@ -51,9 +51,6 @@ namespace qk {
 		template <class T>
 		Variant(const T& value): m_Value(value) {}
 
-		//template <class T>
-		//Variant(T&& value)
-		//	: m_Value(std::forward<T>(value)) {}
 	};
 
 

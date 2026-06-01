@@ -46,14 +46,16 @@ using u8 = uint8_t;
 using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
-
-
-
 using f32 = float;
 static_assert((sizeof(float) == 4));
-
 using f64 = double;
 static_assert((sizeof(double) == 8));
 
+
+
+
 using str = std::string;
 using str_view = std::string_view;
+
+// Loads from the OS' global symbol table
+typedef void* (*SymbolLoader)(const char* name);

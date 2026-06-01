@@ -16,7 +16,7 @@ namespace qk::gfx::gui {
 	};
 
 
-	// move elsewhere
+	// move elsewhere. Serves as an example
 	struct QK_API Vec3EditWidget : Widget {
 
 

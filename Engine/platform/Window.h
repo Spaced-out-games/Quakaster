@@ -78,6 +78,8 @@ namespace qk {
 			Window();
 			~Window();
 
+			operator SymbolLoader();
+
 
 			// Polls events and pushes them to the event queue
 			void pollEvents();
@@ -87,5 +89,4 @@ namespace qk {
 
 	};
 
-	void* getProcAddress();
 }

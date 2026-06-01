@@ -600,13 +600,11 @@ namespace qk {
 		glfwSetJoystickCallback(on_joystick_connect);
 	}
 
-
-
-
-	void* getProcAddress() {
-		
-		return glfwGetProcAddress;
+	Window::operator SymbolLoader() {
+		return (SymbolLoader)glfwGetProcAddress;
 	}
+
+
 
 
 

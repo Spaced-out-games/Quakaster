@@ -8,10 +8,12 @@
 
 namespace qk::gfx::gui {
 
+	// Holds GUI widgets
 	struct QK_API GUILayer : qk::Layer {
 
 
-		void* m_hWindow;
+		void* m_hWindow = nullptr;
+
 		std::vector<std::unique_ptr<Widget>> m_Widgets;
 
 		void push(std::unique_ptr<Widget> pWidget)
