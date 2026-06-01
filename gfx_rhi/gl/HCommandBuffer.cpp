@@ -4,7 +4,11 @@
 
 namespace qk::gfx::rhi {
 
-	using CommandBuffer_impl = CommandBuffer_createinfo;
+	//using CommandBuffer_impl = CommandBuffer_recipe;
+
+	struct CommandBuffer_impl {
+		std::vector<DrawCommand_desc> commands;
+	};
 
 
 	static inline qk::HandleResourceRegistry<CommandBuffer_impl, HCommandBuffer> g_CommandBuffers;
@@ -49,40 +53,31 @@ namespace qk::gfx::rhi {
 
 	bool DrawCommand_execute(const DrawCommand_desc& cmd)
 	{
-		return cmd.visit([](const auto& desc) -> bool {
-
-			using T = std::decay_t<decltype(desc)>;
-
-		if constexpr (std::is_same_v<T, NullCommand_desc>)
+		switch (cmd.type)
 		{
-			return true;
-		}
-		else if constexpr (std::is_same_v<T, ClearCommand_desc>)
-		{
-			glClearColor(desc.r, desc.g, desc.b, desc.a);
-			glClear(ClearChannels_cast(desc.channels));
+		case qk::gfx::rhi::DrawCommandType::Null:
+			return 1;
+		case qk::gfx::rhi::DrawCommandType::Clear:
+			glClearColor(cmd.clear.r, cmd.clear.g, cmd.clear.b, cmd.clear.a);
+			glClear(ClearChannels_cast(cmd.clear.channels));
+			return 1;
+		case qk::gfx::rhi::DrawCommandType::DrawArrays:
+			
+			if (!VertexArray_bind(cmd.drawArrays.mesh)) return 0;
 
-			return true;
-		}
-		else if constexpr (std::is_same_v<T, DrawArrays_desc>)
-		{
-			if (!VertexArray_valid(desc.mesh))
-				return false;
-			VertexArray_bind(desc.mesh);
-
-			if (!Material_bind(desc.material))
-				return false;
+			if (!Material_bind(cmd.drawArrays.material)) return 0;
 
 			glDrawArrays(
-				PrimitiveType_cast(desc.topology),
-				desc.offset,
-				desc.num_vertices);
+				PrimitiveType_cast(cmd.drawArrays.topology),
+				cmd.drawArrays.offset,
+				cmd.drawArrays.num_vertices);
+			return 1;
 
-			return true;
+		default:
+			throw std::runtime_error("Not implemented!");
+			break;
 		}
 
-		return false;
-		});
 	}
 
 
@@ -91,8 +86,8 @@ namespace qk::gfx::rhi {
 
 
 
-	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_createinfo& desc) {
-		return g_CommandBuffers.insert(desc);
+	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& desc) {
+		return g_CommandBuffers.insert(CommandBuffer_impl{ desc.commands() });
 	}
 
 	void CommandBuffer_dtor(const HCommandBuffer& hCmdBuf) {
@@ -109,25 +104,9 @@ namespace qk::gfx::rhi {
 
 		const auto& CmdBuf = g_CommandBuffers.get(hCmdBuf);
 
-		const auto& pre = CmdBuf.preexec();
-		const auto& exec = CmdBuf.commands();
-		const auto& post = CmdBuf.postexec();
-
-
-
-		for (auto& cmd : pre) {
-
-			if (!DrawCommand_execute(cmd)) return 0;
-
-		}
+		const auto& exec = CmdBuf.commands;
 
 		for (auto& cmd : exec) {
-
-			if (!DrawCommand_execute(cmd)) return 0;
-
-		}
-
-		for (auto& cmd : post) {
 
 			if (!DrawCommand_execute(cmd)) return 0;
 

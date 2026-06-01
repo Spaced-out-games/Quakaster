@@ -64,25 +64,9 @@ namespace qk::gfx::rhi {
 
 	};
 
-
-
-
-	// TODO: Transfer to union. 
-	//using Descriptor = Variant<Texture_desc, UniformBuffer_desc>;
-
-	
-
-
-
 	// note: bind index is derived from the index in the descriptor set.
 	using DescriptorSet_createinfo = std::vector<Descriptor>;
 
-
-	/*
-	struct DescriptorSet_createinfo {
-		std::vector<Descriptor> descriptors;
-	};
-	*/
 
 	struct HDescriptorSet: Handle {};
 
@@ -96,28 +80,6 @@ namespace qk::gfx::rhi {
 	bool DescriptorSet_valid(const HDescriptorSet& hDescriptorSet);
 
 	void DescriptorSet_bindProgram(const HDescriptorSet& hDescriptorSet, const RShaderProgram& hProgram);
-
-
-	/*
-		TODO: Work on developing a DescriptorSetLayout so that we don't have to bind in-order. In case you forget,
-		a binding is conceptually just a u8 + Descriptor:
-
-		struct DescriptorBinding {
-			uint8_t slot;
-			Descriptor descriptor;
-		}
-
-		then a descriptor set, at least in a GL implementation, can just be a vector of those OR a side-by side vector:
-
-		std::vector<Descriptor> descriptors;
-		std::vector<u8>			bindings;
-
-
-		neither one is wrong.
-	
-	
-	
-	*/
 
 
 }

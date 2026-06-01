@@ -64,9 +64,9 @@ void Sandbox::init(int argc, char** argv) {
 
 
 
-	rhi::CommandBuffer_createinfo CmdBufDesc;
+	rhi::CommandBuffer_recipe CmdBufDesc;
 	CmdBufDesc
-		.preexecute(rhi::ClearCommand_desc{ 0.0,1.0,0.0,0.0, rhi::Color })
+		.push(rhi::ClearCommand_desc{ 0.0,1.0,0.0,0.0, rhi::Color })
 		.push(rhi::DrawArrays_desc{ material, vao, rhi::Triangle, 0, 3 });
 
 

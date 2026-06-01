@@ -16,7 +16,7 @@ namespace qk::gfx::rhi {
 
 	void VertexArray_dtor(HVertexArray& hVertexArray);
 
-	void VertexArray_bind(const HVertexArray& hVertexArray);
+	bool VertexArray_bind(const HVertexArray& hVertexArray);
 
 	bool VertexArray_valid(const HVertexArray& hVertexArray);
 

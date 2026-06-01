@@ -74,12 +74,13 @@ namespace qk::gfx::rhi {
 		
 	}
 
-	void VertexArray_bind(const HVertexArray& hVertexArray) {
+	bool VertexArray_bind(const HVertexArray& hVertexArray) {
 		auto* pVertexArray = g_VertexArrays.try_get(hVertexArray);
-		if (!pVertexArray) return;
+		if (!pVertexArray) return 0;
 
 		glBindVertexArray(pVertexArray->hVertexArray);
 
+		return 1;
 	}
 
 	bool VertexArray_valid(const HVertexArray& hVertexArray) {

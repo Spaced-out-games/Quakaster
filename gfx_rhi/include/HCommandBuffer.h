@@ -76,38 +76,57 @@ namespace qk::gfx::rhi {
 		size_t num_vertices;
 	};
 
-	using DrawCommand_desc = Variant<NullCommand_desc, ClearCommand_desc, DrawArrays_desc>;
+	enum class DrawCommandType: u8 {
+		Null,
+		Clear,
+		DrawArrays
+	};
 
-	class CommandBuffer_createinfo {
 
-		std::vector<DrawCommand_desc> m_Preexecute;
+	//using DrawCommand_desc = Variant<NullCommand_desc, ClearCommand_desc, DrawArrays_desc>;
+
+	struct DrawCommand_desc {
+		DrawCommandType type;
+		union {
+			NullCommand_desc null;
+			ClearCommand_desc clear;
+			DrawArrays_desc drawArrays;
+		};
+
+
+		DrawCommand_desc():
+			null(), type(DrawCommandType::Null) {}
+		DrawCommand_desc(const NullCommand_desc& desc):
+			null(desc), type(DrawCommandType::Null) {}
+		DrawCommand_desc(const ClearCommand_desc& desc):
+			clear(desc), type(DrawCommandType::Clear) {}
+		DrawCommand_desc(const DrawArrays_desc& desc):
+			drawArrays(desc), type(DrawCommandType::DrawArrays) {}
+
+	};
+
+
+
+	class CommandBuffer_recipe {
+
+		//std::vector<DrawCommand_desc> m_Preexecute;
 		std::vector<DrawCommand_desc> m_Commands;
-		std::vector<DrawCommand_desc> m_Postexecute;
+		//std::vector<DrawCommand_desc> m_Postexecute;
 		public:
-			CommandBuffer_createinfo& preexecute(const DrawCommand_desc& cmd) {
-				m_Preexecute.push_back(cmd);
-				return *this;
-			}
 
-			CommandBuffer_createinfo& postexecute(const DrawCommand_desc& cmd) {
-				m_Postexecute.push_back(cmd);
-				return *this;
-			}
 
-			CommandBuffer_createinfo& push(const DrawCommand_desc& cmd) {
+			CommandBuffer_recipe& push(const DrawCommand_desc& cmd) {
 				m_Commands.push_back(cmd);
 				return *this;
 			}
 
-			const std::vector<DrawCommand_desc>& preexec() const { return m_Preexecute; }
 			const std::vector<DrawCommand_desc>& commands() const { return m_Commands; }
-			const std::vector<DrawCommand_desc>& postexec() const { return m_Postexecute; }
 
 	};
 
 	struct HCommandBuffer : Handle {};
 
-	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_createinfo& desc);
+	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& desc);
 
 	void CommandBuffer_dtor(const HCommandBuffer& hCmdBuf);
 

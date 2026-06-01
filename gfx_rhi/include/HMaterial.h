@@ -32,24 +32,6 @@ namespace qk::gfx::rhi {
 
 	};
 
-	
-
-	
-
-
-
-	//struct HMaterial : Handle {};
-
-
-	//Result<HMaterial, str> Material_ctor(const Material_recipe& MatInfo);
-
-	//void Material_dtor(const HMaterial& hMaterial);
-
-
-	//bool Material_bind(const HMaterial& hMaterial);
-	
-	//bool Material_valid(const HMaterial& hMaterial);
-
 
 
 	struct RMaterial : Resource {};
