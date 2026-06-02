@@ -1,114 +1,172 @@
 #include "HTexture.h"
-#include "glad/glad.h"
-#include "core.h"
 
+#include <glad/glad.h>
+#include <Resource.h>
 
 namespace qk::gfx::rhi {
 
-	inline GLuint TextureType_cast(TextureType type) {
-		switch (type)
-		{
-		case qk::gfx::rhi::TextureType::TEX_1D:
-			return GL_TEXTURE_1D;
-			break;
-		case qk::gfx::rhi::TextureType::TEX_2D:
-			return GL_TEXTURE_2D;
-			break;
-		case qk::gfx::rhi::TextureType::TEX_3D:
-			return GL_TEXTURE_3D;
-			break;
-		case qk::gfx::rhi::TextureType::TEX_CUBEMAP:
-			return GL_TEXTURE_CUBE_MAP;
-			break;
-		case qk::gfx::rhi::TextureType::TEX_2D_ARRAY:
-			return GL_TEXTURE_2D_ARRAY;
-			break;
-		default:
-			return 0;
-			break;
-		}
-	}
+    static GLuint TextureType_cast(TextureType type)
+    {
+        switch (type)
+        {
+        case TEX_1D:       return GL_TEXTURE_1D;
+        case TEX_2D:       return GL_TEXTURE_2D;
+        case TEX_3D:       return GL_TEXTURE_3D;
+        case TEX_CUBEMAP:  return GL_TEXTURE_CUBE_MAP;
+        case TEX_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
+        default:           return 0;
+        }
+    }
 
-	inline GLint TextureFilterMode_cast(TextureFilterMode mode) {
-		switch (mode)
-		{
-		case qk::gfx::rhi::TextureFilterMode::TEXEL:
-			return GL_NEAREST;
-			break;
-		case qk::gfx::rhi::TextureFilterMode::BILINEAR:
-			return GL_LINEAR;
-			break;
-		default:
-			return 0;
-			break;
-		}
-	}
+    static GLint TextureFilterMode_cast(
+        TextureFilterMode mode)
+    {
+        switch (mode)
+        {
+        case TEXEL:    return GL_NEAREST;
+        case BILINEAR: return GL_LINEAR;
+        default:       return 0;
+        }
+    }
 
-	inline GLenum Channel_cast(int num_channels) {
-		QK_ASSERT(num_channels != 2);
-		switch (num_channels) {
-		case 1: return GL_RED; break;
-		case 3: return GL_RGB; break;
-		case 4: return GL_RGBA; break;
-		default: return GL_RGB; break;
-		}
-	}
+    static GLenum Channel_cast(int channels)
+    {
+        QK_ASSERT(channels != 2);
 
-	struct Texture_impl {
-		TextureType type	= TEX_2D;
-		GLuint		texture	= 0;
-	};
+        switch (channels)
+        {
+        case 1: return GL_RED;
+        case 3: return GL_RGB;
+        case 4: return GL_RGBA;
+        default:return GL_RGB;
+        }
+    }
 
+    struct Texture_impl : qk::Resource
+    {
+        TextureType type = TEX_2D;
+        GLuint texture = 0;
+    };
 
-	static inline qk::HandleResourceRegistry<Texture_impl, HTexture> g_Textures;
+    static inline qk::ResourceRegistry<Texture_impl>
+        g_Textures;
 
-	void Texture_upload_2D(const HTexture& hTex, const char* pData, int width, int height, int channels) {
-		auto* pTexDesc = g_Textures.try_get(hTex);
-		if (!pTexDesc) return;
-		GLenum format = Channel_cast(channels);
-		pTexDesc->type = TEX_2D;
+    Result<HTexture, str>
+        Texture_ctor(
+            str_view label,
+            TextureType type)
+    {
+        GLuint gl_tex = 0;
 
-		glBindTexture(TextureType_cast(pTexDesc->type), pTexDesc->texture);
+        glGenTextures(1, &gl_tex);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pData);
+        if (!gl_tex)
+            return str{ "glGenTextures failed" };
 
-		// TODO: Like a real American patriot, offshore this to HTextureSampler.
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		
-	}
+        Texture_impl tex;
+        tex.type = type;
+        tex.texture = gl_tex;
 
-	void Texture_bind(const HTexture& hTex, uint8_t slot) {
-		QK_ASSERT(g_Textures.valid(hTex));
+        return g_Textures.insert(
+            label,
+            std::move(tex));
+    }
 
+    void Texture_upload_2D(
+        const HTexture& hTex,
+        const char* pData,
+        int width,
+        int height,
+        int channels)
+    {
+        if (!hTex)
+            return;
 
+        GLenum format =
+            Channel_cast(channels);
 
-		Texture_impl& Tex = g_Textures.get(hTex);
+        glBindTexture(
+            GL_TEXTURE_2D,
+            hTex->texture);
 
-		
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            format,
+            width,
+            height,
+            0,
+            format,
+            GL_UNSIGNED_BYTE,
+            pData);
 
-		glActiveTexture(GL_TEXTURE0 + slot);
-		glBindTexture(TextureType_cast(Tex.type), Tex.texture);
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MIN_FILTER,
+            GL_LINEAR);
 
-	}
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR);
 
-	bool Texture_valid(const HTexture& hTex) {
-		return g_Textures.valid(hTex);
-	}
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_S,
+            GL_CLAMP_TO_EDGE);
 
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_T,
+            GL_CLAMP_TO_EDGE);
+    }
 
-	void Texture_dtor(const HTexture& hTex) {
-		QK_ASSERT(g_Textures.valid(hTex));
+    bool Texture_bind(
+        const HTexture& hTex,
+        uint8_t slot)
+    {
+        if (!hTex)
+            return false;
 
-		auto& tex = g_Textures.get(hTex);
+        if (!g_Textures.valid(hTex))
+            return false;
 
-		glDeleteTextures(1, &tex.texture);
+        glActiveTexture(
+            GL_TEXTURE0 + slot);
 
-		g_Textures.destroy(hTex);
+        glBindTexture(
+            TextureType_cast(
+                hTex->type),
+            hTex->texture);
 
-	}
+        return true;
+    }
 
+    bool Texture_valid(
+        const HTexture& hTex)
+    {
+        return hTex &&
+            g_Textures.valid(hTex);
+    }
 
+    bool Texture_dtor(
+        HTexture& hTex)
+    {
+        if (!hTex)
+            return false;
+
+        glDeleteTextures(
+            1,
+            &hTex->texture);
+
+        g_Textures.destroy(hTex);
+
+        hTex = nullptr;
+
+        return true;
+    }
+    HTexture Texture_resolve(str_view label)
+    {
+        return g_Textures.find(label);
+    }
 }

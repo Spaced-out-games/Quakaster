@@ -1,24 +1,58 @@
 #include "HDescriptorSet.h"
 #include <Resource.h>
 #include <glad/glad.h>
-
+#include <iostream> // temp
 namespace qk::gfx::rhi {
+
+    struct Descriptor_impl: public Descriptor {
+
+
+        // we need a linker!
+        union {
+            Texture_desc texture;
+            UniformBuffer_desc uniform;
+            StorageBuffer_desc storage;
+        };
+        Descriptor_impl() = default;
+        Descriptor_impl(EDescriptorType type, u8 binding, str id, UniformBuffer_desc uniform = {}) :
+            Descriptor(type, binding, id), uniform(uniform) {
+
+        }
+    };
+
 
     struct DescriptorSet_impl : qk::Resource
     {
-        DescriptorSet_createinfo descriptors;
+        std::vector<Descriptor_impl> descriptors;
     };
 
     static inline qk::ResourceRegistry<DescriptorSet_impl>
         g_DescriptorSets;
 
+
     // ---------------- ctor ----------------
+
+    // NOTE: this is NOT complete!!! It's intended to be a BASIC test with UBOs.
+    bool DescriptorSet_LNK(const Descriptor& desc, DescriptorSet_impl& impl) {
+        RBuffer resolved = Buffer_resolve(desc.id);
+        impl.descriptors.emplace_back(desc.type, desc.binding, desc.id, UniformBuffer_desc{ resolved });
+
+        return 1;
+    }
+
+
 
     HDescriptorSet DescriptorSet_ctor(
         const DescriptorSet_createinfo& info)
     {
         DescriptorSet_impl impl;
-        impl.descriptors = info;
+
+        for (const auto& desc : info) {
+            if (!DescriptorSet_LNK(desc, impl)) {
+                // linker error
+            }
+            
+        }
 
         auto res = g_DescriptorSets.insert(
             "descriptor_set",

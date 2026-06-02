@@ -1,38 +1,49 @@
 #pragma once
-#include <Handle.h>
-#include "core.h"
-using qk::Handle;
+
+#include <rhi_Resource.h>
+#include <Result.h>
+#include <core.h>
 
 namespace qk::gfx::rhi {
 
-	enum TextureType : u32 {
-		TEX_1D,
-		TEX_2D,
-		TEX_3D,
-		TEX_CUBEMAP,
-		TEX_1D_ARRAY,
-		TEX_2D_ARRAY,
-	};
+    enum TextureType : u32 {
+        TEX_1D,
+        TEX_2D,
+        TEX_3D,
+        TEX_CUBEMAP,
+        TEX_1D_ARRAY,
+        TEX_2D_ARRAY,
+    };
 
-	enum TextureFilterMode : u32 {
-		TEXEL,
-		BILINEAR
-	};
+    enum TextureFilterMode : u32 {
+        TEXEL,
+        BILINEAR
+    };
 
-	struct HTexture : Handle {};
+    struct Texture_impl;
+    using HTexture = Texture_impl*;
 
-	void Texture_upload_2D(const HTexture& hTex, const char* pData, int width, int height, int channels);
+    Result<HTexture, str> Texture_ctor(
+        str_view label,
+        TextureType type = TEX_2D);
 
-	void Texture_upload_2D(const HTexture& hTex, const char* pData, int width, int height, int channels);
+    void Texture_upload_2D(
+        const HTexture& hTex,
+        const char* pData,
+        int width,
+        int height,
+        int channels);
 
+    bool Texture_bind(
+        const HTexture& hTex,
+        uint8_t slot);
 
-	// TODO: deprecate texture bindings at this layer of the RHI once descriptor sets and
-	// friends are well-defined and proven.
-	void Texture_bind(const HTexture& hTex, uint8_t slot);
+    bool Texture_valid(
+        const HTexture& hTex);
 
-	bool Texture_valid(const HTexture& hTex);
+    bool Texture_dtor(
+        HTexture& hTex);
 
-	void Texture_dtor(const HTexture& hTex);
-
+    HTexture Texture_resolve(str_view label);
 
 }

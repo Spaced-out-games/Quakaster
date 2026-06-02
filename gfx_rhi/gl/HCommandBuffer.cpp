@@ -1,6 +1,7 @@
 #include "HCommandBuffer.h"
 #include <glad/glad.h>
 #include <Resource.h>
+#include <stdexcept>
 
 namespace qk::gfx::rhi {
 

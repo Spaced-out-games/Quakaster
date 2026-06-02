@@ -35,17 +35,9 @@ namespace qk::gfx::rhi {
     };
 
     struct Descriptor {
-        EDescriptorType type;
+        EDescriptorType type = EDescriptorType::Unknown;
         u8 binding = 0;
         str id;
-
-        union {
-            Texture_desc texture;
-            UniformBuffer_desc uniform;
-            StorageBuffer_desc storage;
-        };
-
-        Descriptor() : type(EDescriptorType::Unknown), binding(0) {}
     };
 
     using DescriptorSet_createinfo = std::vector<Descriptor>;
