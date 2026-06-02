@@ -28,21 +28,15 @@ set(RHI_SOURCES
     gl/gui_widget_input.cpp
     gl/gui_widget_rhi.cpp
     gl/HVertexArray.cpp
+    gl/HBuffer.cpp
+    gl/HVertexLayout.cpp
+    gl/HTexture.cpp
+    gl/HDescriptorSet.cpp
+    gl/HMaterial.cpp
+    gl/HCommandBuffer.cpp
+    gl/rhi_Resource.cpp
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-  "gl/HBuffer.cpp"
-  "gl/HVertexLayout.cpp"
-  "gl/HTexture.cpp" "gl/HDescriptorSet.cpp" "gl/HMaterial.cpp" "gl/HCommandBuffer.cpp"  "gl/rhi_Handle.cpp")
+)
 
 # ------------------------------------------------------------------------------
 # Backend selection

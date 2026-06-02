@@ -1,1 +1,0 @@
-#include "rhi_Resource.h" // just to convince Intellisense to give a shit.
