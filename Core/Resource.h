@@ -14,6 +14,9 @@ namespace qk
         u64 id = 0;
         u32 refs = 0;
         str label;
+        // NOTICE: Whwn using initializer lists on derivative construction, the compiler would assume we were trying to construct Resource metadata, so it would forward the args here.
+        // This constructor is here to make Resource a non-aggregate, forcing the compiler to give the arguments to the derivative.
+        Resource() = default;
     };
 
     template<typename Resource_t>
