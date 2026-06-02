@@ -42,7 +42,7 @@
 #include "HCommandBuffer.h"
 #include "HMaterial.h"
 #include "gfx_rhi.h"
-
+#include "Resource.h"
 struct Vertex {
 	float x, y, z;
 };
