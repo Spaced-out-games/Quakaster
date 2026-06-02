@@ -5,49 +5,12 @@
 #include <Resource.h>
 #include <vector>
 
+#include "rhi_globals.h"
+
 namespace qk::gfx::rhi {
 
-    struct VertexLayout_impl : qk::Resource
-    {
-        std::vector<VertexAttributeBinding> bindings;
-    };
 
-    static inline qk::ResourceRegistry<VertexLayout_impl>
-        g_VertexLayouts;
 
-    inline GLenum ScalarType_cast(
-        EScalarType type)
-    {
-        switch (type)
-        {
-        case EScalarType::i8:
-            return GL_BYTE;
-
-        case EScalarType::i16:
-            return GL_SHORT;
-
-        case EScalarType::i32:
-            return GL_INT;
-
-        case EScalarType::u8:
-            return GL_UNSIGNED_BYTE;
-
-        case EScalarType::u16:
-            return GL_UNSIGNED_SHORT;
-
-        case EScalarType::u32:
-            return GL_UNSIGNED_INT;
-
-        case EScalarType::f32:
-            return GL_FLOAT;
-
-        case EScalarType::f64:
-            return GL_DOUBLE;
-
-        default:
-            return GL_NONE;
-        }
-    }
 
     RVertexLayout VertexLayout_ctor(
         str_view label,
@@ -109,8 +72,7 @@ namespace qk::gfx::rhi {
                     glVertexAttribIPointer(
                         attr.location,
                         attr.component.count,
-                        ScalarType_cast(
-                            attr.component.type),
+                        EScalarType_cast(attr.component.type),
                         binding.stride,
                         (const void*)attr.offset);
                 }
@@ -119,8 +81,7 @@ namespace qk::gfx::rhi {
                     glVertexAttribPointer(
                         attr.location,
                         attr.component.count,
-                        ScalarType_cast(
-                            attr.component.type),
+                        EScalarType_cast(attr.component.type),
                         attr.component.normalize,
                         binding.stride,
                         (const void*)attr.offset);

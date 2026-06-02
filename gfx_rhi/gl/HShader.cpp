@@ -2,55 +2,42 @@
 
 #include "glad/glad.h"
 #include <Resource.h>
-
+#include "rhi_globals.h"
 namespace qk::gfx::rhi {
 
-    // ========================= SHADER =========================
 
-    struct Shader_impl : qk::Resource
-    {
-        GLuint hShader = 0;
-    };
-
-    static inline qk::ResourceRegistry<Shader_impl>
-        g_Shaders;
 
 
     Result<HShader, str>
-        Shader_ctor(str_view label, ShaderType type)
+    Shader_ctor(str_view label, ShaderType type)
     {
-        GLuint gl_shader =
-            glCreateShader(
+        GLuint gl_shader = glCreateShader(
                 type == ShaderType::Vertex
                 ? GL_VERTEX_SHADER
                 : type == ShaderType::Fragment
                 ? GL_FRAGMENT_SHADER
-                : GL_GEOMETRY_SHADER);
+                : GL_GEOMETRY_SHADER
+        );
 
-        if (!gl_shader)
-            return str{
-                "glCreateShader failed" };
+        if (!gl_shader) return str{"glCreateShader failed" };
 
 
         auto* pShader = g_Shaders.insert(
             label,
-            { .hShader = gl_shader });
+            { gl_shader }
+        );
         return pShader;
 
     }
 
     bool Shader_valid(const HShader& hShader)
     {
-        return hShader &&
-            g_Shaders.valid(hShader);
+        return hShader && g_Shaders.valid(hShader);
     }
 
-    str Shader_upload(
-        const HShader& hShader,
-        const str& source)
-    {
-        if (!hShader)
-            return "Invalid shader";
+    str Shader_upload(const HShader& hShader, const str& source) {
+        
+        if (!hShader) return "Invalid shader";
 
         QK_ASSERT(g_Shaders.valid(hShader));
 

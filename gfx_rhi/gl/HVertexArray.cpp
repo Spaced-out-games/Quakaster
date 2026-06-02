@@ -5,44 +5,10 @@
 
 #include <Resource.h>
 
+#include "rhi_globals.h"
+
 namespace qk::gfx::rhi {
 
-    struct VertexArray_impl : qk::Resource
-    {
-        GLuint vao = 0;
-
-        VertexArray_impl()
-        {
-            glGenVertexArrays(1, &vao);
-        }
-
-        ~VertexArray_impl()
-        {
-           // if (vao)
-        }
-    };
-
-    static inline qk::ResourceRegistry<VertexArray_impl>
-        g_VertexArrays;
-
-    inline GLenum EScalarType_cast(EScalarType type)
-    {
-        switch (type)
-        {
-        case EScalarType::i8:  return GL_BYTE;
-        case EScalarType::i16: return GL_SHORT;
-        case EScalarType::i32: return GL_INT;
-
-        case EScalarType::u8:  return GL_UNSIGNED_BYTE;
-        case EScalarType::u16: return GL_UNSIGNED_SHORT;
-        case EScalarType::u32: return GL_UNSIGNED_INT;
-
-        case EScalarType::f32: return GL_FLOAT;
-        case EScalarType::f64: return GL_DOUBLE;
-
-        default: return GL_NONE;
-        }
-    }
 
     HVertexArray VertexArray_ctor(str_view label)
     {

@@ -5,11 +5,19 @@
 
 namespace qk::gfx::rhi {
 
+
+
     enum class ShaderType {
         Vertex,
         Fragment,
         Geometry
     };
+
+    struct Shader_recipe {
+        str source;
+        ShaderType type;
+    };
+
 
     struct Shader_impl;
     using HShader = Shader_impl*;
