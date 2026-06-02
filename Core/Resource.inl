@@ -6,49 +6,58 @@ namespace qk
     template<typename Resource_t>
     Resource_t* ResourceRegistry<Resource_t>::insert(
         str_view label,
-        Resource_t&& resource)
+        Resource_t* resource)
     {
-        const u64 id =
+        if (!resource)
+            return nullptr;
+
+        const u64 label_hash =
             qk::hash_fnv1a(label);
 
-        resource.id = id;
-        resource.refs = 0;
-        resource.label = label;
+        resource->hash_code = label_hash;
+        resource->references = 0;
+        resource->label = label;
+        resource->state = Active;
 
         auto [it, inserted] =
             m_Resources.try_emplace(
-                id,
-                std::move(resource));
+                label_hash,
+                resource);
 
         if (!inserted)
         {
             QK_ASSERT(
-                it->second.label == label &&
+                it->second->label == label &&
                 "Hash collision detected.");
 
             return nullptr;
         }
 
-        return &it->second;
+        return resource;
     }
 
     template<typename Resource_t>
     bool ResourceRegistry<Resource_t>::destroy(
-        Resource_t* resource)
+        Resource_t*& resource)
     {
         if (!resource)
             return false;
 
         auto it =
-            m_Resources.find(resource->id);
+            m_Resources.find(
+                resource->hash_code);
 
         if (it == m_Resources.end())
             return false;
 
-        if (it->second.refs != 0)
+        if (!resource->ready_for_deletion())
             return false;
 
+        resource->state = Destroyed;
+
         m_Resources.erase(it);
+
+        resource = nullptr;
 
         return true;
     }
@@ -61,47 +70,51 @@ namespace qk
             return false;
 
         auto it =
-            m_Resources.find(resource->id);
+            m_Resources.find(
+                resource->hash_code);
 
-        return it != m_Resources.end();
+        if (it == m_Resources.end())
+            return false;
+
+        return it->second == resource;
     }
 
     template<typename Resource_t>
     Resource_t* ResourceRegistry<Resource_t>::find(
         str_view label)
     {
-        const u64 id =
+        const u64 label_hash =
             qk::hash_fnv1a(label);
 
         auto it =
-            m_Resources.find(id);
+            m_Resources.find(label_hash);
 
         if (it == m_Resources.end())
             return nullptr;
 
         QK_ASSERT(
-            it->second.label == label);
+            it->second->label == label);
 
-        return &it->second;
+        return it->second;
     }
 
     template<typename Resource_t>
     const Resource_t* ResourceRegistry<Resource_t>::find(
         str_view label) const
     {
-        const u64 id =
+        const u64 label_hash =
             qk::hash_fnv1a(label);
 
         auto it =
-            m_Resources.find(id);
+            m_Resources.find(label_hash);
 
         if (it == m_Resources.end())
             return nullptr;
 
         QK_ASSERT(
-            it->second.label == label);
+            it->second->label == label);
 
-        return &it->second;
+        return it->second;
     }
 
     template<typename Resource_t>
@@ -114,7 +127,7 @@ namespace qk
         if (it == m_Resources.end())
             return nullptr;
 
-        return &it->second;
+        return it->second;
     }
 
     template<typename Resource_t>
@@ -127,7 +140,7 @@ namespace qk
         if (it == m_Resources.end())
             return nullptr;
 
-        return &it->second;
+        return it->second;
     }
 
     template<typename Resource_t>
@@ -138,12 +151,13 @@ namespace qk
             return false;
 
         auto it =
-            m_Resources.find(resource->id);
+            m_Resources.find(
+                resource->hash_code);
 
         if (it == m_Resources.end())
             return false;
 
-        ++it->second.refs;
+        ++it->second->references;
 
         return true;
     }
@@ -156,18 +170,19 @@ namespace qk
             return false;
 
         auto it =
-            m_Resources.find(resource->id);
+            m_Resources.find(
+                resource->hash_code);
 
         if (it == m_Resources.end())
             return false;
 
-        if (it->second.refs == 0)
+        if (it->second->references == 0)
         {
             QK_ASSERT(false);
             return false;
         }
 
-        --it->second.refs;
+        --it->second->references;
 
         return true;
     }
@@ -180,13 +195,14 @@ namespace qk
             return -1;
 
         auto it =
-            m_Resources.find(resource->id);
+            m_Resources.find(
+                resource->hash_code);
 
         if (it == m_Resources.end())
             return -1;
 
         return static_cast<int>(
-            it->second.refs);
+            it->second->references);
     }
 
     template<typename Resource_t>
@@ -197,12 +213,13 @@ namespace qk
             return {};
 
         auto it =
-            m_Resources.find(resource->id);
+            m_Resources.find(
+                resource->hash_code);
 
         if (it == m_Resources.end())
             return {};
 
-        return it->second.label;
+        return it->second->label;
     }
 
     template<typename Resource_t>
@@ -212,12 +229,18 @@ namespace qk
         if (!resource)
             return UINT64_MAX;
 
-        return resource->id;
+        return resource->hash_code;
     }
 
     template<typename Resource_t>
     void ResourceRegistry<Resource_t>::clear()
     {
+        for (auto& [id, resource] : m_Resources)
+        {
+            if (resource)
+                resource->state = Destroyed;
+        }
+
         m_Resources.clear();
     }
 

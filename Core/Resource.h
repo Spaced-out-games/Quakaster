@@ -6,17 +6,49 @@
 
 #include <core.h>
 #include <fnv1a.h>
-
+#include <iostream>
 namespace qk
 {
+
+    enum ResourceState: u8 {
+        Active,
+        Retired,
+        Destroyed
+    };
+
     struct Resource
     {
-        u64 id = 0;
-        u32 refs = 0;
         str label;
+        u64 hash_code = 0;
+        u32 references = 0;
+        ResourceState state = Destroyed;
         // NOTICE: Whwn using initializer lists on derivative construction, the compiler would assume we were trying to construct Resource metadata, so it would forward the args here.
         // This constructor is here to make Resource a non-aggregate, forcing the compiler to give the arguments to the derivative.
         Resource() = default;
+
+        
+        bool ready_for_deletion() const {
+            bool result = references == 0;
+            //result = result && state == Retired;
+            return result;
+        
+        }
+
+        // Whether 
+        bool valid() const { return state == Active; }
+        
+        virtual bool destroy() {
+            return true;
+        }
+
+        // default destructor, for now.
+        virtual ~Resource() {
+            assert(references == 0);
+            destroy();
+        }
+
+        // 
+
     };
 
     template<typename Resource_t>
@@ -24,20 +56,30 @@ namespace qk
     {
         static_assert(
             std::is_base_of_v<Resource, Resource_t>,
-            "Resource_t must derive from qk::gfx::rhi::Resource");
+            "Resource_t must derive from qk::gfx::rhi::Resource"
+        );
 
     public:
 
         ResourceRegistry() {
-            m_Resources.reserve(1024); // just see if this fixes it
+            m_Resources.reserve(1024);
+        }
+
+        ~ResourceRegistry()
+        {
+            for (const auto& resource : m_Resources) {
+                auto* pResource = resource.second;
+                delete pResource;
+                std::cout << pResource; // just for debugging
+            }
         }
 
         Resource_t* insert(
             str_view label,
-            Resource_t&& resource);
+            Resource_t* resource);
 
         bool destroy(
-            Resource_t* resource);
+            Resource_t*& resource);
 
         bool valid(
             const Resource_t* resource) const;
@@ -75,7 +117,7 @@ namespace qk
 
     private:
 
-        std::unordered_map<u64, Resource_t> m_Resources;
+        std::unordered_map<u64, Resource_t*> m_Resources;
     };
 
 }

@@ -52,6 +52,6 @@ namespace qk::gfx::rhi {
     bool DescriptorSet_bind(HDescriptorSet hDescriptorSet);
     bool DescriptorSet_valid(HDescriptorSet hDescriptorSet);
 
-    void DescriptorSet_bindProgram(HDescriptorSet hDescriptorSet, RShaderProgram hProgram);
+    //void DescriptorSet_bindProgram(HDescriptorSet hDescriptorSet, RShaderProgram hProgram);
 
 }

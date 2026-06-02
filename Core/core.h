@@ -7,7 +7,6 @@
 #include <string_view>
 #include <string>
 
-
 #define QK_API_VERSION(variant, major, minor, patch) \
     ((((u32)(variant)) << 29U) | (((u32)(major)) << 22U) | (((u32)(minor)) << 12U) | ((u32)(patch)))
 // pre-release

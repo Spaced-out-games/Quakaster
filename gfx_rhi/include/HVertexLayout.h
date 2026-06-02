@@ -9,9 +9,7 @@ namespace qk::gfx::rhi {
 
     using RVertexLayout = VertexLayout_impl*;
 
-    RVertexLayout VertexLayout_ctor(
-        str_view label,
-        const VertexLayout_recipe& desc);
+    RVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc);
 
     bool VertexLayout_dtor(
         RVertexLayout& hLayout);

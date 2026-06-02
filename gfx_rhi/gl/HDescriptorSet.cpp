@@ -1,36 +1,9 @@
 #include "HDescriptorSet.h"
-#include <Resource.h>
+#include "rhi_globals.h"
 #include <glad/glad.h>
-#include <iostream> // temp
+#include <Resource.h>
 namespace qk::gfx::rhi {
 
-    struct Descriptor_impl: public Descriptor {
-
-
-        // we need a linker!
-        union {
-            Texture_desc texture;
-            UniformBuffer_desc uniform;
-            StorageBuffer_desc storage;
-        };
-        Descriptor_impl() = default;
-        Descriptor_impl(EDescriptorType type, u8 binding, str id, UniformBuffer_desc uniform = {}) :
-            Descriptor(type, binding, id), uniform(uniform) {
-
-        }
-    };
-
-
-    struct DescriptorSet_impl : qk::Resource
-    {
-        std::vector<Descriptor_impl> descriptors;
-    };
-
-    static inline qk::ResourceRegistry<DescriptorSet_impl>
-        g_DescriptorSets;
-
-
-    // ---------------- ctor ----------------
 
     // NOTE: this is NOT complete!!! It's intended to be a BASIC test with UBOs.
     bool DescriptorSet_LNK(const Descriptor& desc, DescriptorSet_impl& impl) {
@@ -40,119 +13,108 @@ namespace qk::gfx::rhi {
         return 1;
     }
 
+    bool Descriptor_impl::bind() const {
+        switch (type)
+        {
+        case EDescriptorType::Texture:
+            if (!Texture_valid(hTex))
+                return false;
 
+            Texture_bind(hTex, binding);
+            break;
 
-    HDescriptorSet DescriptorSet_ctor(
-        const DescriptorSet_createinfo& info)
-    {
-        DescriptorSet_impl impl;
+        case EDescriptorType::UniformBuffer:
+            if (!UniformBuffer_valid(uniform.hBuf))
+                return false;
 
-        for (const auto& desc : info) {
-            if (!DescriptorSet_LNK(desc, impl)) {
-                // linker error
-            }
-            
+            UniformBuffer_bind(uniform.hBuf, binding);
+            break;
+
+        case EDescriptorType::StorageBuffer:
+            return false;
+
+        default:
+            break;
         }
-
-        auto res = g_DescriptorSets.insert(
-            "descriptor_set",
-            std::move(impl));
-        return res;
     }
 
-    // ---------------- dtor ----------------
+
+
+    DescriptorSet_impl::DescriptorSet_impl(const DescriptorSet_createinfo& info) {
+        for (const auto& desc : info) {
+            if (!DescriptorSet_LNK(desc, *this)) {
+                // linker error
+            }
+
+            // we'd add to the refcount here.
+
+        }
+    }
+
+    // Needs properly implemented. Releases locks
+    bool DescriptorSet_impl::destroy() {
+        if (!ready_for_deletion())
+            return false;
+
+        // we'd decrease refcounts here
+
+    }
+
+    DescriptorSet_impl::~DescriptorSet_impl() {
+        assert(references == 0);
+        destroy();
+
+    }
+
+
+    bool DescriptorSet_impl::bind() const {
+        for (auto& desc : descriptors)
+        {
+            desc.bind();
+        }
+        return true;
+    }
+
+    
+
+
+
+    HDescriptorSet DescriptorSet_ctor(const DescriptorSet_createinfo& info) {
+        return new DescriptorSet_impl(info);
+    }
+
 
     void DescriptorSet_dtor(HDescriptorSet& hDescriptorSet)
     {
         if (!hDescriptorSet)
             return;
 
-        g_DescriptorSets.destroy(hDescriptorSet);
+        delete hDescriptorSet;
+
         hDescriptorSet = nullptr;
     }
 
-    // ---------------- bind ----------------
 
     bool DescriptorSet_bind(HDescriptorSet hDescriptorSet)
     {
         if (!hDescriptorSet)
             return false;
 
-        auto* set = hDescriptorSet;
-        auto& descriptors = set->descriptors;
+        return hDescriptorSet->bind();
 
-        for (auto& desc : descriptors)
-        {
-            switch (desc.type)
-            {
-            case EDescriptorType::Texture:
-                if (!Texture_valid(desc.texture.hTex))
-                    return false;
-
-                Texture_bind(
-                    desc.texture.hTex,
-                    desc.binding);
-                break;
-
-            case EDescriptorType::UniformBuffer:
-                if (!UniformBuffer_valid(desc.uniform.hBuf))
-                    return false;
-
-                UniformBuffer_bind(
-                    desc.uniform.hBuf,
-                    desc.binding);
-                break;
-
-            case EDescriptorType::StorageBuffer:
-                return false;
-
-            default:
-                break;
-            }
-        }
-
-        return true;
     }
 
     // ---------------- valid ----------------
 
-    bool DescriptorSet_valid(HDescriptorSet hDescriptorSet)
-    {
-        if (!hDescriptorSet)
-            return false;
+    bool DescriptorSet_valid(HDescriptorSet hDescriptorSet) {
 
-        auto& descriptors = hDescriptorSet->descriptors;
-
-        for (auto& desc : descriptors)
-        {
-            switch (desc.type)
-            {
-            case EDescriptorType::Texture:
-                if (!Texture_valid(desc.texture.hTex))
-                    return false;
-                break;
-
-            case EDescriptorType::UniformBuffer:
-                if (!UniformBuffer_valid(desc.uniform.hBuf))
-                    return false;
-                break;
-
-            case EDescriptorType::StorageBuffer:
-                return false;
-
-            default:
-                break;
-            }
-        }
-
-        return true;
+        return true; // short circuit for now
+        
     }
 
     // ---------------- bind program ----------------
 
-    void DescriptorSet_bindProgram(
-        HDescriptorSet hDescriptorSet,
-        RShaderProgram hProgram)
+    void DescriptorSet_bindProgram(HDescriptorSet hDescriptorSet, RShaderProgram hProgram)
     {
         if (!hDescriptorSet)
             return;
@@ -164,7 +126,7 @@ namespace qk::gfx::rhi {
             switch (desc.type)
             {
             case EDescriptorType::Texture:
-                if (!Texture_valid(desc.texture.hTex))
+                if (!Texture_valid(desc.hTex))
                     return;
 
                 ShaderProgram_bind_uniform_block(

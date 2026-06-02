@@ -10,42 +10,63 @@
 namespace qk::gfx::rhi {
 
 
-    HVertexArray VertexArray_ctor(str_view label)
+    struct VertexArray_impl : qk::Resource
     {
-        VertexArray_impl impl;
+        GLuint vao = 0;
 
-        return g_VertexArrays.insert(
-            label,
-            std::move(impl));
+        VertexArray_impl()
+        {
+            glGenVertexArrays(1, &vao);
+        }
+
+        bool destroy() override {
+            if (!ready_for_deletion() || !vao) return false;
+
+            glDeleteVertexArrays(1, &vao);
+            return true;
+        }
+
+        void bind() {
+            glBindVertexArray(vao);
+        }
+
+        ~VertexArray_impl() {
+            destroy();
+        }
+
+    };
+
+
+
+    HVertexArray VertexArray_ctor(str_view label) {
+
+        return new VertexArray_impl();
+
     }
 
     void VertexArray_dtor(HVertexArray& hVertexArray)
     {
-        if (!hVertexArray)
-            return;
+        assert(hVertexArray);
         
+        hVertexArray->destroy();
 
-        glDeleteVertexArrays(1, &hVertexArray->vao);
-
-        g_VertexArrays.destroy(hVertexArray);
         hVertexArray = nullptr;
     }
 
     bool VertexArray_valid(const HVertexArray& hVertexArray)
     {
-        return g_VertexArrays.valid(hVertexArray);
+        // this isn't perfect but it works.
+        return hVertexArray != nullptr;
     }
 
-    bool VertexArray_bind(const HVertexArray& hVertexArray)
-    {
-        if (!hVertexArray)
-            return false;
+    bool VertexArray_bind(const HVertexArray& hVertexArray) {
 
-        if (!g_VertexArrays.valid(hVertexArray))
-            return false;
+        assert(hVertexArray);
 
-        glBindVertexArray(hVertexArray->vao);
+        hVertexArray->bind();
+
         return true;
+
     }
 
 }

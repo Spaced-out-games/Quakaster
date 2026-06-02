@@ -8,13 +8,13 @@
 
 namespace qk::gfx::rhi {
 
-    enum BufferUsage {
+    enum BufferUsage: u8 {
         StaticDraw,
         DynamicDraw,
         StreamDraw
     };
 
-    enum class BufferType {
+    enum class BufferType: u8 {
         Unknown,
         Vertex,
         Index,
@@ -46,7 +46,7 @@ namespace qk::gfx::rhi {
 
     bool Buffer_upload(
         const RBuffer& hBuf,
-        const void* data,
+        const void* pData,
         u32 count,
         u32 elem_size);
 

@@ -2,133 +2,71 @@
 
 #include <format>
 #include <Resource.h>
-
+#include "rhi_globals.h"
 namespace qk::gfx::rhi {
 
-    struct Material_impl : qk::Resource
-    {
-        RShaderProgram program = nullptr;
-        HDescriptorSet descriptor_set = nullptr;
-    };
 
-    static inline qk::ResourceRegistry<Material_impl>
-        g_Materials;
 
-    static inline u32 g_material_index = 0;
+
 
     // ---------------- Material_recipe ----------------
 
-    Material_recipe::Material_recipe(
-        const str& name,
-        const str& vertName,
-        const str& vertSrc,
-        const str& fragName,
-        const str& fragSrc,
-        const DescriptorSet_createinfo& setRecipe)
-        : matName(name),
-        vertName(vertName),
+    Material_recipe::Material_recipe(const str& vertSrc, const str& fragSrc,
+                                     const DescriptorSet_createinfo& setRecipe):
         vertSrc(vertSrc),
-        fragName(fragName),
         fragSrc(fragSrc),
         set_recipe(setRecipe)
     {}
 
-    Material_recipe::Material_recipe(
-        const str& vertSrc,
-        const str& fragSrc)
-        : matName(std::format(
-            "material_{}",
-            g_material_index++)),
-        vertName(matName + "::vert"),
-        fragName(matName + "::frag"),
-        vertSrc(vertSrc),
-        fragSrc(fragSrc)
-    {}
-
     // ---------------- internal build ----------------
 
-    static Result<Material_impl, str>
-        make_material(const Material_recipe& mat_recipe)
-    {
-        auto vert =
-            Shader_ctor(
-                mat_recipe.vertName,
-                ShaderType::Vertex);
 
-        if (!vert)
-            return vert.error();
+    // backend
 
-        auto vertUpload =
-            Shader_upload(
-                vert.value(),
-                mat_recipe.vertSrc);
+    Material_impl::Material_impl(const Material_recipe& recipe, str& error) {
 
-        if (!vertUpload.empty())
-            return vertUpload;
+        Shader_recipe vertRecipe = {
+            .source = recipe.vertSrc,
+            .type = ShaderType::Vertex
+        };
 
-        auto frag =
-            Shader_ctor(mat_recipe.fragName,
-                ShaderType::Fragment
-                );
+        Shader_recipe fragRecipe = {
+            .source = recipe.fragSrc,
+            .type = ShaderType::Fragment
+        };
 
-        if (!frag)
-            return frag.error();
 
-        auto fragUpload =
-            Shader_upload(
-                frag.value(),
-                mat_recipe.fragSrc);
+        auto hProgram = ShaderProgram_ctor(vertRecipe, fragRecipe);
 
-        if (!fragUpload.empty())
-            return fragUpload;
-
-        auto program =
-            ShaderProgram_ctor(
-                mat_recipe.matName,
-                frag.value(),
-                vert.value(),
-                false);
-
-        if (!program)
-            return program.error();
-
-        HDescriptorSet set =
-            DescriptorSet_ctor(
-                mat_recipe.set_recipe);
-
-        Material_impl m;
-        m.program = program.value();
-        m.descriptor_set = set;
-
-        return m;
+        if (!hProgram) {
+            error += hProgram.error();
+            return;
+        }
+        program = hProgram.value();
+        descriptor_set = DescriptorSet_ctor(recipe.set_recipe);
     }
+
+
+
+
+
 
     // ---------------- public API ----------------
 
     Result<RMaterial, str>
-        Material_ctor(const Material_recipe& MatInfo)
+    Material_ctor(const Material_recipe& MatInfo)
     {
-        auto mat_res = make_material(MatInfo);
 
-        if (!mat_res)
-            return mat_res.error();
+        str error = "";
 
-        auto& mat = mat_res.value();
+        auto* pMaterial = new Material_impl(MatInfo, error);
 
-        if (!ShaderProgram_valid(mat.program))
-            return str{ "Invalid shader program" };
+        if (!error.empty()) {
+            delete pMaterial;
+            return error;
+        }
+        return pMaterial;
 
-        if (!DescriptorSet_valid(mat.descriptor_set))
-            return str{ "Invalid descriptor set" };
-
-        DescriptorSet_bindProgram(
-            mat.descriptor_set,
-            mat.program);
-
-        auto res = g_Materials.insert(
-            MatInfo.matName,
-            std::move(mat));
-        return res;
     }
 
     void Material_dtor(RMaterial& hMaterial)
@@ -136,7 +74,7 @@ namespace qk::gfx::rhi {
         if (!hMaterial)
             return;
 
-        g_Materials.destroy(hMaterial);
+        delete hMaterial;
         hMaterial = nullptr;
     }
 
@@ -145,26 +83,16 @@ namespace qk::gfx::rhi {
         if (!hMaterial)
             return false;
 
-        if (!g_Materials.valid(hMaterial))
-            return false;
-
-        auto& mat = *hMaterial;
-
-        if (!ShaderProgram_bind(mat.program))
-            return false;
-
-        if (!DescriptorSet_bind(mat.descriptor_set))
-            return false;
-
+        hMaterial->bind();
         return true;
+
     }
 
     bool Material_valid(const RMaterial& hMaterial)
     {
-        return hMaterial &&
-            g_Materials.valid(hMaterial) &&
-            ShaderProgram_valid(hMaterial->program) &&
-            DescriptorSet_valid(hMaterial->descriptor_set);
+        return hMaterial != nullptr &&
+            hMaterial->descriptor_set != nullptr &&
+            hMaterial->program != nullptr;
     }
 
 }

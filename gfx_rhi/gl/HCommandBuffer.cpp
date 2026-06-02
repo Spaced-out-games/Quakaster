@@ -2,62 +2,12 @@
 #include <glad/glad.h>
 #include <Resource.h>
 #include <stdexcept>
+#include "rhi_globals.h"
 
 namespace qk::gfx::rhi {
 
-    struct CommandBuffer_impl : qk::Resource {
-        std::vector<DrawCommand_desc> commands;
-    };
 
-    static inline ResourceRegistry<CommandBuffer_impl>
-        g_CommandBuffers;
-
-    static inline u64 g_CommandBufferCounter = 0;
-
-    inline GLbitfield ClearChannels_cast(
-        qk::gfx::rhi::ClearChannels channels)
-    {
-        GLbitfield result = 0;
-
-        if ((channels & ClearChannels::Color) == ClearChannels::Color)
-            result |= GL_COLOR_BUFFER_BIT;
-
-        if ((channels & ClearChannels::Depth) == ClearChannels::Depth)
-            result |= GL_DEPTH_BUFFER_BIT;
-
-        if ((channels & ClearChannels::Stencil) == ClearChannels::Stencil)
-            result |= GL_STENCIL_BUFFER_BIT;
-
-        return result;
-    }
-
-    inline GLuint PrimitiveType_cast(
-        PrimitiveTopology type)
-    {
-        switch (type)
-        {
-        case PrimitiveTopology::Triangle:
-            return GL_TRIANGLES;
-
-        case PrimitiveTopology::Lines:
-            return GL_LINES;
-
-        case PrimitiveTopology::Points:
-            return GL_POINTS;
-
-        case PrimitiveTopology::TriangleStrip:
-            return GL_TRIANGLE_STRIP;
-
-        case PrimitiveTopology::LineStrip:
-            return GL_LINE_STRIP;
-
-        default:
-            return GL_TRIANGLES;
-        }
-    }
-
-    bool DrawCommand_execute(
-        const DrawCommand_desc& cmd)
+    bool DrawCommand_execute(const DrawCommand_desc& cmd)
     {
         switch (cmd.type)
         {
@@ -80,17 +30,11 @@ namespace qk::gfx::rhi {
 
         case DrawCommandType::DrawArrays:
 
-            if (!VertexArray_bind(
-                cmd.drawArrays.mesh))
-            {
+            if (!VertexArray_bind(cmd.drawArrays.mesh))
                 return false;
-            }
 
-            if (!Material_bind(
-                cmd.drawArrays.material))
-            {
+            if (!Material_bind(cmd.drawArrays.material))
                 return false;
-            }
 
             glDrawArrays(
                 PrimitiveType_cast(
@@ -107,61 +51,66 @@ namespace qk::gfx::rhi {
         }
     }
 
-    HCommandBuffer CommandBuffer_ctor(
-        const CommandBuffer_recipe& desc)
-    {
-        CommandBuffer_impl impl;
-        impl.commands = desc.commands();
 
-        str label =
-            "__CommandBuffer_" +
-            std::to_string(
-                g_CommandBufferCounter++);
 
-        return g_CommandBuffers.insert(
-            label,
-            std::move(impl));
+    CommandBuffer_impl::CommandBuffer_impl(const CommandBuffer_recipe& desc) {
+        commands = desc.commands();
     }
 
-    void CommandBuffer_dtor(
-        HCommandBuffer& hCmdBuf)
-    {
-        if (!hCmdBuf)
-            return;
+    CommandBuffer_impl::~CommandBuffer_impl() {
+        destroy();
+    }
 
-        g_CommandBuffers.destroy(
-            hCmdBuf);
+    bool CommandBuffer_impl::destroy() {
+        return true;
+    }
+
+    bool CommandBuffer_impl::execute() {
+        for (const auto& cmd : commands)
+        {
+            if (!DrawCommand_execute(cmd)) return false;
+        }
+        return true;
+    }
+
+
+    
+
+
+
+
+    // API impleementation
+
+
+    HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& desc)
+    {
+
+        CommandBuffer_impl* pCmds = new CommandBuffer_impl(desc);
+
+        return pCmds;
+
+    }
+
+    void CommandBuffer_dtor(HCommandBuffer& hCmdBuf)
+    {
+        if (!hCmdBuf)return;
+
+        delete hCmdBuf;
 
         hCmdBuf = nullptr;
     }
 
-    bool CommandBuffer_valid(
-        const HCommandBuffer& hCmdBuf)
+    bool CommandBuffer_valid(const HCommandBuffer& hCmdBuf)
     {
-        return g_CommandBuffers.valid(
-            hCmdBuf);
+        return true;//g_CommandBuffers.valid(hCmdBuf);
     }
 
-    bool CommandBuffer_execute(
-        const HCommandBuffer& hCmdBuf)
+    bool CommandBuffer_execute(const HCommandBuffer& hCmdBuf)
     {
-        if (!hCmdBuf)
-            return false;
+        if (!hCmdBuf) return false;
 
-        if (!g_CommandBuffers.valid(
-            hCmdBuf))
-        {
-            return false;
-        }
+        return hCmdBuf->execute();
 
-        for (const auto& cmd :
-            hCmdBuf->commands)
-        {
-            if (!DrawCommand_execute(cmd))
-                return false;
-        }
-
-        return true;
     }
 
 }

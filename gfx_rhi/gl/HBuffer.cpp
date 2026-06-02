@@ -3,154 +3,126 @@
 #include <Resource.h>
 #include <glad/glad.h>
 #include <stdexcept>
-
+#include "rhi_globals.h"
 namespace qk::gfx::rhi {
 
-    static GLenum BufferUsage_cast(
-        BufferUsage usage)
-    {
-        switch (usage)
+
+
+    Buffer_impl::Buffer_impl( BufferType type, BufferUsage usage, u32 size, u32 count, bool ready):
+        initialized(ready), type(type), usage(usage),
+        elem_size(size), elem_count(count)
         {
-        case StaticDraw:  return GL_STATIC_DRAW;
-        case DynamicDraw: return GL_DYNAMIC_DRAW;
-        case StreamDraw:  return GL_STREAM_DRAW;
+            glGenBuffers(1, &hBuffer);
         }
 
-        throw std::runtime_error(
-            "Invalid BufferUsage");
+    Buffer_impl::~Buffer_impl() {
+        destroy();
     }
 
-    static GLenum BufferType_cast(
-        BufferType type)
-    {
-        switch (type)
-        {
-        case BufferType::Vertex:
-            return GL_ARRAY_BUFFER;
-
-        case BufferType::Index:
-            return GL_ELEMENT_ARRAY_BUFFER;
-
-        case BufferType::Uniform:
-            return GL_UNIFORM_BUFFER;
-
-        default:
-            throw std::runtime_error(
-                "Invalid BufferType");
-        }
+    bool Buffer_impl::destroy() {
+        if (!hBuffer) return false;
+        glDeleteBuffers(1, &hBuffer);
+        return true;
     }
 
-    struct Buffer_impl : qk::Resource
-    {
-        GLuint hBuffer = 0;
 
-        BufferType type =
-            BufferType::Unknown;
 
-        BufferUsage usage =
-            StaticDraw;
+    bool Buffer_impl::upload(const void* pData, u32 count, u32 elem_size) {
+        assert(hBuffer);
 
-        u32 elem_size = 0;
-        u32 elem_count = 0;
+        elem_count = count;
+        elem_size = elem_size;
+        initialized = true;
 
-        bool initialized = false;
-    };
+        glBindBuffer(BufferType_cast(type), hBuffer);
+        glBufferData(BufferType_cast(type), count * elem_size, pData, BufferUsage_cast(usage));
 
-    static inline
-        qk::ResourceRegistry<Buffer_impl>
-        g_Buffers;
+        return true;
+    }
 
-    RBuffer Buffer_ctor(
-        str_view label,
-        BufferType type,
-        BufferUsage usage)
-    {
-        Buffer_impl buffer;
+    bool Buffer_impl::VertexBuffer_bind() {
+        assert(type == BufferType::Vertex);
 
-        buffer.type = type;
-        buffer.usage = usage;
+        if (!initialized) return false;
 
-        glGenBuffers(
-            1,
-            &buffer.hBuffer);
+        glBindBuffer(GL_ARRAY_BUFFER, hBuffer);
+
+        return true;
+
+    }
+
+    bool Buffer_impl::IndexBuffer_bind() {
+
+        assert(type == BufferType::Index);
+
+        if (!initialized) return false;
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, hBuffer);
+
+        return true;
+    }
+
+    bool Buffer_impl::UniformBuffer_bind(u8 slot) {
+        assert(type == BufferType::Uniform);
+
+        if (!initialized) return false;
+        glBindBufferBase(GL_UNIFORM_BUFFER, slot, hBuffer);
+
+        return false;
+    }
+
+
+    RBuffer Buffer_ctor(str_view label, BufferType type, BufferUsage usage) {
+
+
+
+        auto* pBuf = new Buffer_impl(type, usage);
+
 
         return g_Buffers.insert(
             label,
-            std::move(buffer));
+            pBuf
+        );
     }
 
-    str_view Buffer_name(
-        const RBuffer& hBuf)
+    str_view Buffer_name(const RBuffer& hBuf)
     {
-        if (!hBuf)
-            return {};
+        if (!hBuf) return {};
 
         return hBuf->label;
     }
 
-    bool Buffer_dtor(
-        RBuffer& hBuf)
+    bool Buffer_dtor(RBuffer& hBuf)
     {
-        if (!hBuf)
-            return false;
+        if (!hBuf) return false;
 
-        glDeleteBuffers(
-            1,
-            &hBuf->hBuffer);
+        glDeleteBuffers(1, &hBuf->hBuffer);
 
-        g_Buffers.destroy(
-            hBuf);
+        g_Buffers.destroy(hBuf);
 
         hBuf = nullptr;
 
         return true;
     }
 
-    bool Buffer_upload(
-        const RBuffer& hBuf,
-        const void* data,
-        u32 count,
-        u32 elem_size)
+    bool Buffer_upload(const RBuffer& hBuf, const void* pData, u32 count, u32 elem_size)
     {
-        if (!hBuf)
-            return false;
-
-        hBuf->elem_count = count;
-        hBuf->elem_size = elem_size;
-        hBuf->initialized = true;
-
-        glBindBuffer(
-            BufferType_cast(hBuf->type),
-            hBuf->hBuffer);
-
-        glBufferData(
-            BufferType_cast(hBuf->type),
-            count * elem_size,
-            data,
-            BufferUsage_cast(hBuf->usage));
-
-        return true;
+        return hBuf->upload(pData, count, elem_size);
     }
 
-    bool Buffer_valid(
-        const RBuffer& hBuf)
+    bool Buffer_valid(const RBuffer& hBuf)
     {
-        return hBuf &&
-            g_Buffers.valid(hBuf);
+        return hBuf && g_Buffers.valid(hBuf);
     }
 
-    bool Buffer_initialized(
-        const RBuffer& hBuf)
+    bool Buffer_initialized(const RBuffer& hBuf)
     {
-        return hBuf &&
-            hBuf->initialized;
+        return hBuf && hBuf->initialized;
     }
 
-    BufferType Buffer_type(
-        const RBuffer& hBuf)
+    BufferType Buffer_type(const RBuffer& hBuf)
     {
-        if (!hBuf)
-            return BufferType::Unknown;
+        if (!hBuf) return BufferType::Unknown;
 
         return hBuf->type;
     }
@@ -159,63 +131,28 @@ namespace qk::gfx::rhi {
         return g_Buffers.find(label);
     }
 
-    bool VertexBuffer_bind(
-        const RVertexBuffer& hBuf)
+    bool VertexBuffer_bind(const RVertexBuffer& hBuf)
     {
-        if (!hBuf)
-            return false;
+        if (!hBuf) return false;
 
-        if (!hBuf->initialized)
-            return false;
-
-        if (hBuf->type != BufferType::Vertex)
-            return false;
-
-        glBindBuffer(
-            GL_ARRAY_BUFFER,
-            hBuf->hBuffer);
-
-        return true;
+        return hBuf->VertexBuffer_bind();
     }
 
-    bool IndexBuffer_bind(
-        const RIndexBuffer& hBuf)
+    bool IndexBuffer_bind(const RIndexBuffer& hBuf)
     {
-        if (!hBuf)
-            return false;
+        if (!hBuf) return false;
 
-        if (!hBuf->initialized)
-            return false;
+        return hBuf->IndexBuffer_bind();
 
-        if (hBuf->type != BufferType::Index)
-            return false;
-
-        glBindBuffer(
-            GL_ELEMENT_ARRAY_BUFFER,
-            hBuf->hBuffer);
-
-        return true;
     }
 
-    bool UniformBuffer_bind(
-        const RUniformBuffer& hBuf,
-        u8 slot)
+    bool UniformBuffer_bind(const RUniformBuffer& hBuf, u8 slot)
     {
-        if (!hBuf)
-            return false;
 
-        if (!hBuf->initialized)
-            return false;
+        if (!hBuf) return false;
 
-        if (hBuf->type != BufferType::Uniform)
-            return false;
+        return hBuf->UniformBuffer_bind(slot);
 
-        glBindBufferBase(
-            GL_UNIFORM_BUFFER,
-            slot,
-            hBuf->hBuffer);
-
-        return true;
     }
 
 }

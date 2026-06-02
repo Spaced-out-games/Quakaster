@@ -311,13 +311,6 @@ namespace qk::media {
 				return str{ "Texture not implemented yet." };
 
 
-
-
-
-
-
-
-
 			case rhi::EDescriptorType::UniformBuffer:
 				// don't construct yet
 				//result.uniform.hBuf = rhi::RUniformBuffer(qk::string_hash{ str{j["id"]} }); // temporary
@@ -341,7 +334,6 @@ namespace qk::media {
 
 	Result<rhi::DescriptorSet_createinfo, str> DescriptorSetFromJSON(const json& j, const str& name) {
 
-		std::cout << j;
 
 
 		assert(j.is_array());

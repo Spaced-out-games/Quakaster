@@ -35,6 +35,7 @@ set(RHI_SOURCES
     gl/HMaterial.cpp
     gl/HCommandBuffer.cpp
     gl/rhi_Resource.cpp
+    gl/HPipeline.cpp
 
 )
 
@@ -94,6 +95,7 @@ if(GFX_BACKEND STREQUAL "gl")
         PRIVATE
             external/glad/include
             external/imgui
+            spdlog::spdlog
     )
 endif()
 

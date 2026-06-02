@@ -23,7 +23,6 @@ namespace qk::gfx::rhi {
 
 	};
 	
-	// uint32_t binding; // artificial construct in GL; inferred by array index
 	struct VertexAttributeBinding {
 		InputRate input_rate; // the divisor
 		uint32_t stride;
@@ -43,9 +42,9 @@ namespace qk::gfx::rhi {
 
 	
 
-	//using VertexLayout_createinfo = std::vector<VertexAttributeBinding>;
 
 	struct VertexLayout_recipe {
+		str label;
 		std::vector<VertexAttributeBinding> bindings;
 	};
 

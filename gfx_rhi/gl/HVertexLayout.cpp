@@ -10,71 +10,29 @@
 namespace qk::gfx::rhi {
 
 
+    VertexLayout_impl::VertexLayout_impl(const VertexLayout_recipe& recipe) {
 
+        bindings = recipe.bindings;
 
-    RVertexLayout VertexLayout_ctor(
-        str_view label,
-        const VertexLayout_recipe& desc)
-    {
-        VertexLayout_impl impl;
-
-        impl.bindings = desc.bindings;
-
-        return g_VertexLayouts.insert(
-            label,
-            std::move(impl));
+        // we should PROBABLY ALSO VALIDATE DESCRIPTORS AND LOCK THEM HERE!!!
     }
 
-    bool VertexLayout_dtor(
-        RVertexLayout& hLayout)
-    {
-        if (!hLayout)
-            return false;
-
-        bool result =
-            g_VertexLayouts.destroy(
-                hLayout);
-
-        hLayout = nullptr;
-
-        return result;
+    bool VertexLayout_impl::destroy() {
+        // release locks on descriptors
+        return true;
     }
 
-    bool VertexLayout_valid(
-        const RVertexLayout& hLayout)
-    {
-        return g_VertexLayouts.valid(
-            hLayout);
-    }
 
-    bool VertexLayout_apply(
-        const RVertexLayout& hLayout)
-    {
-        if (!hLayout)
-            return false;
+    bool VertexLayout_impl::apply() const {
 
-        if (!g_VertexLayouts.valid(
-            hLayout))
-        {
-            return false;
-        }
-
-        for (const auto& binding :
-            hLayout->bindings)
-        {
-            for (const auto& attr :
-                binding.attributes)
-            {
-                if (EScalarType_isInteger(
-                    attr.component.type) &&
-                    !attr.component.normalize)
-                {
+        for (const auto& binding : bindings) {
+            for (const auto& attr : binding.attributes) {
+                if (EScalarType_isInteger(attr.component.type) && attr.component.normalize) {
                     glVertexAttribIPointer(
-                        attr.location,
-                        attr.component.count,
-                        EScalarType_cast(attr.component.type),
-                        binding.stride,
-                        (const void*)attr.offset);
+                        attr.location, attr.component.count,
+                        EScalarType_cast(attr.component.type), binding.stride,
+                        (const void*)attr.offset
+                    );
                 }
                 else
                 {
@@ -84,22 +42,61 @@ namespace qk::gfx::rhi {
                         EScalarType_cast(attr.component.type),
                         attr.component.normalize,
                         binding.stride,
-                        (const void*)attr.offset);
+                        (const void*)attr.offset
+                    );
                 }
 
                 glEnableVertexAttribArray(
-                    attr.location);
+                    attr.location
+                );
 
-                glVertexAttribDivisor(
+                glVertexAttribDivisor (
                     attr.location,
-                    binding.input_rate ==
-                    InputRate::PerInstance
-                    ? 1
-                    : 0);
+                    InputRate_cast(binding.input_rate)
+                );
             }
         }
 
         return true;
+    }
+
+
+
+
+
+    // API implementations
+
+    RVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc) {
+        return new VertexLayout_impl(desc);
+    }
+
+    bool VertexLayout_dtor(
+        RVertexLayout& hLayout)
+    {
+        if (!hLayout)
+            return false;
+
+        delete hLayout;
+
+        hLayout = nullptr;
+
+        return true;
+    }
+
+    bool VertexLayout_valid(
+        const RVertexLayout& hLayout)
+    {
+        return hLayout != nullptr;
+    }
+
+    bool VertexLayout_apply(
+        const RVertexLayout& hLayout)
+    {
+        if (!hLayout)
+            return false;
+
+
+        return hLayout->apply();
     }
 
 }

@@ -4,6 +4,12 @@
 
 namespace qk::gfx::rhi {
 	int init(SymbolLoader loader) {
-		return gladLoadGLLoader((GLADloadproc)loader);
+
+		int result = gladLoadGLLoader((GLADloadproc)loader);
+		
+		#ifdef _DEBUG
+			//glEnable(GL_PROGRAM_POINT_SIZE);
+		#endif
+		return result;
 	}
 }
