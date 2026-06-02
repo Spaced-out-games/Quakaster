@@ -1,51 +1,46 @@
 #pragma once
-#include <HDescriptorSet.h>
-#include <rhi_Resource.h>
-#include <HShader.h>
-#include <Handle.h>
 
+#include <HDescriptorSet.h>
+#include <HShader.h>
+#include <Result.h>
+#include <core.h>
 
 namespace qk::gfx::rhi {
 
-	
+    struct Material_recipe
+    {
+        str matName, vertName, fragName;
 
-	struct Material_recipe {
+        str vertSrc, fragSrc;
 
+        DescriptorSet_createinfo set_recipe;
 
-		str matName, vertName, fragName;
+        Material_recipe(
+            const str& name,
+            const str& vertName,
+            const str& vertSrc,
+            const str& fragName,
+            const str& fragSrc,
+            const DescriptorSet_createinfo& setRecipe = {});
 
-		str vertSrc, fragSrc;
+        Material_recipe(
+            const str& vertSrc,
+            const str& fragSrc);
 
-		DescriptorSet_createinfo set_recipe;
+        Material_recipe() = default;
+    };
 
-		Material_recipe(const str& name,
-			const str& vertName,
-			const str& vertSrc,
-			const str& fragName,
-			const str& fragSrc,
-			const DescriptorSet_createinfo& setRecipe = {}
-		);
+    struct Material_impl;
 
-		Material_recipe(const str& vertSrc, const str& fragSrc);
+    using RMaterial = Material_impl*;
 
-		Material_recipe() = default;
+    Result<RMaterial, str>
+        Material_ctor(const Material_recipe& MatInfo);
 
-	};
+    void Material_dtor(RMaterial& hMaterial);
 
+    bool Material_bind(const RMaterial& hMaterial);
 
-
-	struct RMaterial : Resource {};
-
-
-	Result<RMaterial, str> Material_ctor(const Material_recipe& MatInfo);
-
-	void Material_dtor(const RMaterial& hMaterial);
-
-
-	bool Material_bind(const RMaterial& hMaterial);
-
-	bool Material_valid(const RMaterial& hMaterial);
-
-
+    bool Material_valid(const RMaterial& hMaterial);
 
 }

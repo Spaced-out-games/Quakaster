@@ -1,23 +1,20 @@
 #pragma once
+
 #include <rhi_Resource.h>
-//#include <Handle.h>
-
-
-//using qk::Handle;
+#include <core.h>
 
 namespace qk::gfx::rhi {
 
+    struct VertexArray_impl;
 
+    using HVertexArray = VertexArray_impl*;
 
-	struct HVertexArray : Resource {};
-	//struct HVertexArray : Handle {};
+    HVertexArray VertexArray_ctor(str_view label);
 
-	HVertexArray VertexArray_ctor(str_view label);
+    void VertexArray_dtor(HVertexArray& hVertexArray);
 
-	void VertexArray_dtor(HVertexArray& hVertexArray);
+    bool VertexArray_bind(const HVertexArray& hVertexArray);
 
-	bool VertexArray_bind(const HVertexArray& hVertexArray);
-
-	bool VertexArray_valid(const HVertexArray& hVertexArray);
+    bool VertexArray_valid(const HVertexArray& hVertexArray);
 
 }

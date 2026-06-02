@@ -1,92 +1,85 @@
 #include "HVertexArray.h"
-#include "glad\glad.h"
-#include <Handle.h>
+
+#include "glad/glad.h"
 #include "Scalar.h"
 
-
-
-
+#include <Resource.h>
 
 namespace qk::gfx::rhi {
 
-	struct VertexArray_impl {
-		GLuint hVertexArray = 0;
-	};
+    struct VertexArray_impl : qk::Resource
+    {
+        GLuint vao = 0;
 
+        VertexArray_impl()
+        {
+            glGenVertexArrays(1, &vao);
+        }
 
-	//static inline qk::HandleResourceRegistry<GLuint, HVertexArray> g_VertexArrays;
+        ~VertexArray_impl()
+        {
+           // if (vao)
+        }
+    };
 
-	static inline rhi::ResourceCache<VertexArray_impl, HVertexArray> g_VertexArrays;
+    static inline qk::ResourceRegistry<VertexArray_impl>
+        g_VertexArrays;
 
+    inline GLenum EScalarType_cast(EScalarType type)
+    {
+        switch (type)
+        {
+        case EScalarType::i8:  return GL_BYTE;
+        case EScalarType::i16: return GL_SHORT;
+        case EScalarType::i32: return GL_INT;
 
-	inline GLenum EScalarType_cast(EScalarType type)
-	{
-		switch (type)
-		{
+        case EScalarType::u8:  return GL_UNSIGNED_BYTE;
+        case EScalarType::u16: return GL_UNSIGNED_SHORT;
+        case EScalarType::u32: return GL_UNSIGNED_INT;
 
-			case EScalarType::i8:
-				return GL_BYTE;
+        case EScalarType::f32: return GL_FLOAT;
+        case EScalarType::f64: return GL_DOUBLE;
 
-			case EScalarType::i16:
-				return GL_SHORT;
+        default: return GL_NONE;
+        }
+    }
 
-			case EScalarType::i32:
-				return GL_INT;
+    HVertexArray VertexArray_ctor(str_view label)
+    {
+        VertexArray_impl impl;
 
-			case EScalarType::u8:
-				return GL_UNSIGNED_BYTE;
+        return g_VertexArrays.insert(
+            label,
+            std::move(impl));
+    }
 
-			case EScalarType::u16:
-				return GL_UNSIGNED_SHORT;
+    void VertexArray_dtor(HVertexArray& hVertexArray)
+    {
+        if (!hVertexArray)
+            return;
+        
 
-			case EScalarType::u32:
-				return GL_UNSIGNED_INT;
+        glDeleteVertexArrays(1, &hVertexArray->vao);
 
-			case EScalarType::f32:
-				return GL_FLOAT;
+        g_VertexArrays.destroy(hVertexArray);
+        hVertexArray = nullptr;
+    }
 
-			case EScalarType::f64:
-				return GL_DOUBLE;
+    bool VertexArray_valid(const HVertexArray& hVertexArray)
+    {
+        return g_VertexArrays.valid(hVertexArray);
+    }
 
-			default:
-				return GL_NONE;
+    bool VertexArray_bind(const HVertexArray& hVertexArray)
+    {
+        if (!hVertexArray)
+            return false;
 
-		}
-	}
+        if (!g_VertexArrays.valid(hVertexArray))
+            return false;
 
-	HVertexArray VertexArray_ctor(str_view label) {
-		GLuint hVertexArray = 0;
-		glGenVertexArrays(1, &hVertexArray);
-
-
-		return HVertexArray(g_VertexArrays.insert(label, VertexArray_impl{hVertexArray}));
-
-	}
-
-	void VertexArray_dtor(HVertexArray& hVertexArray) {
-		if (!g_VertexArrays.valid(hVertexArray)) return;
-
-		auto* pVertexArray = g_VertexArrays.try_get(hVertexArray);
-
-		if (!pVertexArray) return;
-		glDeleteVertexArrays(1, &pVertexArray->hVertexArray);
-		g_VertexArrays.destroy(hVertexArray);
-		
-	}
-
-	bool VertexArray_bind(const HVertexArray& hVertexArray) {
-		auto* pVertexArray = g_VertexArrays.try_get(hVertexArray);
-		if (!pVertexArray) return 0;
-
-		glBindVertexArray(pVertexArray->hVertexArray);
-
-		return 1;
-	}
-
-	bool VertexArray_valid(const HVertexArray& hVertexArray) {
-		return g_VertexArrays.valid(hVertexArray);
-	}
-
-
+        glBindVertexArray(hVertexArray->vao);
+        return true;
+    }
 
 }

@@ -1,38 +1,26 @@
 #pragma once
+
 #include "VertexLayoutDesc.h"
-#include <Handle.h>
-#include <rhi_Resource.h>
-
-
+#include <Resource.h>
 
 namespace qk::gfx::rhi {
 
-	struct HVertexLayout : Handle {};
+    struct VertexLayout_impl;
 
-	/*
-	HVertexLayout	VertexLayout_ctor(const VertexLayout_recipe& desc);
+    using RVertexLayout = VertexLayout_impl*;
 
-	bool			VertexLayout_dtor(const HVertexLayout& hLayout);
+    RVertexLayout VertexLayout_ctor(
+        str_view label,
+        const VertexLayout_recipe& desc);
 
-	bool			VertexLayout_valid(const HVertexLayout& hLayout);
+    bool VertexLayout_dtor(
+        RVertexLayout& hLayout);
 
-	// NOTICE: This assumes a VertexArray has already been bound.
-	bool			VertexLayout_apply(const HVertexLayout& hLayout);
-	*/
+    bool VertexLayout_valid(
+        const RVertexLayout& hLayout);
 
+    // NOTICE: This assumes a VertexArray has already been bound.
+    bool VertexLayout_apply(
+        const RVertexLayout& hLayout);
 
-
-	struct RVertexLayout : Resource{};
-
-	RVertexLayout	VertexLayout_ctor(str_view label, const VertexLayout_recipe& desc);
-
-	bool			VertexLayout_dtor(const RVertexLayout& hLayout);
-
-	bool			VertexLayout_valid(const RVertexLayout& hLayout);
-
-	// NOTICE: This assumes a VertexArray has already been bound.
-	bool			VertexLayout_apply(const RVertexLayout& hLayout);
-
-
-
-} // namespace qk::gfx::rhi
+}

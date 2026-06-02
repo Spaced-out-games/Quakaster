@@ -49,9 +49,9 @@ void Sandbox::init(int argc, char** argv) {
 
 	materials["mat_solid"].set_recipe = sets["CameraDataDescriptorSet"];
 
-	rhi::RMaterial material = rhi::Material_ctor(
+	auto material = rhi::Material_ctor(
 		materials["mat_solid"]
-	).value();
+	);
 
 
 	rhi::HVertexArray vao = rhi::VertexArray_ctor("tri_mesh");
@@ -61,13 +61,14 @@ void Sandbox::init(int argc, char** argv) {
 
 	rhi::VertexLayout_apply(hLayout);
 	
+//	std::cout << material.error();
 
-
+	auto mat = material.value();
 
 	rhi::CommandBuffer_recipe CmdBufDesc;
 	CmdBufDesc
 		.push(rhi::ClearCommand_desc{ 0.0,1.0,0.0,0.0, rhi::Color })
-		.push(rhi::DrawArrays_desc{ material, vao, rhi::Triangle, 0, 3 });
+		.push(rhi::DrawArrays_desc{ mat, vao, rhi::Triangle, 0, 3});
 
 
 	CmdBuf = rhi::CommandBuffer_ctor(CmdBufDesc);

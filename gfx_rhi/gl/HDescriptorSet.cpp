@@ -1,127 +1,161 @@
 #include "HDescriptorSet.h"
+#include <Resource.h>
 #include <glad/glad.h>
 
 namespace qk::gfx::rhi {
 
+    struct DescriptorSet_impl : qk::Resource
+    {
+        DescriptorSet_createinfo descriptors;
+    };
 
-	struct DescriptorSet_impl : public std::vector<Descriptor> {};
+    static inline qk::ResourceRegistry<DescriptorSet_impl>
+        g_DescriptorSets;
 
+    // ---------------- ctor ----------------
 
-	qk::HandleResourceRegistry<DescriptorSet_impl, HDescriptorSet> g_DescriptorSets;
+    HDescriptorSet DescriptorSet_ctor(
+        const DescriptorSet_createinfo& info)
+    {
+        DescriptorSet_impl impl;
+        impl.descriptors = info;
 
-	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_createinfo& info) {
-		return g_DescriptorSets.insert(DescriptorSet_impl{ info });
-	}
+        auto res = g_DescriptorSets.insert(
+            "descriptor_set",
+            std::move(impl));
+        return res;
+    }
 
-	void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet) {
+    // ---------------- dtor ----------------
 
-		QK_ASSERT(g_DescriptorSets.valid(hDescriptorSet));
+    void DescriptorSet_dtor(HDescriptorSet& hDescriptorSet)
+    {
+        if (!hDescriptorSet)
+            return;
 
-		g_DescriptorSets.destroy(hDescriptorSet);
+        g_DescriptorSets.destroy(hDescriptorSet);
+        hDescriptorSet = nullptr;
+    }
 
-	}
+    // ---------------- bind ----------------
 
-	bool DescriptorSet_bind(const HDescriptorSet& hDescriptorSet) {
-		QK_ASSERT(g_DescriptorSets.valid(hDescriptorSet));
+    bool DescriptorSet_bind(HDescriptorSet hDescriptorSet)
+    {
+        if (!hDescriptorSet)
+            return false;
 
-		const auto& DescriptorSet = g_DescriptorSets.get(hDescriptorSet);
+        auto* set = hDescriptorSet;
+        auto& descriptors = set->descriptors;
 
-		for (auto& desc : DescriptorSet) {
+        for (auto& desc : descriptors)
+        {
+            switch (desc.type)
+            {
+            case EDescriptorType::Texture:
+                if (!Texture_valid(desc.texture.hTex))
+                    return false;
 
+                Texture_bind(
+                    desc.texture.hTex,
+                    desc.binding);
+                break;
 
-			switch (desc.type)
-			{
-				case EDescriptorType::Texture:
-					QK_ASSERT(Texture_valid(desc.texture.hTex));
-					if (!Texture_valid(desc.texture.hTex)) { return 0; }
-					Texture_bind(desc.texture.hTex, desc.binding);
-					break;
-				case EDescriptorType::UniformBuffer:
-					QK_ASSERT(UniformBuffer_valid(desc.uniform.hBuf));
-					if (!UniformBuffer_valid(desc.uniform.hBuf)) { return 0; }
-					UniformBuffer_bind(desc.uniform.hBuf, desc.binding);
-					break;
-				case EDescriptorType::StorageBuffer:
-					throw std::runtime_error("SSBO not implemented.");
-					break;
-				
-			default:
-				break;
-			}
-			
+            case EDescriptorType::UniformBuffer:
+                if (!UniformBuffer_valid(desc.uniform.hBuf))
+                    return false;
 
-		}
-		return 1;
+                UniformBuffer_bind(
+                    desc.uniform.hBuf,
+                    desc.binding);
+                break;
 
+            case EDescriptorType::StorageBuffer:
+                return false;
 
-	}
+            default:
+                break;
+            }
+        }
 
+        return true;
+    }
 
-	bool DescriptorSet_valid(const HDescriptorSet& hDescriptorSet) {
-		if (!g_DescriptorSets.valid(hDescriptorSet))
-			return 0;
+    // ---------------- valid ----------------
 
-		const auto& DescriptorSet = g_DescriptorSets.get(hDescriptorSet);
+    bool DescriptorSet_valid(HDescriptorSet hDescriptorSet)
+    {
+        if (!hDescriptorSet)
+            return false;
 
+        auto& descriptors = hDescriptorSet->descriptors;
 
-		for (auto& desc : DescriptorSet) {
+        for (auto& desc : descriptors)
+        {
+            switch (desc.type)
+            {
+            case EDescriptorType::Texture:
+                if (!Texture_valid(desc.texture.hTex))
+                    return false;
+                break;
 
+            case EDescriptorType::UniformBuffer:
+                if (!UniformBuffer_valid(desc.uniform.hBuf))
+                    return false;
+                break;
 
-			switch (desc.type)
-			{
-			case EDescriptorType::Texture:
-				if (!Texture_valid(desc.texture.hTex))
-					return 0;
-				break;
-			case EDescriptorType::UniformBuffer:
-				if(!Buffer_valid(RBuffer(desc.uniform.hBuf)))
-					return 0;
-				break;
-			case EDescriptorType::StorageBuffer:
-				return 0;
-				break;
-			
-			default:
-				break;
-			}
+            case EDescriptorType::StorageBuffer:
+                return false;
 
-		}
+            default:
+                break;
+            }
+        }
 
-		return 1;
+        return true;
+    }
 
-	}
-	
-	void DescriptorSet_bindProgram(const HDescriptorSet& hDescriptorSet, const RShaderProgram& hProgram) {
-		if (!g_DescriptorSets.valid(hDescriptorSet)) return;
+    // ---------------- bind program ----------------
 
-		const auto& set = g_DescriptorSets.get(hDescriptorSet);
+    void DescriptorSet_bindProgram(
+        HDescriptorSet hDescriptorSet,
+        RShaderProgram hProgram)
+    {
+        if (!hDescriptorSet)
+            return;
 
-		for (const auto& desc : set) {
+        auto& set = hDescriptorSet->descriptors;
 
+        for (const auto& desc : set)
+        {
+            switch (desc.type)
+            {
+            case EDescriptorType::Texture:
+                if (!Texture_valid(desc.texture.hTex))
+                    return;
 
-			switch (desc.type) {
-				case EDescriptorType::Texture:
-					if (!Texture_valid(desc.texture.hTex))
-						return;
-				case EDescriptorType::UniformBuffer:
-					if (!UniformBuffer_valid(desc.uniform.hBuf))
-						return;
-					ShaderProgram_bind_uniform_block(hProgram, desc.id.c_str(), desc.binding);
-					break;
-				case EDescriptorType::StorageBuffer:
-					throw std::runtime_error("SSBO not implemented.");
-				default:
-					break;
-			}
+                ShaderProgram_bind_uniform_block(
+                    hProgram,
+                    desc.id.c_str(),
+                    desc.binding);
+                break;
 
+            case EDescriptorType::UniformBuffer:
+                if (!UniformBuffer_valid(desc.uniform.hBuf))
+                    return;
 
+                ShaderProgram_bind_uniform_block(
+                    hProgram,
+                    desc.id.c_str(),
+                    desc.binding);
+                break;
 
+            case EDescriptorType::StorageBuffer:
+                return;
 
-			
-		}
-	}
-
-
-
+            default:
+                break;
+            }
+        }
+    }
 
 }

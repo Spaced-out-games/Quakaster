@@ -1,51 +1,49 @@
 #pragma once
-//#include "Uniform.h" we need this!!!
-#include <Handle.h>
-#include <Result.h>
-#include <rhi_Resource.h>
-#include <string>
-#include <core.h>
 
-using qk::Result;
+#include <core.h>
+#include <Result.h>
 
 namespace qk::gfx::rhi {
 
-	enum class ShaderType {
-		Vertex,
-		Fragment,
-		Geometry
-	};
+    enum class ShaderType {
+        Vertex,
+        Fragment,
+        Geometry
+    };
 
-	// ------------------------------------------------ SHADER ------------------------------------------------- //
+    struct Shader_impl;
+    using HShader = Shader_impl*;
 
+    Result<HShader, str> Shader_ctor(str_view label, ShaderType type);
 
+    str Shader_upload(
+        const HShader& hShader,
+        const str& source);
 
-	struct HShader : Handle {};
+    bool Shader_dtor(HShader& hShader);
 
-
-	Result<HShader, std::string> Shader_ctor(ShaderType type);
-	std::string Shader_upload(const HShader& hShader, const std::string& source);
-	bool Shader_dtor(HShader& hShader);
-	bool Shader_valid(const HShader& hShader);
-
-
-	// --------------------------------------------- SHADER PROGRAM --------------------------------------------- //
+    bool Shader_valid(const HShader& hShader);
 
 
-	struct HUniformBlock : Handle {};
+    struct ShaderProgram_impl;
+    using RShaderProgram = ShaderProgram_impl*;
 
+    Result<RShaderProgram, str>
+        ShaderProgram_ctor(
+            str_view label,
+            const HShader& hFragment,
+            const HShader& hVertex,
+            bool);
 
-	struct RShaderProgram: Resource {};
+    bool ShaderProgram_dtor(RShaderProgram& hProgram);
 
+    bool ShaderProgram_bind(const RShaderProgram& hProgram);
 
-	Result<RShaderProgram, std::string>
-	ShaderProgram_ctor(const HShader& hFragment, const HShader& hVertex, bool);
-	bool ShaderProgram_dtor(RShaderProgram& hProgram);
-	bool ShaderProgram_bind(const RShaderProgram& hProgram);
-	bool ShaderProgram_valid(const RShaderProgram& hProgram);
-	bool ShaderProgram_bind_uniform_block(const RShaderProgram& hProgram, const char* id, u8 slot);
+    bool ShaderProgram_valid(const RShaderProgram& hProgram);
 
-
-
+    bool ShaderProgram_bind_uniform_block(
+        const RShaderProgram& hProgram,
+        const char* id,
+        u8 slot);
 
 }

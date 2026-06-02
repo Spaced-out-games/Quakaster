@@ -25,6 +25,10 @@ namespace qk
 
     public:
 
+        ResourceRegistry() {
+            m_Resources.reserve(1024); // just see if this fixes it
+        }
+
         Resource_t* insert(
             str_view label,
             Resource_t&& resource);

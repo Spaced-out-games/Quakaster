@@ -1,122 +1,166 @@
 #include "HCommandBuffer.h"
 #include <glad/glad.h>
-
+#include <Resource.h>
 
 namespace qk::gfx::rhi {
 
-	//using CommandBuffer_impl = CommandBuffer_recipe;
+    struct CommandBuffer_impl : qk::Resource {
+        std::vector<DrawCommand_desc> commands;
+    };
 
-	struct CommandBuffer_impl {
-		std::vector<DrawCommand_desc> commands;
-	};
+    static inline ResourceRegistry<CommandBuffer_impl>
+        g_CommandBuffers;
 
+    static inline u64 g_CommandBufferCounter = 0;
 
-	static inline qk::HandleResourceRegistry<CommandBuffer_impl, HCommandBuffer> g_CommandBuffers;
+    inline GLbitfield ClearChannels_cast(
+        qk::gfx::rhi::ClearChannels channels)
+    {
+        GLbitfield result = 0;
 
+        if ((channels & ClearChannels::Color) == ClearChannels::Color)
+            result |= GL_COLOR_BUFFER_BIT;
 
+        if ((channels & ClearChannels::Depth) == ClearChannels::Depth)
+            result |= GL_DEPTH_BUFFER_BIT;
 
+        if ((channels & ClearChannels::Stencil) == ClearChannels::Stencil)
+            result |= GL_STENCIL_BUFFER_BIT;
 
-	inline GLbitfield ClearChannels_cast(qk::gfx::rhi::ClearChannels channels) {
-		GLbitfield result = 0;
+        return result;
+    }
 
-		if ((channels & qk::gfx::rhi::ClearChannels::Color) == qk::gfx::rhi::ClearChannels::Color)
-			result |= GL_COLOR_BUFFER_BIT;
+    inline GLuint PrimitiveType_cast(
+        PrimitiveTopology type)
+    {
+        switch (type)
+        {
+        case PrimitiveTopology::Triangle:
+            return GL_TRIANGLES;
 
-		if ((channels & qk::gfx::rhi::ClearChannels::Depth) == qk::gfx::rhi::ClearChannels::Depth)
-			result |= GL_DEPTH_BUFFER_BIT;
+        case PrimitiveTopology::Lines:
+            return GL_LINES;
 
-		if ((channels & qk::gfx::rhi::ClearChannels::Stencil) == qk::gfx::rhi::ClearChannels::Stencil)
-			result |= GL_STENCIL_BUFFER_BIT;
+        case PrimitiveTopology::Points:
+            return GL_POINTS;
 
-		return result;
-	}
+        case PrimitiveTopology::TriangleStrip:
+            return GL_TRIANGLE_STRIP;
 
-	inline GLuint PrimitiveType_cast(PrimitiveTopology type) {
-		switch (type)
-		{
-		case qk::gfx::rhi::PrimitiveTopology::Triangle:
-			return GL_TRIANGLES;
-		case qk::gfx::rhi::PrimitiveTopology::Lines:
-			return GL_LINES;
-		case qk::gfx::rhi::PrimitiveTopology::Points:
-			return GL_POINTS;
-		case qk::gfx::rhi::PrimitiveTopology::TriangleStrip:
-			return GL_TRIANGLE_STRIP;
-		case qk::gfx::rhi::PrimitiveTopology::LineStrip:
-			return GL_LINE_STRIP;
-		default:
-			return GL_TRIANGLES;
-			break;
-		}
-	}
+        case PrimitiveTopology::LineStrip:
+            return GL_LINE_STRIP;
 
+        default:
+            return GL_TRIANGLES;
+        }
+    }
 
-	bool DrawCommand_execute(const DrawCommand_desc& cmd)
-	{
-		switch (cmd.type)
-		{
-		case qk::gfx::rhi::DrawCommandType::Null:
-			return 1;
-		case qk::gfx::rhi::DrawCommandType::Clear:
-			glClearColor(cmd.clear.r, cmd.clear.g, cmd.clear.b, cmd.clear.a);
-			glClear(ClearChannels_cast(cmd.clear.channels));
-			return 1;
-		case qk::gfx::rhi::DrawCommandType::DrawArrays:
-			
-			if (!VertexArray_bind(cmd.drawArrays.mesh)) return 0;
+    bool DrawCommand_execute(
+        const DrawCommand_desc& cmd)
+    {
+        switch (cmd.type)
+        {
+        case DrawCommandType::Null:
+            return true;
 
-			if (!Material_bind(cmd.drawArrays.material)) return 0;
+        case DrawCommandType::Clear:
 
-			glDrawArrays(
-				PrimitiveType_cast(cmd.drawArrays.topology),
-				cmd.drawArrays.offset,
-				cmd.drawArrays.num_vertices);
-			return 1;
+            glClearColor(
+                cmd.clear.r,
+                cmd.clear.g,
+                cmd.clear.b,
+                cmd.clear.a);
 
-		default:
-			throw std::runtime_error("Not implemented!");
-			break;
-		}
+            glClear(
+                ClearChannels_cast(
+                    cmd.clear.channels));
 
-	}
+            return true;
 
+        case DrawCommandType::DrawArrays:
 
+            if (!VertexArray_bind(
+                cmd.drawArrays.mesh))
+            {
+                return false;
+            }
 
+            if (!Material_bind(
+                cmd.drawArrays.material))
+            {
+                return false;
+            }
 
+            glDrawArrays(
+                PrimitiveType_cast(
+                    cmd.drawArrays.topology),
+                cmd.drawArrays.offset,
+                static_cast<GLsizei>(
+                    cmd.drawArrays.num_vertices));
 
+            return true;
 
+        default:
+            throw std::runtime_error(
+                "Unhandled DrawCommandType");
+        }
+    }
 
-	HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& desc) {
-		return g_CommandBuffers.insert(CommandBuffer_impl{ desc.commands() });
-	}
+    HCommandBuffer CommandBuffer_ctor(
+        const CommandBuffer_recipe& desc)
+    {
+        CommandBuffer_impl impl;
+        impl.commands = desc.commands();
 
-	void CommandBuffer_dtor(const HCommandBuffer& hCmdBuf) {
-		g_CommandBuffers.destroy(hCmdBuf);
-	}
+        str label =
+            "__CommandBuffer_" +
+            std::to_string(
+                g_CommandBufferCounter++);
 
-	bool CommandBuffer_valid(const HCommandBuffer& hCmdBuf) {
-		return g_CommandBuffers.valid(hCmdBuf);
-	}
+        return g_CommandBuffers.insert(
+            label,
+            std::move(impl));
+    }
 
+    void CommandBuffer_dtor(
+        HCommandBuffer& hCmdBuf)
+    {
+        if (!hCmdBuf)
+            return;
 
-	bool CommandBuffer_execute(const HCommandBuffer& hCmdBuf) {
-		if (!g_CommandBuffers.valid(hCmdBuf)) return 0;
+        g_CommandBuffers.destroy(
+            hCmdBuf);
 
-		const auto& CmdBuf = g_CommandBuffers.get(hCmdBuf);
+        hCmdBuf = nullptr;
+    }
 
-		const auto& exec = CmdBuf.commands;
+    bool CommandBuffer_valid(
+        const HCommandBuffer& hCmdBuf)
+    {
+        return g_CommandBuffers.valid(
+            hCmdBuf);
+    }
 
-		for (auto& cmd : exec) {
+    bool CommandBuffer_execute(
+        const HCommandBuffer& hCmdBuf)
+    {
+        if (!hCmdBuf)
+            return false;
 
-			if (!DrawCommand_execute(cmd)) return 0;
+        if (!g_CommandBuffers.valid(
+            hCmdBuf))
+        {
+            return false;
+        }
 
-		}
+        for (const auto& cmd :
+            hCmdBuf->commands)
+        {
+            if (!DrawCommand_execute(cmd))
+                return false;
+        }
 
-		return 1;
-
-
-	}
-
-
+        return true;
+    }
 
 }
