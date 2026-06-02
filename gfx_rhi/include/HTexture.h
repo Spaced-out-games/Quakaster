@@ -29,7 +29,7 @@ namespace qk::gfx::rhi {
 
     void Texture_upload_2D(
         const HTexture& hTex,
-        const char* pData,
+        const u8* pData,
         int width,
         int height,
         int channels);

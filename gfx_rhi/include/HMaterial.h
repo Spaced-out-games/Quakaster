@@ -35,7 +35,7 @@ namespace qk::gfx::rhi {
     using RMaterial = Material_impl*;
 
     Result<RMaterial, str>
-        Material_ctor(const Material_recipe& MatInfo);
+    Material_ctor(const Material_recipe& MatInfo);
 
     void Material_dtor(RMaterial& hMaterial);
 

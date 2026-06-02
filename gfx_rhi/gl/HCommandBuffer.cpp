@@ -2,59 +2,11 @@
 #include <glad/glad.h>
 #include <Resource.h>
 #include <stdexcept>
+#include "rhi_globals.h"
 
 namespace qk::gfx::rhi {
 
-    struct CommandBuffer_impl : qk::Resource {
-        std::vector<DrawCommand_desc> commands;
-    };
 
-    static inline ResourceRegistry<CommandBuffer_impl>
-        g_CommandBuffers;
-
-    static inline u64 g_CommandBufferCounter = 0;
-
-    inline GLbitfield ClearChannels_cast(
-        qk::gfx::rhi::ClearChannels channels)
-    {
-        GLbitfield result = 0;
-
-        if ((channels & ClearChannels::Color) == ClearChannels::Color)
-            result |= GL_COLOR_BUFFER_BIT;
-
-        if ((channels & ClearChannels::Depth) == ClearChannels::Depth)
-            result |= GL_DEPTH_BUFFER_BIT;
-
-        if ((channels & ClearChannels::Stencil) == ClearChannels::Stencil)
-            result |= GL_STENCIL_BUFFER_BIT;
-
-        return result;
-    }
-
-    inline GLuint PrimitiveType_cast(
-        PrimitiveTopology type)
-    {
-        switch (type)
-        {
-        case PrimitiveTopology::Triangle:
-            return GL_TRIANGLES;
-
-        case PrimitiveTopology::Lines:
-            return GL_LINES;
-
-        case PrimitiveTopology::Points:
-            return GL_POINTS;
-
-        case PrimitiveTopology::TriangleStrip:
-            return GL_TRIANGLE_STRIP;
-
-        case PrimitiveTopology::LineStrip:
-            return GL_LINE_STRIP;
-
-        default:
-            return GL_TRIANGLES;
-        }
-    }
 
     bool DrawCommand_execute(
         const DrawCommand_desc& cmd)
@@ -107,8 +59,11 @@ namespace qk::gfx::rhi {
         }
     }
 
-    HCommandBuffer CommandBuffer_ctor(
-        const CommandBuffer_recipe& desc)
+
+
+
+
+    HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& desc)
     {
         CommandBuffer_impl impl;
         impl.commands = desc.commands();
@@ -123,42 +78,30 @@ namespace qk::gfx::rhi {
             std::move(impl));
     }
 
-    void CommandBuffer_dtor(
-        HCommandBuffer& hCmdBuf)
+    void CommandBuffer_dtor(HCommandBuffer& hCmdBuf)
     {
-        if (!hCmdBuf)
-            return;
+        if (!hCmdBuf)return;
 
-        g_CommandBuffers.destroy(
-            hCmdBuf);
+        g_CommandBuffers.destroy(hCmdBuf);
 
         hCmdBuf = nullptr;
     }
 
-    bool CommandBuffer_valid(
-        const HCommandBuffer& hCmdBuf)
+    bool CommandBuffer_valid(const HCommandBuffer& hCmdBuf)
     {
-        return g_CommandBuffers.valid(
-            hCmdBuf);
+        return g_CommandBuffers.valid(hCmdBuf);
     }
 
     bool CommandBuffer_execute(
         const HCommandBuffer& hCmdBuf)
     {
-        if (!hCmdBuf)
-            return false;
+        if (!hCmdBuf) return false;
 
-        if (!g_CommandBuffers.valid(
-            hCmdBuf))
-        {
-            return false;
-        }
+        if (!g_CommandBuffers.valid(hCmdBuf)) return false;
 
-        for (const auto& cmd :
-            hCmdBuf->commands)
+        for (const auto& cmd : hCmdBuf->commands)
         {
-            if (!DrawCommand_execute(cmd))
-                return false;
+            if (!DrawCommand_execute(cmd)) return false;
         }
 
         return true;

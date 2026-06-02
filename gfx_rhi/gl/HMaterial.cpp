@@ -2,19 +2,12 @@
 
 #include <format>
 #include <Resource.h>
-
+#include "rhi_globals.h"
 namespace qk::gfx::rhi {
 
-    struct Material_impl : qk::Resource
-    {
-        RShaderProgram program = nullptr;
-        HDescriptorSet descriptor_set = nullptr;
-    };
 
-    static inline qk::ResourceRegistry<Material_impl>
-        g_Materials;
 
-    static inline u32 g_material_index = 0;
+
 
     // ---------------- Material_recipe ----------------
 
@@ -47,54 +40,28 @@ namespace qk::gfx::rhi {
 
     // ---------------- internal build ----------------
 
-    static Result<Material_impl, str>
-        make_material(const Material_recipe& mat_recipe)
+    inline Result<Material_impl, str>
+    make_material(const Material_recipe& mat_recipe)
     {
-        auto vert =
-            Shader_ctor(
-                mat_recipe.vertName,
-                ShaderType::Vertex);
 
-        if (!vert)
-            return vert.error();
+        Shader_recipe vertRecipe = {
+            .source = mat_recipe.vertSrc,
+            .type = ShaderType::Vertex
+        };
 
-        auto vertUpload =
-            Shader_upload(
-                vert.value(),
-                mat_recipe.vertSrc);
+        Shader_recipe fragRecipe = {
+            .source = mat_recipe.fragSrc,
+            .type = ShaderType::Fragment
+        };
 
-        if (!vertUpload.empty())
-            return vertUpload;
+        
 
-        auto frag =
-            Shader_ctor(mat_recipe.fragName,
-                ShaderType::Fragment
-                );
-
-        if (!frag)
-            return frag.error();
-
-        auto fragUpload =
-            Shader_upload(
-                frag.value(),
-                mat_recipe.fragSrc);
-
-        if (!fragUpload.empty())
-            return fragUpload;
-
-        auto program =
-            ShaderProgram_ctor(
-                mat_recipe.matName,
-                frag.value(),
-                vert.value(),
-                false);
+        auto program = ShaderProgram_ctor(mat_recipe.matName, vertRecipe, fragRecipe);
 
         if (!program)
             return program.error();
 
-        HDescriptorSet set =
-            DescriptorSet_ctor(
-                mat_recipe.set_recipe);
+        HDescriptorSet set = DescriptorSet_ctor(mat_recipe.set_recipe);
 
         Material_impl m;
         m.program = program.value();
@@ -106,7 +73,7 @@ namespace qk::gfx::rhi {
     // ---------------- public API ----------------
 
     Result<RMaterial, str>
-        Material_ctor(const Material_recipe& MatInfo)
+    Material_ctor(const Material_recipe& MatInfo)
     {
         auto mat_res = make_material(MatInfo);
 

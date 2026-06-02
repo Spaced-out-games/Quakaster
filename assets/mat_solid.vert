@@ -8,7 +8,10 @@ layout(std140) uniform CameraData {
 
 };
 
+out vec2 aUV;
+
 void main()
 {
     gl_Position = view * vec4(aPos, 1.0);
+	aUV = aPos.xy;
 }

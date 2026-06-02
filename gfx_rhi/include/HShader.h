@@ -19,29 +19,34 @@ namespace qk::gfx::rhi {
     };
 
 
-    struct Shader_impl;
-    using HShader = Shader_impl*;
+    //struct Shader_impl;
+    //using HShader = Shader_impl*;
 
-    Result<HShader, str> Shader_ctor(str_view label, ShaderType type);
+    //Result<HShader, str> Shader_ctor(str_view label, ShaderType type);
 
-    str Shader_upload(
-        const HShader& hShader,
-        const str& source);
+    //str Shader_upload(
+    //    const HShader& hShader,
+    //    const str& source);
 
-    bool Shader_dtor(HShader& hShader);
+    //bool Shader_dtor(HShader& hShader);
 
-    bool Shader_valid(const HShader& hShader);
+    //bool Shader_valid(const HShader& hShader);
 
 
     struct ShaderProgram_impl;
     using RShaderProgram = ShaderProgram_impl*;
 
+
+    Result<RShaderProgram, str>
+    ShaderProgram_ctor(str_view label, const Shader_recipe& vertRecipe, const Shader_recipe& fragRecipe);
+
+    /*
     Result<RShaderProgram, str>
         ShaderProgram_ctor(
             str_view label,
             const HShader& hFragment,
             const HShader& hVertex,
-            bool);
+            bool);*/
 
     bool ShaderProgram_dtor(RShaderProgram& hProgram);
 

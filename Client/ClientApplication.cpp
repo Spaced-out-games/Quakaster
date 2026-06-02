@@ -5,11 +5,16 @@ using namespace qk::media;
 
 
 std::vector<Vertex> g_Vertices = {
-		{  0.0f,  0.5f, 0.0f },
-		{ -0.5f, -0.5f, 0.0f },
-		{  0.5f, -0.5f, 0.0f }
+	{-1.0f,  1.0f, 0.0f}, // top-left
+	{-1.0f, -1.0f, 0.0f}, // bottom-left
+	{ 1.0f,  1.0f, 0.0f}, // top-right
+	{ 1.0f, -1.0f, 0.0f}, // bottom-right
 };
 
+#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
+
+
+static rhi::HTexture hTex;
 
 void Sandbox::init(int argc, char** argv) {
 	init_subsystems();
@@ -22,6 +27,17 @@ void Sandbox::init(int argc, char** argv) {
 	auto sets = qk::media::DescriptorSetsFromJSON(j["descriptor_sets"]).value();
 
 
+
+	// load texture
+	qk::media::Image img;
+	qk::media::load_image(img, TEST_IMAGE_PATH); 
+
+	auto tex_res = rhi::Texture_ctor("uTex", rhi::TextureType::TEX_2D);
+	hTex = tex_res.value();
+	rhi::Texture_upload_2D(hTex, img.data(), img.width(), img.height(), img.channels());
+
+
+
 	// load layouts
 	if (!layouts) {
 		spdlog::critical("{}", layouts.error());
@@ -32,7 +48,9 @@ void Sandbox::init(int argc, char** argv) {
 
 
 	// update the camera UBO
-	g_Camera.view = glm::translate(g_Camera.view, { 0,0.5,0 });
+	g_Camera.view = glm::translate(g_Camera.view, { 1.0,1.0,0 });
+	g_Camera.view = glm::scale(g_Camera.view, { 2,2,1 });
+
 
 	// upload vertex data
 	rhi::RVertexBuffer vbo = rhi::VertexBuffer_ctor("vbo", rhi::StaticDraw);
@@ -60,18 +78,28 @@ void Sandbox::init(int argc, char** argv) {
 	rhi::VertexBuffer_bind(vbo);
 
 	rhi::VertexLayout_apply(hLayout);
-	
-//	std::cout << material.error();
 
+	if (!material) {
+		spdlog::error("{}", material.error());
+		std::abort();
+	}
+	
 	auto mat = material.value();
 
 	rhi::CommandBuffer_recipe CmdBufDesc;
 	CmdBufDesc
-		.push(rhi::ClearCommand_desc{ 0.0,1.0,0.0,0.0, rhi::Color })
-		.push(rhi::DrawArrays_desc{ mat, vao, rhi::Triangle, 0, 3});
+		.push(rhi::ClearCommand_desc{ 1.0,0.0,1.0,0.0, rhi::Color })
+		.push(rhi::DrawArrays_desc{ mat, vao, rhi::TriangleStrip, 0, g_Vertices.size()});
 
 
 	CmdBuf = rhi::CommandBuffer_ctor(CmdBufDesc);
+
+
+
+	rhi::Texture_bind(hTex, 0);
+
+
+
 
 }
 

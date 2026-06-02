@@ -1,36 +1,17 @@
 #include "HDescriptorSet.h"
-#include <Resource.h>
+#include "rhi_globals.h"
 #include <glad/glad.h>
-#include <iostream> // temp
+#include <Resource.h>
 namespace qk::gfx::rhi {
 
-    struct Descriptor_impl: public Descriptor {
 
 
-        // we need a linker!
-        union {
-            Texture_desc texture;
-            UniformBuffer_desc uniform;
-            StorageBuffer_desc storage;
-        };
-        Descriptor_impl() = default;
-        Descriptor_impl(EDescriptorType type, u8 binding, str id, UniformBuffer_desc uniform = {}) :
-            Descriptor(type, binding, id), uniform(uniform) {
-
-        }
-    };
 
 
-    struct DescriptorSet_impl : qk::Resource
-    {
-        std::vector<Descriptor_impl> descriptors;
-    };
-
-    static inline qk::ResourceRegistry<DescriptorSet_impl>
-        g_DescriptorSets;
 
 
-    // ---------------- ctor ----------------
+
+
 
     // NOTE: this is NOT complete!!! It's intended to be a BASIC test with UBOs.
     bool DescriptorSet_LNK(const Descriptor& desc, DescriptorSet_impl& impl) {
@@ -42,8 +23,7 @@ namespace qk::gfx::rhi {
 
 
 
-    HDescriptorSet DescriptorSet_ctor(
-        const DescriptorSet_createinfo& info)
+    HDescriptorSet DescriptorSet_ctor(const DescriptorSet_createinfo& info)
     {
         DescriptorSet_impl impl;
 
@@ -60,7 +40,6 @@ namespace qk::gfx::rhi {
         return res;
     }
 
-    // ---------------- dtor ----------------
 
     void DescriptorSet_dtor(HDescriptorSet& hDescriptorSet)
     {
@@ -71,7 +50,6 @@ namespace qk::gfx::rhi {
         hDescriptorSet = nullptr;
     }
 
-    // ---------------- bind ----------------
 
     bool DescriptorSet_bind(HDescriptorSet hDescriptorSet)
     {

@@ -26,7 +26,7 @@ namespace qk::gfx::rhi {
         return g_Textures.insert(label, std::move(tex));
     }
 
-    void Texture_upload_2D(const HTexture& hTex, const char* pData,
+    void Texture_upload_2D(const HTexture& hTex, const u8* pData,
         int width, int height, int channels) {
 
         if (!hTex) return;
@@ -47,7 +47,7 @@ namespace qk::gfx::rhi {
         glTexParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_MIN_FILTER,
-            GL_LINEAR);
+            GL_NEAREST);
 
         glTexParameteri(
             GL_TEXTURE_2D,
@@ -58,13 +58,13 @@ namespace qk::gfx::rhi {
         glTexParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_S,
-            GL_CLAMP_TO_EDGE
+            GL_REPEAT
         );
 
         glTexParameteri(
             GL_TEXTURE_2D,
             GL_TEXTURE_WRAP_T,
-            GL_CLAMP_TO_EDGE
+            GL_REPEAT
         );
     }
 
