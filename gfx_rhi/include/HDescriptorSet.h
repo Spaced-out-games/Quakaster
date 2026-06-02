@@ -23,6 +23,10 @@ namespace qk::gfx::rhi {
 
 	*/
 
+	struct Descriptor_impl;
+
+	struct DescriptorSet_impl;
+
 
 	enum class EDescriptorType {
 		Unknown,

@@ -4,14 +4,13 @@
 namespace qk::gfx::rhi {
 
 
+	struct DescriptorSet_impl : public std::vector<Descriptor> {};
 
-
-	using DescriptorSet_impl = std::vector<Descriptor>;
 
 	qk::HandleResourceRegistry<DescriptorSet_impl, HDescriptorSet> g_DescriptorSets;
 
 	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_createinfo& info) {
-		return g_DescriptorSets.insert(info);
+		return g_DescriptorSets.insert(DescriptorSet_impl{ info });
 	}
 
 	void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet) {
