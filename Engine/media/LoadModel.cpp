@@ -53,11 +53,11 @@ namespace qk::media {
 	// Vertex buffer layouts
 	// ---------------------------------------------------------------------------------------------------
 
-	Result<rhi::VertexAttribute_createinfo, str> VertexAttributeFromJSON(const json& j, u32& location) {
+	Result<rhi::VertexAttribute_recipe, str> VertexAttributeFromJSON(const json& j, u32& location) {
 		assert(j.is_object() && j.contains("type"));
 
 		// rename to `result`
-		rhi::VertexAttribute_createinfo info = {};
+		rhi::VertexAttribute_recipe info = {};
 		// location
 		if (j.contains("location")) {
 			if (!j["location"].is_number_unsigned()) {

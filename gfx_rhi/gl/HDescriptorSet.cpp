@@ -3,9 +3,6 @@
 
 namespace qk::gfx::rhi {
 
-	using Texture_impl = Texture_desc;
-
-	using UniformBuffer_impl = UniformBuffer_desc;
 
 
 

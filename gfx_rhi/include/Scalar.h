@@ -83,9 +83,7 @@ namespace qk::gfx::rhi {
         }
     }
 
-    // ------------------------------------------------------------
     // Compile-time mappings from C++ type -> EScalarType
-    // ------------------------------------------------------------
     template <typename T>
     constexpr EScalarType EScalarType_cast() {
         return EScalarType::unknown;
