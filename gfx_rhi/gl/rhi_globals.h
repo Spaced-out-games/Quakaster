@@ -164,6 +164,38 @@ namespace qk::gfx::rhi {
         return result;
     }
 
+    inline GLenum ShaderType_cast(ShaderType type)
+    {
+        switch (type)
+        {
+        case ShaderType::Vertex:
+            return GL_VERTEX_SHADER;
+        case ShaderType::Fragment:
+            return GL_FRAGMENT_SHADER;
+        case ShaderType::Geometry:
+            return GL_GEOMETRY_SHADER;
+        default:
+            throw std::runtime_error("Shader type not supported");
+            break;
+        }
+    }
+
+    inline GLbitfield ClearChannels_cast(ClearChannels channels)
+    {
+        GLbitfield result = 0;
+
+        if ((channels & ClearChannels::Color) == ClearChannels::Color)
+            result |= GL_COLOR_BUFFER_BIT;
+
+        if ((channels & ClearChannels::Depth) == ClearChannels::Depth)
+            result |= GL_DEPTH_BUFFER_BIT;
+
+        if ((channels & ClearChannels::Stencil) == ClearChannels::Stencil)
+            result |= GL_STENCIL_BUFFER_BIT;
+
+        return result;
+    }
+
     inline GLuint PrimitiveType_cast(PrimitiveTopology type)
     {
         switch (type)
@@ -340,6 +372,32 @@ namespace qk::gfx::rhi {
 
 
     };
+
+    struct ShaderProgram_impl : qk::Resource
+    {
+        GLuint hProgram = 0;
+        ShaderProgram_impl(GLuint hProgram): hProgram(hProgram) {}
+    };
+
+    struct Material_impl : qk::Resource
+    {
+        RShaderProgram program = nullptr;
+
+
+        HDescriptorSet descriptor_set = nullptr;
+    };
+
+    struct Descriptor_impl : public Descriptor {
+
+        // we need a linker!
+        union {
+            Texture_desc texture;
+            UniformBuffer_desc uniform;
+            StorageBuffer_desc storage;
+        };
+        Descriptor_impl() = default;
+        Descriptor_impl(EDescriptorType type, u8 binding, str id, UniformBuffer_desc uniform = {}) :
+            Descriptor(type, binding, id), uniform(uniform) {
 
     // --------------------------------------------------------- registries --------------------------------------------------------- //
 

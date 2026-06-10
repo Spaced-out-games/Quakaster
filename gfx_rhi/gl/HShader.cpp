@@ -142,6 +142,7 @@ namespace qk::gfx::rhi {
 
         str error;
 
+        // create program and link
         GLuint program = glCreateProgram();
 
         // attach and link all the shaders
