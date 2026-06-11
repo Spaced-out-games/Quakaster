@@ -37,6 +37,12 @@ FetchContent_Declare(
     GIT_TAG v3.12.0
 )
 
+FetchContent_Declare(
+    enet
+    GIT_REPOSITORY https://github.com/lsalzman/enet.git
+    GIT_TAG v1.3.18
+)
+
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -46,6 +52,7 @@ FetchContent_MakeAvailable(spdlog)
 FetchContent_MakeAvailable(glm)
 FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(entt)
+FetchContent_MakeAvailable(enet)
 FetchContent_MakeAvailable(nlohmann_json)
 
 
@@ -53,6 +60,7 @@ add_subdirectory(Core)
 add_subdirectory(gfx_rhi)
 add_subdirectory(Engine)
 add_subdirectory(Client)
+add_subdirectory(Server)
 
 
 

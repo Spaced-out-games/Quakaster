@@ -59,7 +59,7 @@ set(ENGINE_SOURCES
     
     
 
-      "media/LoadModel.cpp")
+      "media/LoadModel.cpp" "net/NetEndpoint.cpp" "net/PacketQueue.cpp" "net/Connection.cpp")
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})
@@ -73,7 +73,9 @@ target_link_libraries(${PROJECT_NAME}
         EnTT::EnTT
         nlohmann_json::nlohmann_json
         spdlog::spdlog
-
+        enet
+        ws2_32 # windows-specific for enet
+        winmm# windows-specific for enet
     PRIVATE
         glfw
 )
@@ -82,11 +84,14 @@ target_link_libraries(${PROJECT_NAME}
 target_include_directories(Engine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${enet_SOURCE_DIR}/include
+
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../vendor
 )
 
-
+get_property(_targets DIRECTORY ${enet_SOURCE_DIR} PROPERTY BUILDSYSTEM_TARGETS)
+message(STATUS "[ENGINE] [DEBUG] enet_SOURCE_DIR : ${_targets}")
 message(STATUS "[ENGINE] [DEBUG] CMAKE_CURRENT_DIRECTORY: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 
