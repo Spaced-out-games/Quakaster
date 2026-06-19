@@ -58,7 +58,45 @@ namespace qk::net {
 				m_Queues[channel] = PacketQueue{};
 			}
 
+			size_t size() {
+				return m_Queues.size();
+			}
+			template <class packet_t>
+			bool push(const packet_t& value) {
+				constexpr u8 channel = Channel_traits<packet_t>::channel;
+
+				if (!m_Queues.contains(channel)) add_queue(channel);
+
+				return m_Queues.at(channel).push_outgoing(value);
+
+			}
+
+			template <class packet_t>
+			bool pop(packet_t& value) {
+				constexpr u8 channel = Channel_traits<packet_t>::channel;
+
+				if (!m_Queues.contains(channel)) add_queue(channel);
+
+				return m_Queues.at(channel).pop_incoming(value);
+
+			}
+
 	};
+
+
+	template <class T>
+	PacketQueueMap& operator<<(PacketQueueMap& map, const T& value) {
+		map.push(value);
+		return map;
+	}
+
+	template <class T>
+	PacketQueueMap& operator>>(PacketQueueMap& map, T& value) {
+		map.pop(value);
+
+		return map;
+	}
+
 
 
 }

@@ -1,35 +1,25 @@
 #pragma once
-#include <vector>
-#include "core.h"
-//#include "ByteStream.h"
-#include <string.h>
-
-using namespace qk::utility;
-
-namespace qk::utility {
-	class ByteStream;
-}
-
+#include "ByteStream.h"
+#include <cstring>
 
 namespace qk {
 
-	template <class T>
-	//requires std::is_trivially_copyable_v<T>
-	bool serialize(ByteStream& bs, const T& value) {
-		bs.write_impl(&value, sizeof(T));
-		return 1;
-	}
+    template<class T>
+    bool serialize(utility::ByteStream& bs, const T& value)
+    {
+        return bs.write_impl(&value, sizeof(T));
+    }
 
-	template <class T>
-	bool deserialize(ByteStream& bs, T& value) {
+    template<class T>
+    bool deserialize(utility::ByteStream& bs, T& value)
+    {
+        const u8* ptr = bs.read_impl(sizeof(T));
 
-		//const u8* pArchive = bs.read_impl(sizeof(T))
+        if (!ptr)
+            return false;
 
-		//if (!pArchive) return false;
+        memcpy(&value, ptr, sizeof(T));
+        return true;
+    }
 
-		//memcpy(&value, pArchive, sizeof(T));
-
-		return true;
-
-	}
 }
