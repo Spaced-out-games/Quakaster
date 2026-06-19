@@ -1,105 +1,64 @@
 #pragma once
+#include "../utility/ByteStream.h"
+#include "../utility/Serialize.h"
 #include <unordered_map>
-#include <enet/enet.h>
-#include <type_traits>
-#include <queue>
-#include "core.h"
-#include <cstring>
 
+using qk::utility::ByteStream;
 
 namespace qk::net {
 
-	// packets and packet queues
-
-	template <class payload_t>
+	template <class packet_t>
 	struct Channel_traits {
-
+		//static constexpr u8 channel = 0;
 	};
 
 
-	enum PacketType : u32 {
-		STATUS_OKAY,
-		STATUS_CONNECT,
-		STATUS_DISCONNECT,
-		STATUS_RECEIVE,
-		// Successfully got a packet but it is too large
-		ERROR_PACKET_INVALID_SIZE,
-		ERROR_OUT_OF_MEMORY
 
-	};
-
-	struct Packet_header {
-		// IConnection* pConnection; // when we get that ball rolling
-		ENetPeer* pFrom = nullptr;
-		PacketType	type = STATUS_OKAY;
-		size_t		size = 0;
-		u8			channel = 0;
-
-	};
-
-	template <class payload_t>	
-	struct Packet: Packet_header {
-		payload_t payload;
-	};
-
-	struct IPacketQueue {
-		virtual void upload(
-			const void* pPayload,
-			size_t PayloadSize,
-			ENetPeer* pPeer,
-			PacketType type,
-			u8 channel
-		) = 0;
-
-		virtual ~IPacketQueue() = default;
-	};
-
-	template <class payload_t>
-	class PacketQueue : IPacketQueue {
-		static_assert(std::is_trivially_copyable_v<payload_t>, "Packet payloads must be trivially copyable");
+	struct PacketQueue {
+		qk::utility::ByteStream m_Incoming;
+		qk::utility::ByteStream m_Outgoing;
 
 
-		std::deque<Packet<payload_t>> m_Packets;
-
-
-		void upload(const void* pPayload, size_t PayloadSize, ENetPeer* pPeer, PacketType type, u8 channel) override {
-
-			assert(sizeof(payload_t) == PayloadSize);
-			assert(Channel_traits<payload_t>::channel == channel);
-			
-			if (sizeof(payload_t) != PayloadSize)
-				return;
-			
-			Packet<payload_t> pkt;
-			pkt.pFrom = pPeer;
-			pkt.size = PayloadSize;
-			pkt.type = type;
-			pkt.channel = channel;
-
-			if (pPayload) {
-				memcpy(&pkt.payload, pPayload, PayloadSize);
-			}
-			
-
-			m_Packets.push_back(pkt);
-
+		template <class packet_t>
+		bool push_incoming(const packet_t& packet) {
+			return qk::serialize(m_Incoming, packet);
 		}
 
-		std::deque<Packet<payload_t>>& queue() {
-			return m_Packets;
+		template <class packet_t>
+		bool push_outgoing(const packet_t& packet) {
+			return qk::serialize(m_Outgoing, packet);
 		}
 
-		const std::deque<Packet<payload_t>>& queue() {
-			return m_Packets;
+
+		template <class packet_t>
+		void pop_incoming(packet_t& packet) {
+			qk::serialize(m_Incoming, packet);
 		}
+
+		template <class packet_t>
+		void pop_outgoing(packet_t& packet) {
+			qk::deserialize(m_Outgoing, packet);
+		}
+
+		qk::utility::ByteStream& incoming() { return m_Incoming; }
+		qk::utility::ByteStream& outgoing() { return m_Outgoing; }
+
 
 	};
+
+
 
 	class PacketQueueMap {
-		std::unordered_map<u8, IPacketQueue*> m;
+		std::unordered_map<u8, PacketQueue> m_Queues;
+			
+		public:
+			void add_queue(u8 channel) {
+				if (m_Queues.contains(channel)) return;
+
+				m_Queues[channel] = PacketQueue{};
+			}
+
 	};
-
-
 
 
 }

@@ -59,7 +59,7 @@ set(ENGINE_SOURCES
     
     
 
-      "media/LoadModel.cpp" "net/NetEndpoint.cpp" "net/PacketQueue.cpp" "net/Connection.cpp")
+      "media/LoadModel.cpp"    "utility/ByteStream.cpp"  "net/PacketQueue.cpp")
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})

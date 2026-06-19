@@ -1,9 +1,49 @@
 #include <entrypoint.h>
-#include "net/NetEndpoint.h"
+#include "net/Endpoint.h"
 #include "platform/Application.h"
 #include <spdlog/spdlog.h>
 
-class ServerApp : public qk::Application, public qk::net::NetEndpoint
+/*
+using namespace qk::net;
+
+class ServerApp : public qk::Application { //, qk::net::NetEndpoint {
+    Endpoint ep;
+
+    void init(int argc, char** argv) override {
+
+
+        spdlog::info("Server Initialized.");
+
+
+        ep.init("127.0.0.1", 7777, 32, 32);
+
+        ep.on_connect_pfn = [](Endpoint&, const ENetEvent&, Connection* pConnection) {
+            spdlog::info("connection event");
+
+        };
+
+        ep.on_disconnect_pfn = [](Endpoint&, const ENetEvent&, Connection* pConnection) {
+            spdlog::info("disconnection event");
+
+        };
+
+        ep.on_receive_pfn = [](Endpoint&, const ENetEvent&, Connection* pConnection) {
+            spdlog::info("received event");
+        };
+
+
+    }
+    void run() override {
+        ep.flush();
+    }
+
+    void shutdown() override {}
+
+};
+
+*/
+/*
+class ServerAppOld : public qk::Application, public qk::net::NetEndpoint
 {
 
     ChatMessage incoming;
@@ -58,7 +98,7 @@ public:
     {
         disconnect();
     }
-};
+};*/
 
 std::unique_ptr<qk::Application>
 qk::create_application(int argc, char** argv)
