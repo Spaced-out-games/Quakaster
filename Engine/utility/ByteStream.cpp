@@ -4,7 +4,7 @@
 namespace qk::utility {
 
 
-    bool ByteStream::write_impl(const void* data, size_t size)
+    bool ByteStream::write(const void* data, size_t size)
     {
         size_t old = m_buffer.size();
         m_buffer.resize(old + size);
@@ -13,7 +13,7 @@ namespace qk::utility {
         return true; // for now
     }
 
-    const u8* ByteStream::read_impl(size_t size)
+    const u8* ByteStream::read(size_t size)
     {
 
         if (m_offset + size > m_buffer.size())

@@ -1,107 +1,63 @@
-#include <entrypoint.h>
+// setup
+#include <platform/Quakaster.h>
+#include "entrypoint.h"
+#include "core.h"
+#include "net/ChatMessage.h"
 #include "net/Endpoint.h"
+
+// standard library
+//#include <filesystem>
+#include <iostream>
+#include <vector>
+#include <memory>
+
+// platform
 #include "platform/Application.h"
+#include "platform/Window.h"
 #include <spdlog/spdlog.h>
 
-/*
-using namespace qk::net;
-
-class ServerApp : public qk::Application { //, qk::net::NetEndpoint {
-    Endpoint ep;
-
-    void init(int argc, char** argv) override {
+using qk::net::Endpoint;
+using qk::net::Connection;
 
 
-        spdlog::info("Server Initialized.");
+class ServerApp : public qk::Application {
+
+	Endpoint ep;
+
+	void init(int argc, char** argv) override {
+
+		ep.init(nullptr, 7777);
+		ep.on_connect = [](Endpoint& ep, Connection* pConnection) {
+			pConnection->add_queue<ChatMessage>();
+			spdlog::info("Client connected!");
+		};
+
+		ep.on_receive = [](Endpoint& ep, Connection* pConnection) {
+			ChatMessage msg;
+
+			bool status = pConnection->pop(msg);
+
+			if(status)
+				spdlog::info("[CLIENT]: {}", msg.msg);
+
+		};
+
+		
 
 
-        ep.init("127.0.0.1", 7777, 32, 32);
+		//map.push(ChatMessage{ "Hello World" });
 
-        ep.on_connect_pfn = [](Endpoint&, const ENetEvent&, Connection* pConnection) {
-            spdlog::info("connection event");
+	}
 
-        };
+	void run() override {
+		ep.flush();
+	}
 
-        ep.on_disconnect_pfn = [](Endpoint&, const ENetEvent&, Connection* pConnection) {
-            spdlog::info("disconnection event");
-
-        };
-
-        ep.on_receive_pfn = [](Endpoint&, const ENetEvent&, Connection* pConnection) {
-            spdlog::info("received event");
-        };
-
-
-    }
-    void run() override {
-        ep.flush();
-    }
-
-    void shutdown() override {}
+	void shutdown() override {
+	}
 
 };
 
-*/
-/*
-class ServerAppOld : public qk::Application, public qk::net::NetEndpoint
-{
-
-    ChatMessage incoming;
-public:
-
-    void init(int argc, char** argv) override
-    {
-        ENetAddress addr{};
-        addr.host = ENET_HOST_ANY;
-        addr.port = 7777;
-
-        if (!NetEndpoint::init(&addr))
-        {
-            spdlog::error("[SERVER]: Failed to start server");
-            setStatus(1);
-            return;
-        }
-
-        spdlog::info("[SERVER]: Listening on port 7777");
-    }
-
-    void run() override
-    {
-        auto evt = receive_impl(&incoming, sizeof(incoming), 100);
-
-        switch (evt.type)
-        {
-        case qk::net::STATUS_CONNECT:
-            spdlog::info("[SERVER]: Client connected");
-
-            send_impl("[SERVER]: Welcome!", 256, 0);
-            break;
-
-        case qk::net::STATUS_DISCONNECT:
-            spdlog::info("[SERVER]: Client disconnected");
-            break;
-
-        case qk::net::STATUS_RECEIVE:
-        {
-
-            spdlog::info("[CLIENT]: {}", incoming.msg);
-
-            break;
-        }
-
-        default:
-            break;
-        }
-    }
-
-    void shutdown() override
-    {
-        disconnect();
-    }
-};*/
-
-std::unique_ptr<qk::Application>
-qk::create_application(int argc, char** argv)
-{
-    return std::make_unique<ServerApp>();
+std::unique_ptr<qk::Application> qk::create_application(int argc, char** argv) {
+	return std::make_unique<ServerApp>();
 }

@@ -8,95 +8,77 @@ using qk::utility::ByteStream;
 namespace qk::net {
 
 	template <class packet_t>
-	struct Channel_traits {
-		//static constexpr u8 channel = 0;
-	};
+	struct Channel_traits;
 
 
-
+	// Stores the incoming and outgoing packets for one channel.
 	struct PacketQueue {
-		qk::utility::ByteStream m_Incoming;
-		qk::utility::ByteStream m_Outgoing;
 
+		ByteStream m_Incoming;
+		ByteStream m_Outgoing;
 
+		// Push a packet to the incoming queue
 		template <class packet_t>
-		bool push_incoming(const packet_t& packet) {
-			return qk::serialize(m_Incoming, packet);
-		}
+		bool push_incoming(const packet_t& packet);
 
+		// Push a packet to the outgoing queue
 		template <class packet_t>
-		bool push_outgoing(const packet_t& packet) {
-			return qk::serialize(m_Outgoing, packet);
-		}
+		bool push_outgoing(const packet_t& packet);
 
-
+		/* 
+		* Pop a packet from the incoming queue, writing to `packet`.
+		* Returns true if `packet` was successfully written to
+		*/ 
 		template <class packet_t>
-		void pop_incoming(packet_t& packet) {
-			qk::serialize(m_Incoming, packet);
-		}
+		bool pop_incoming(packet_t& packet);
 
+		/*
+		* Pop a packet from the incoming queue, writing to `packet`.
+		* Returns true if `packet` was successfully written to
+		*/
 		template <class packet_t>
-		void pop_outgoing(packet_t& packet) {
-			qk::deserialize(m_Outgoing, packet);
-		}
+		bool pop_outgoing(packet_t& packet);
+		
+		// Reference to incoming queue
+		ByteStream& incoming();
 
-		qk::utility::ByteStream& incoming() { return m_Incoming; }
-		qk::utility::ByteStream& outgoing() { return m_Outgoing; }
-
+		// Reference to outgoing queue
+		ByteStream& outgoing();
 
 	};
 
 
-
+	// Maps a channel to a packetqueue, and by consequence, a type to its queue.
 	class PacketQueueMap {
+		protected:
+		public:
+
+		// type erased queues
 		std::unordered_map<u8, PacketQueue> m_Queues;
 			
-		public:
-			void add_queue(u8 channel) {
-				if (m_Queues.contains(channel)) return;
-
-				m_Queues[channel] = PacketQueue{};
-			}
-
-			size_t size() {
-				return m_Queues.size();
-			}
 			template <class packet_t>
-			bool push(const packet_t& value) {
-				constexpr u8 channel = Channel_traits<packet_t>::channel;
+			void add_queue();
 
-				if (!m_Queues.contains(channel)) add_queue(channel);
-
-				return m_Queues.at(channel).push_outgoing(value);
-
-			}
+			size_t size() const;
 
 			template <class packet_t>
-			bool pop(packet_t& value) {
-				constexpr u8 channel = Channel_traits<packet_t>::channel;
+			bool push(const packet_t& value);
 
-				if (!m_Queues.contains(channel)) add_queue(channel);
-
-				return m_Queues.at(channel).pop_incoming(value);
-
-			}
+			template <class packet_t>
+			bool pop(packet_t& value);
 
 	};
 
 
 	template <class T>
-	PacketQueueMap& operator<<(PacketQueueMap& map, const T& value) {
-		map.push(value);
-		return map;
-	}
+	PacketQueueMap& operator<<(PacketQueueMap& map, const T& value);
 
 	template <class T>
-	PacketQueueMap& operator>>(PacketQueueMap& map, T& value) {
-		map.pop(value);
-
-		return map;
-	}
+	PacketQueueMap& operator>>(PacketQueueMap& map, T& value);
 
 
 
 }
+
+
+#include "PacketQueue.inl"
