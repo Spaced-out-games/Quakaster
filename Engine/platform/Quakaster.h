@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// platform/Quakaster.h 
+/// Purpose: Manages platform initialization and shutdown
+/// **************************************************************************************************
 #pragma once
 #include "core.h"
 

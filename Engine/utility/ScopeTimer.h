@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// core/utility/ScopeTimer.h
+/// utility/ScopeTimer.h
 /// Purpose: Defines a type that records how much time passes between construction and destruction,
 /// outputting to some time aggregator
 /// **************************************************************************************************
@@ -8,6 +8,7 @@
 #include "core.h"
 
 namespace qk::utility {
+    // Times the duration of a scope
     struct QK_API ScopeTimer {
         uint64_t* m_pTarget = nullptr;
         uint64_t m_StartTime = 0;
@@ -16,7 +17,6 @@ namespace qk::utility {
 
         ~ScopeTimer();
 
-        // non-copyable
         ScopeTimer(const ScopeTimer&) = delete;
         ScopeTimer& operator=(const ScopeTimer&) = delete;
 

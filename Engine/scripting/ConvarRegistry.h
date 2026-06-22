@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// console/ConvarRegistry.h
+/// scripting/ConvarRegistry.h
 /// Purpose: Wraps convar storage in a convenient hash map
 /// ************************************************************************************************** 
 

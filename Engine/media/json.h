@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// media/json.h
+/// Purpose: Defines an interface to load and work with JSON files
+/// **************************************************************************************************
 #pragma once
 #include <nlohmann/json.hpp>
 
@@ -5,13 +9,13 @@ namespace qk::media {
 
 	using json = nlohmann::json;
 
-	// todo: define some kind of interface for this to work
+	// Validates a path to ensure it is in the whitelist and in a relative path. Not implemented as of 06/20/26
 	bool validatePath(const std::filesystem::path& path);
 
-
+	// Loads a text file
 	std::string loadText(const std::filesystem::path& path);
 
-
+	// Loads a json file
 	json loadJSON(const std::filesystem::path& path);
 
 }

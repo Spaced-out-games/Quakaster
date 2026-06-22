@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// utility/AcceleratedLinkedList.h 
+/// Purpose: Maps keys to elements, while preserving insertion order
+/// **************************************************************************************************
 #pragma once
 #include <unordered_map>
 #include <stdint.h>

@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// spacial/SpatialHashMap.h 
+/// Purpose: Defines a spacial hash map for optimized spacial queries
+/// **************************************************************************************************
 #pragma once
 #include "core.h"
 #include <unordered_map>
@@ -6,7 +10,7 @@
 
 namespace qk::spacial {
 
-
+	// Defines 
 	using SpacialGridCell = glm::ivec3;
 
 	struct SpacialGridCellHash {
@@ -28,7 +32,7 @@ namespace qk::spacial {
 
 		std::unordered_map<SpacialGridCell, std::vector<value_t>, SpacialGridCellHash> m_Grid;
 
-
+		// Get the cell index for a position
 		SpacialGridCell cell(const glm::vec3& position) {
 			return {
 				(int)(std::floor(position.x / grid_size)),
@@ -36,7 +40,7 @@ namespace qk::spacial {
 				(int)(std::floor(position.z / grid_size))
 			};
 		}
-
+		// Insert a value_t at the given position in the spatial hash map
 		void insert(const glm::vec3& pos, const value_t& value) {
 			m_Grid[cell(pos)].push_back(value);
 		}

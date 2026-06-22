@@ -16,6 +16,7 @@ using namespace qk::utility;
 
 namespace qk::service {
 
+	// Maintains a registry of console variables and provides an interface to work with them
 	class QK_API ConvarService : IService {
 
 		

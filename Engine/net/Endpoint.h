@@ -1,3 +1,8 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// net/Endpoint.h 
+/// Purpose: Network endpoint that maintains a list of active connectinos, queues packets, and manages
+/// packet I/O
+/// **************************************************************************************************
 #pragma once
 #include "Connection.h"
 #include <memory>

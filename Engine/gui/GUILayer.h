@@ -1,14 +1,17 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// gui/GUILayer.h
+/// Purpose: Holds ImGui widgets and propagates input events to them
+/// **************************************************************************************************
 #pragma once
 #include "core.h"
 #include <io/Layer.h>
 #include "GUIWidget.h"
 #include <vector>
 #include <memory>
-//#include "SharedDefs.h"
 
 namespace qk::gfx::gui {
 
-	// Holds GUI widgets
+	// Holds ImGui widgets
 	struct QK_API GUILayer : qk::Layer {
 
 
@@ -35,7 +38,7 @@ namespace qk::gfx::gui {
 		GUILayer(void* hWindow);
 
 
-		// sorts widgets by their Z
+		// sorts widgets by their Z. Unimplemented.
 		void sort();
 
 		virtual void onRender() override;

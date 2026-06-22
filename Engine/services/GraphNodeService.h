@@ -28,6 +28,7 @@ namespace qk::service {
 		bool hasHeirarchy(entt::entity target);
 
 		// helper functions
+
 		entt::entity parent(entt::entity target);
 		entt::entity firstChild(entt::entity target);
 		entt::entity lastChild(entt::entity target);

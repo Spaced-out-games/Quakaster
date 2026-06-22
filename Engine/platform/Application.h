@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// core/core/Application.h
+/// platform/Application.h
 /// Purpose: Defines a basic interface for Quakaster applications
 /// ************************************************************************************************** 
 

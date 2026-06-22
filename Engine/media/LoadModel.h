@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// media/LoadModel.h (needs moved to gfx/ )
+/// Purpose: Loads JSON-based graphics pipelines
+/// **************************************************************************************************
 #pragma once
 #include <HMaterial.h>
 #include <VertexLayoutDesc.h>

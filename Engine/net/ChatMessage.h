@@ -1,9 +1,14 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// net/ChatMessage.h 
+/// Purpose: Serves as a basic example of a packet type compatable with Quakaster's networking library
+/// **************************************************************************************************
+
 #pragma once
 #include "PacketQueue.h"
 
 
 
-// Basic packet example
+// Basic message structure
 struct ChatMessage {
 	char msg[256]{};
 };

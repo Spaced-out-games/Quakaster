@@ -1,6 +1,6 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// core/Window.h
-/// Purpose: Defines a basic Window wrapper for GLFW calls.
+/// platform/Window.h
+/// Purpose: Defines a platform-specific window implementation
 /// ************************************************************************************************** 
 
 #pragma once
@@ -17,7 +17,7 @@ namespace qk {
 
 	void QK_API InitWindowEventSystem(Window& window);
 	
-
+	// platform-specific window implementation
 	class QK_API Window {
 		void* m_hWindow;
 
@@ -78,6 +78,7 @@ namespace qk {
 			Window();
 			~Window();
 
+			// implicit cast for qk::gfx::rhi::init
 			operator SymbolLoader();
 
 

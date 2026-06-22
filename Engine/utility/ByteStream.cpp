@@ -4,12 +4,12 @@
 namespace qk::utility {
 
 
-    bool ByteStream::write(const void* data, size_t size)
+    bool ByteStream::write(const void* pData, size_t size)
     {
         size_t old = m_buffer.size();
         m_buffer.resize(old + size);
 
-        std::memcpy(m_buffer.data() + old, data, size);
+        std::memcpy(m_buffer.data() + old, pData, size);
         return true; // for now
     }
 

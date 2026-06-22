@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// Core/fnv1a.h
+/// Purpose: Defines an engine-native compile-time string hash and related utilities
+/// **************************************************************************************************
 #pragma once
 #include <stdint.h>
 #include <string_view>
@@ -26,8 +30,9 @@ namespace qk {
 
 
 
-
+    // Stores a fnv1a string hash.
     struct string_hash {
+        // Might want to add the string contents as well sometime
         uint64_t hash;
 
         constexpr string_hash(const std::string_view& value)
@@ -37,6 +42,7 @@ namespace qk {
         constexpr operator uint64_t() const {
             return hash;
         }
+
 
         constexpr bool operator==(const string_hash& other) const {
             return hash == other.hash;

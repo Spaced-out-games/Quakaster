@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// net/Connection.h 
+/// Purpose: Manages a connection and packet queues for a foreign endpoint.
+/// **************************************************************************************************
 #pragma once
 #include "PacketQueue.h"
 #include <enet/enet.h>

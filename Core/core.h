@@ -2,6 +2,7 @@
 /// Core/core.h
 /// Purpose: Defines core Quakaster macros and types.
 /// **************************************************************************************************
+#pragma once
 #include <cassert>
 #include <stdint.h>
 #include <string_view>
@@ -23,14 +24,12 @@
 #define QK_API __declspec(dllimport)
 #endif
 #else
-#define QK_API  // static no decoration needed
+#define QK_API
 #endif
 
-// QK_Debug.h
-#pragma once
 
 #if defined(_MSC_VER)
-    // MSVC
+// MSVC
 #define QK_DEBUG_BREAK() __debugbreak()
 #elif defined(__GNUC__) || defined(__clang__)
 #include <signal.h>

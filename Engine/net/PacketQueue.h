@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// net/PacketQueue.h 
+/// Purpose: Stores serialized incoming and outgoing packets.
+/// **************************************************************************************************
 #pragma once
 #include "../utility/ByteStream.h"
 #include "../utility/Serialize.h"
@@ -59,13 +63,16 @@ namespace qk::net {
 			template <class packet_t>
 			void add_queue();
 
+			// get the number of queues
 			size_t size() const;
 
+			// push a packet
 			template <class packet_t>
-			bool push(const packet_t& value);
+			bool push(const packet_t& src);
 
+			// pop a packet
 			template <class packet_t>
-			bool pop(packet_t& value);
+			bool pop(packet_t& dest);
 
 	};
 

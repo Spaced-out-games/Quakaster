@@ -1,6 +1,6 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// console/Convar.h
-/// Purpose: Defines Convar interface
+/// scripting/Convar.h
+/// Purpose: Defines Console variables
 /// ************************************************************************************************** 
 
 

@@ -1,5 +1,5 @@
 #pragma once
-
+// Move to qk::gui::rhi or just outright qk::gui since this is pretty verbose lol
 namespace qk::gfx::rhi::gui {
 
 

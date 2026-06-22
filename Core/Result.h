@@ -1,10 +1,14 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// components/Result.h
+/// Purpose: in-house alias to std::expected
+/// **************************************************************************************************
 #pragma once
 #include <variant>
 #include <utility>
 
 namespace qk {
 
-	// ergonomic std::variant
+	// ergonomic std::variant. Should really just be replaced with std::expected.
 	template <typename... Args>
 	class Variant {
 		std::variant<Args...> m_Value;
@@ -53,8 +57,7 @@ namespace qk {
 
 	};
 
-
-
+	
 
 	template <class T, class E>
 	class Result {
@@ -97,5 +100,14 @@ namespace qk {
 
 	};
 
+	// Needs depricated
 	struct void_t {};
+
+
+	// Needs entirely implemented and swapped:
+	//template<typename T, typename E>
+	//using Result = std::expected<T, E>;
+
+	//template<typename E>
+	//using Error = std::unexpected<E>;
 }

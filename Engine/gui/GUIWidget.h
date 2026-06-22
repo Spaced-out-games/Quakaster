@@ -1,3 +1,7 @@
+/// **************************************** QUAKASTER ENGINE **************************************** 
+/// gui/GUIWidget.h
+/// Purpose: Defines the interface for ImGui widgets.
+/// **************************************************************************************************
 #pragma once
 #include "core.h"
 #include <gui_widget_rhi.h>
@@ -6,11 +10,13 @@
 #include <glm/glm.hpp>
 namespace qk::gfx::gui {
 
+
+	// interface for ImGui widgets.
 	struct QK_API Widget {
 
 		int m_Z = 0;
 
-		// also the avenue for logic.
+		// Entry point for rendering and input logic.
 		virtual void render() = 0;
 
 	};

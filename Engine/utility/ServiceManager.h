@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// core/utility/ServiceManager
+/// utility/ServiceManager
 /// Purpose: Defines a service registry type, capable of integrating with your own 
 /// custom service storage sysetm
 /// **************************************************************************************************
@@ -17,7 +17,7 @@ namespace qk::utility {
 
     struct ServiceEntry {
         IService* service = nullptr;
-        void (*dtor)(void* pStorage, ServiceMap&, const std::string&) = nullptr; // C-style function pointer
+        void (*dtor)(void* pStorage, ServiceMap& map, const std::string& svc_name) = nullptr; // C-style function pointer
     };
 
     // Type for ServiceManager bookkeeping

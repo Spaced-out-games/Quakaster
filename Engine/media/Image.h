@@ -1,5 +1,5 @@
 /// **************************************** QUAKASTER ENGINE **************************************** 
-/// core/res/Image.h
+/// media/Image.h
 /// Purpose: Defines a structure that can load images from disk
 /// ************************************************************************************************** 
 #pragma once

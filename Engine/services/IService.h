@@ -7,6 +7,8 @@
 #include "core.h"
 
 namespace qk::service {
+
+	// Logic centralizing template. 
 	struct QK_API IService {
 
 	protected:
