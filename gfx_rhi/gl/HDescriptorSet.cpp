@@ -6,6 +6,11 @@ namespace qk::gfx::rhi {
 
 
     // NOTE: this is NOT complete!!! It's intended to be a BASIC test with UBOs.
+    // this throws a wrench in our plans to do away with RHI-sided registries because
+    // we need to be able to resolve buffer names to buffer handles, but this is a terrible design
+    // Instead, we could make use of glGetProgramiv, glGetActiveUniformBlockiv, glGetActiveUniformsiv, glGetActiveUniform
+    // to invert the problem, or more accurately, forwarding it to OpenGL
+    
     bool DescriptorSet_LNK(const Descriptor& desc, DescriptorSet_impl& impl) {
         RBuffer resolved = Buffer_resolve(desc.id);
         impl.descriptors.emplace_back(desc.type, desc.binding, desc.id, UniformBuffer_desc{ resolved });
