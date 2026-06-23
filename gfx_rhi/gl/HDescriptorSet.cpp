@@ -60,11 +60,7 @@ namespace qk::gfx::rhi {
 
     }
 
-    DescriptorSet_impl::~DescriptorSet_impl() {
-        assert(references == 0);
-        destroy();
 
-    }
 
 
     bool DescriptorSet_impl::bind() const {

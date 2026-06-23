@@ -47,6 +47,20 @@ namespace qk::gfx::rhi {
     }
 
 
+    bool Material_impl::destroy() {
+        // needs to free resource locks here.
+        return true;
+
+    }
+
+    void Material_impl::bind() {
+        // we used to validate here but that shouldn't be needed
+        ShaderProgram_bind(program);
+        DescriptorSet_bind(descriptor_set);
+    }
+
+
+
 
 
 

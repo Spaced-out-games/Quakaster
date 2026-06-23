@@ -5,6 +5,7 @@
 
 namespace qk::gfx::rhi {
 
+    // What to draw with
     enum PrimitiveTopology {
         Triangle,
         Lines,
@@ -13,6 +14,7 @@ namespace qk::gfx::rhi {
         LineStrip
     };
 
+    // Which channels to clear
     enum ClearChannels : uint32_t {
         Color = 1u << 0,
         Depth = 1u << 1,
@@ -50,13 +52,16 @@ namespace qk::gfx::rhi {
         return a;
     }
 
+    // null command description
     struct NullCommand_desc {};
 
+    // Clear command description
     struct ClearCommand_desc {
         float r, g, b, a;
         ClearChannels channels;
     };
 
+    // DrawArrays draw call description
     struct DrawArrays_desc {
         RMaterial material;
         HVertexArray mesh;
@@ -65,12 +70,14 @@ namespace qk::gfx::rhi {
         size_t num_vertices;
     };
 
+    // 
     enum class DrawCommandType : u8 {
         Null,
         Clear,
         DrawArrays
     };
 
+    // draw call description
     struct DrawCommand_desc {
 
         DrawCommandType type;
@@ -102,6 +109,7 @@ namespace qk::gfx::rhi {
         {}
     };
 
+    // Recipe for command buffer
     class CommandBuffer_recipe {
 
         std::vector<DrawCommand_desc> m_Commands;
@@ -118,16 +126,22 @@ namespace qk::gfx::rhi {
         }
     };
 
+    // Commandbuffer implementation
     struct CommandBuffer_impl;
 
+    // Commandbuffer handle
     using HCommandBuffer = CommandBuffer_impl*;
 
+    // Commandbuffer constructor
     HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& desc);
 
+    // Commandbuffer destructor
     void CommandBuffer_dtor(HCommandBuffer& hCmdBuf);
 
+    // Commandbuffer validity check
     bool CommandBuffer_valid(const HCommandBuffer& hCmdBuf);
 
+    // Execute commandbuffer. 
     bool CommandBuffer_execute(const HCommandBuffer& hCmdBuf);
 
 }

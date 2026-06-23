@@ -8,12 +8,14 @@
 
 namespace qk::gfx::rhi {
 
+    // Optimizes buffer consumption
     enum BufferUsage: u8 {
         StaticDraw,
         DynamicDraw,
         StreamDraw
     };
 
+    // Denotes buffer type
     enum class BufferType: u8 {
         Unknown,
         Vertex,
@@ -32,30 +34,37 @@ namespace qk::gfx::rhi {
     // ============================================================
     // Core API
     // ============================================================
-
+    
+    // Make a buffer and return the handle
     RBuffer Buffer_ctor(
         str_view label,
         BufferType type,
         BufferUsage usage = StaticDraw);
 
+    // Get the internal name of the buffer
     str_view Buffer_name(
         const RBuffer& hBuf);
 
+    // Destroy the buffer
     bool Buffer_dtor(
         RBuffer& hBuf);
 
+    // Upload to the buffer
     bool Buffer_upload(
         const RBuffer& hBuf,
         const void* pData,
         u32 count,
         u32 elem_size);
 
+    // check handle validity
     bool Buffer_valid(
         const RBuffer& hBuf);
 
+    // check buffer initialization status
     bool Buffer_initialized(
         const RBuffer& hBuf);
 
+    // get the type of a generic buffer
     BufferType Buffer_type(
         const RBuffer& hBuf);
 
@@ -65,7 +74,7 @@ namespace qk::gfx::rhi {
     // ============================================================
     // Vertex Buffer API
     // ============================================================
-
+    // make a vertex buffer
     inline RVertexBuffer VertexBuffer_ctor(
         str_view label,
         BufferUsage usage = StaticDraw)
@@ -75,16 +84,18 @@ namespace qk::gfx::rhi {
             BufferType::Vertex,
             usage);
     }
-
+    // bind a vertex buffer
     bool VertexBuffer_bind(
         const RVertexBuffer& hBuf);
 
+    // destroy a vertex buffer
     inline bool VertexBuffer_dtor(
         RVertexBuffer& hBuf)
     {
         return Buffer_dtor(hBuf);
     }
 
+    // upload to a vertex buffer
     inline bool VertexBuffer_upload(
         const RVertexBuffer& hBuf,
         const void* data,
@@ -98,6 +109,7 @@ namespace qk::gfx::rhi {
             elem_size);
     }
 
+    // upload to a vertex buffer
     template<typename vertex_t>
     inline bool VertexBuffer_upload(
         const RVertexBuffer& hBuf,
@@ -110,12 +122,14 @@ namespace qk::gfx::rhi {
             sizeof(vertex_t));
     }
 
+    // Check vertex buffer validity
     inline bool VertexBuffer_valid(
         const RVertexBuffer& hBuf)
     {
         return Buffer_valid(hBuf);
     }
 
+    // check whether vertex buffer is initialized
     inline bool VertexBuffer_initialized(
         const RVertexBuffer& hBuf)
     {
@@ -126,6 +140,7 @@ namespace qk::gfx::rhi {
     // Index Buffer API
     // ============================================================
 
+    // Construct index buffer
     inline RIndexBuffer IndexBuffer_ctor(
         str_view label,
         BufferUsage usage = StaticDraw)
@@ -136,9 +151,11 @@ namespace qk::gfx::rhi {
             usage);
     }
 
+    // bind the index buffer
     bool IndexBuffer_bind(
         const RIndexBuffer& hBuf);
 
+    // upload to the index buffer
     inline bool IndexBuffer_upload(
         const RIndexBuffer& hBuf,
         const void* data,
@@ -152,6 +169,7 @@ namespace qk::gfx::rhi {
             elem_size);
     }
 
+    // check index buffer validity
     inline bool IndexBuffer_valid(
         const RIndexBuffer& hBuf)
     {
@@ -161,7 +179,8 @@ namespace qk::gfx::rhi {
     // ============================================================
     // Uniform Buffer API
     // ============================================================
-
+    
+    // Construct uniform buffer
     inline RUniformBuffer UniformBuffer_ctor(
         str_view label)
     {
@@ -170,17 +189,18 @@ namespace qk::gfx::rhi {
             BufferType::Uniform,
             DynamicDraw);
     }
-
+    // bind uniform buffer
     bool UniformBuffer_bind(
         const RUniformBuffer& hBuf,
         u8 slot);
 
+    // destroy uniform buffer
     inline bool UniformBuffer_dtor(
         RUniformBuffer& hBuf)
     {
         return Buffer_dtor(hBuf);
     }
-
+    // upload to uniform buffer
     inline bool UniformBuffer_upload(
         const RUniformBuffer& hBuf,
         const void* data,
@@ -194,6 +214,7 @@ namespace qk::gfx::rhi {
             elem_size);
     }
 
+    // check uniform buffer validity
     inline bool UniformBuffer_valid(
         const RUniformBuffer& hBuf)
     {

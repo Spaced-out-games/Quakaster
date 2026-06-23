@@ -6,32 +6,7 @@
 #include <Result.h>
 namespace qk::gfx::rhi {
 
-    // Declaration. If you need it publicly, just move it to the `rhi_globals` header.
-    struct ShaderProgram_impl : qk::Resource
-    {
-        GLuint hProgram = 0;
 
-        static Result <GLuint, str>
-            Shader_compile(const Shader_recipe& recipe);
-
-        static Result <GLuint, str>
-            Shader_link(const std::span<GLuint>& recipes);
-
-
-        // temporary fix
-        ShaderProgram_impl(GLuint hProgram) : hProgram(hProgram) {}
-
-        ShaderProgram_impl(std::span<Shader_recipe> recipes, str& error_out);
-
-        bool destroy() override;
-
-        bool bind() const;
-
-        ~ShaderProgram_impl();
-
-        bool bind_uniform_block(const char* pName, u8 slot);
-
-    };
 
 
     // construction

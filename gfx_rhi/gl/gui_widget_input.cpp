@@ -84,10 +84,6 @@ namespace qk::gfx::gui::io {
 		return io.WantCaptureMouse;
 	}
 
-	void setDisplaySize(float w, float h) {
-		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize.x = w;
-		io.DisplaySize.y = h;
-	}
+
 
 }

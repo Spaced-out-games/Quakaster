@@ -1,4 +1,5 @@
 // setup
+/*
 #include <platform/Quakaster.h>
 #include "entrypoint.h"
 #include "core.h"
@@ -74,3 +75,4 @@ class ClientApp : public qk::Application {
 std::unique_ptr<qk::Application> qk::create_application(int argc, char** argv) {
 	return std::make_unique<ClientApp>();
 }
+*/

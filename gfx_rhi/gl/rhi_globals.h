@@ -148,6 +148,7 @@ namespace qk::gfx::rhi {
         }
     }
 
+
     inline GLbitfield ClearChannels_cast(ClearChannels channels)
     {
         GLbitfield result = 0;
@@ -192,6 +193,34 @@ namespace qk::gfx::rhi {
     // ------------------------------------------------------- Implementations ------------------------------------------------------- //
 
 
+        // Declaration. If you need it publicly, just move it to the `rhi_globals` header.
+    struct ShaderProgram_impl : qk::Resource
+    {
+        GLuint hProgram = 0;
+
+        static Result <GLuint, str>
+            Shader_compile(const Shader_recipe& recipe);
+
+        static Result <GLuint, str>
+            Shader_link(const std::span<GLuint>& recipes);
+
+
+        // temporary fix
+        ShaderProgram_impl(GLuint hProgram) : hProgram(hProgram) {}
+
+        ShaderProgram_impl(std::span<Shader_recipe> recipes, str& error_out);
+
+        bool destroy() override;
+
+        bool bind() const;
+
+        ~ShaderProgram_impl();
+
+        bool bind_uniform_block(const char* pName, u8 slot);
+
+    };
+
+
     struct VertexLayout_impl : qk::Resource
     {
         std::vector<VertexAttributeBinding> bindings;
@@ -215,15 +244,7 @@ namespace qk::gfx::rhi {
         TextureType type = TEX_2D;
         GLuint texture = 0;
 
-        bool destroy() override {
-
-
-            if (!ready_for_deletion() || !texture) return false;
-            glDeleteTextures(1, &texture);
-
-            return true;
-
-        }
+        bool destroy() override;
 
     };
 
@@ -239,17 +260,9 @@ namespace qk::gfx::rhi {
         Material_impl(const Material_recipe& recipe, str& error);
 
 
-        bool destroy() override {
-            // needs to free resource locks here.
-            return true;
+        bool destroy() override;
 
-        }
-
-        void bind() {
-            // we used to validate here but that shouldn't be needed
-            ShaderProgram_bind(program);
-            DescriptorSet_bind(descriptor_set);
-        }
+        void bind();
 
     };
 
@@ -291,7 +304,6 @@ namespace qk::gfx::rhi {
         std::vector<Descriptor_impl> descriptors;
 
         DescriptorSet_impl(const DescriptorSet_createinfo& info);
-        ~DescriptorSet_impl();
 
         // Needs properly implemented
         bool destroy() override;
@@ -304,11 +316,8 @@ namespace qk::gfx::rhi {
 
         CommandBuffer_impl(const CommandBuffer_recipe& desc);
 
-        ~CommandBuffer_impl();
-
         // Needs implemented
         bool destroy() override;
-
 
         bool execute();
 
@@ -325,9 +334,10 @@ namespace qk::gfx::rhi {
 
         bool destroy() override;
 
+        Buffer_impl(BufferType type, BufferUsage usage, u32 elem_size = 0, u32 elem_count = 0, bool initialized = 0);
+
         ~Buffer_impl();
 
-        Buffer_impl(BufferType type, BufferUsage usage, u32 elem_size = 0, u32 elem_count = 0, bool initialized = 0);
 
         bool upload(const void* pData, u32 count, u32 elem_size);
 

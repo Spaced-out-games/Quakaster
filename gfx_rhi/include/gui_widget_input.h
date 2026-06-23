@@ -113,29 +113,42 @@ namespace qk::gfx::gui::io {
 
     };
 
+    // Push event to imgui
 	void PushMousePosEvent(float x, float y);
 
+    // Push event to imgui
 	void PushMouseButtonEvent(int button, bool pressed);
-
+    
+    // Push event to imgui
 	void PushMouseWheelEvent(float wheel_x, float wheel_y);
 
-	void PushKeyEvent(Key keycode, bool pressed);
+    // Push event to imgui
+    void PushKeyEvent(Key keycode, bool pressed);
 	
-	void PushInputCharacter(unsigned int c);
+    // Push event to imgui
+    void PushInputCharacter(unsigned int c);
 
-	void PushInputCharactersUTF8(const char* text);
+    // Push event to imgui
+    void PushInputCharactersUTF8(const char* text);
 
-	void PushFocusEvent(bool focused);
+    // Push event to imgui
+    void PushFocusEvent(bool focused);
 
-	void PushMouseSourceEvent(MouseSource source);
+    // Push event to imgui
+    void PushMouseSourceEvent(MouseSource source);
 
-	void SetDisplaySize(float width, float height);
+    // Tell ImGui what the display size is
+    void SetDisplaySize(float width, float height);
 
-	void SetDeltaTime(float dt);
+    // Tell ImGui the deltaTime
+    void SetDeltaTime(float dt);
 
-	bool& RequestsKeyboardInput();
+    // Whether or not ImGui wants to consume keyboard input
+    bool& RequestsKeyboardInput();
 
-	bool& RequestsMouseInput();
+    // Whether or not ImGui wants to consume mouse input
+    bool& RequestsMouseInput();
 
-	void setDisplaySize(float w, float h);
+    // Tell ImGui what the display size is. Might be a duplicate lol
+    //void setDisplaySize(float w, float h);
 }

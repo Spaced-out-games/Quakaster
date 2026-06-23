@@ -57,9 +57,7 @@ namespace qk::gfx::rhi {
         commands = desc.commands();
     }
 
-    CommandBuffer_impl::~CommandBuffer_impl() {
-        destroy();
-    }
+
 
     bool CommandBuffer_impl::destroy() {
         return true;

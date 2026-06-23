@@ -15,9 +15,11 @@ namespace qk::gfx::rhi {
             glGenBuffers(1, &hBuffer);
         }
 
+
     Buffer_impl::~Buffer_impl() {
         destroy();
     }
+
 
     bool Buffer_impl::destroy() {
         if (!hBuffer) return false;

@@ -22,6 +22,7 @@ namespace qk
 
     struct Resource
     {
+        // label and hash code need depricated
         str label;
         u64 hash_code = 0;
         u32 references = 0;
@@ -32,8 +33,7 @@ namespace qk
 
         
         bool ready_for_deletion() const {
-            bool result = references == 0;
-            //result = result && state == Retired;
+            bool result = references == 0  && state == Retired;
             return result;
         
         }
@@ -45,9 +45,28 @@ namespace qk
             return true;
         }
 
+        bool try_destroy() {
+            // the logic for this needs fleshed out
+
+
+
+        }
+
+        void release() {
+            //references--;
+            //if (references == 0)
+            //    state = Retired;
+        }
+
+        bool acquire() {
+            //if (state != Active) return false;
+            //references++;
+            //return true;
+        }
+
+
         // default destructor, for now.
         virtual ~Resource() {
-            assert(references == 0);
             destroy();
         }
 
