@@ -19,7 +19,7 @@ namespace qk {
 	
 	// platform-specific window implementation
 	class QK_API Window {
-		void* m_hWindow;
+		HWindow m_hWindow;
 
 		std::string m_Title;
 
@@ -71,7 +71,7 @@ namespace qk {
 			Size getSize() const;
 
 			// Gets a platform Resource (GLFWWindow*, SDLWindow*...)
-			void* handle();
+			HWindow handle();
 
 			// Explicit destruction
 			void destroy();

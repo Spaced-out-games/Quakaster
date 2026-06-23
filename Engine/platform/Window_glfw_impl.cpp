@@ -90,7 +90,7 @@ namespace qk {
 		return sz;
 	}
 
-	void* Window::handle() {
+	HWindow Window::handle() {
 		return m_hWindow;
 	}
 

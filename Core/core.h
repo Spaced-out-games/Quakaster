@@ -57,3 +57,6 @@ using str_view = std::string_view;
 
 // Loads from the OS' global symbol table
 typedef void* (*SymbolLoader)(const char* name);
+
+// Generic Window resource handle
+using HWindow = void*;

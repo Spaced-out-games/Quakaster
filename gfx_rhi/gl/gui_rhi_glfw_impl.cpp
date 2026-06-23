@@ -46,7 +46,7 @@ namespace qk::gfx::rhi::gui {
         }
     }
 
-    void init(const void* window)
+    void init(const HWindow window)
     {
         auto* glfw_win = (GLFWwindow*)(window);
 

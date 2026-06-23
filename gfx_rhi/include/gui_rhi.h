@@ -1,9 +1,9 @@
 #pragma once
-
+#include "core.h"
 
 namespace qk::gfx::rhi::gui {
 
-	void init(const void* window);
+	void init(const HWindow window);
 
 	void begin_frame(float DeltaTime);
 
