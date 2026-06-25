@@ -68,7 +68,7 @@ namespace qk::gfx::rhi {
     BufferType Buffer_type(
         const RBuffer& hBuf);
 
-    RBuffer Buffer_resolve(str_view label);
+    //RBuffer Buffer_resolve(str_view label);
 
 
     // ============================================================

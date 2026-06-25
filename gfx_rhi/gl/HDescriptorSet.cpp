@@ -9,11 +9,17 @@ namespace qk::gfx::rhi {
     // this throws a wrench in our plans to do away with RHI-sided registries because
     // we need to be able to resolve buffer names to buffer handles, but this is a terrible design
     // Instead, we could make use of glGetProgramiv, glGetActiveUniformBlockiv, glGetActiveUniformsiv, glGetActiveUniform
-    // to invert the problem, or more accurately, forwarding it to OpenGL
+    // to invert the problem, or more accurately, forwarding it to OpenGL.
+
+    // Actually, a better approach would be to separate layouts from resource usage.
+    // Layouts should be entirely handle and name agnostic.
+    // For things that erquire names explicitly in the linking step, we can use program inspection functions to
+    // lookup the name of the buffer and link accordingly.
     
     bool DescriptorSet_LNK(const Descriptor& desc, DescriptorSet_impl& impl) {
-        RBuffer resolved = Buffer_resolve(desc.id);
-        impl.descriptors.emplace_back(desc.type, desc.binding, desc.id, UniformBuffer_desc{ resolved });
+        assert(false);
+        //RBuffer resolved = Buffer_resolve(desc.id);
+        //impl.descriptors.emplace_back(desc.type, desc.binding, desc.id, UniformBuffer_desc{ resolved });
 
         return 1;
     }

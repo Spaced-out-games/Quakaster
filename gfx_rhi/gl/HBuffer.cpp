@@ -80,11 +80,11 @@ namespace qk::gfx::rhi {
 
         auto* pBuf = new Buffer_impl(type, usage);
 
-
-        return g_Buffers.insert(
-            label,
-            pBuf
-        );
+        return pBuf;
+        //return g_Buffers.insert(
+        //    label,
+        //    pBuf
+        //);
     }
 
     str_view Buffer_name(const RBuffer& hBuf)
@@ -100,7 +100,9 @@ namespace qk::gfx::rhi {
 
         glDeleteBuffers(1, &hBuf->hBuffer);
 
-        g_Buffers.destroy(hBuf);
+
+        delete hBuf;
+        //g_Buffers.destroy(hBuf);
 
         hBuf = nullptr;
 
@@ -114,7 +116,7 @@ namespace qk::gfx::rhi {
 
     bool Buffer_valid(const RBuffer& hBuf)
     {
-        return hBuf && g_Buffers.valid(hBuf);
+        return hBuf != nullptr;//&& g_Buffers.valid(hBuf);
     }
 
     bool Buffer_initialized(const RBuffer& hBuf)
@@ -128,10 +130,10 @@ namespace qk::gfx::rhi {
 
         return hBuf->type;
     }
-
+    /*
     RBuffer Buffer_resolve(str_view label) {
         return g_Buffers.find(label);
-    }
+    }*/
 
     bool VertexBuffer_bind(const RVertexBuffer& hBuf)
     {
