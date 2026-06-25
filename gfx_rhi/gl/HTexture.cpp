@@ -33,7 +33,7 @@ namespace qk::gfx::rhi {
         pTex->type = type;
         pTex->texture = gl_tex;
 
-        return g_Textures.insert(label, pTex);
+        return pTex;
     }
 
     void Texture_upload_2D(const HTexture& hTex, const u8* pData,
@@ -82,7 +82,7 @@ namespace qk::gfx::rhi {
     {
         if (!hTex) return false;
 
-        if (!g_Textures.valid(hTex)) return false;
+        if (!hTex) return false;
 
         glActiveTexture(GL_TEXTURE0 + slot);
 
@@ -96,7 +96,7 @@ namespace qk::gfx::rhi {
 
     bool Texture_valid(const HTexture& hTex)
     {
-        return hTex && g_Textures.valid(hTex);
+        return hTex;
     }
 
     bool Texture_dtor(HTexture& hTex)
@@ -105,14 +105,11 @@ namespace qk::gfx::rhi {
 
         glDeleteTextures(1, &hTex->texture);
 
-        g_Textures.destroy(hTex);
+        delete hTex;
 
         hTex = nullptr;
 
         return true;
     }
-    HTexture Texture_resolve(str_view label)
-    {
-        return g_Textures.find(label);
-    }
+
 }

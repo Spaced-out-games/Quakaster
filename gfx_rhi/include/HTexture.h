@@ -44,6 +44,5 @@ namespace qk::gfx::rhi {
     bool Texture_dtor(
         HTexture& hTex);
 
-    HTexture Texture_resolve(str_view label);
 
 }
