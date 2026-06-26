@@ -17,9 +17,9 @@ namespace qk::gfx::rhi {
     // lookup the name of the buffer and link accordingly.
     
     bool DescriptorSet_LNK(const Descriptor& desc, DescriptorSet_impl& impl) {
-        assert(false);
-        //RBuffer resolved = Buffer_resolve(desc.id);
-        //impl.descriptors.emplace_back(desc.type, desc.binding, desc.id, UniformBuffer_desc{ resolved });
+        //assert(false);
+        RBuffer resolved = Buffer_resolve(desc.id);
+        impl.descriptors.emplace_back(desc.type, desc.binding, desc.id, UniformBuffer_desc{ resolved });
 
         return 1;
     }

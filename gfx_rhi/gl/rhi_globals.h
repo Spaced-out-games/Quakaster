@@ -358,7 +358,7 @@ namespace qk::gfx::rhi {
     // Just the descriptor-ables for now. Eventually heap-allocate, then add an arena allocator.
 
     //static inline qk::ResourceRegistry<Texture_impl>        g_Textures;
-    //static inline qk::ResourceRegistry<Buffer_impl>         g_Buffers;
+    static inline qk::ResourceRegistry<Buffer_impl>         g_Buffers;
 
 
 }
