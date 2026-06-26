@@ -267,7 +267,9 @@ namespace qk::gfx::rhi {
     };
 
 
-
+    struct DescriptorSetLayout_impl {
+        std::vector<DescriptorBinding> bindings;
+    };
 
     struct Descriptor_impl : public Descriptor {
 

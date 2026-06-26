@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 #include <stdint.h>
-
+#include "HDescriptorSetLayout.h"
 #include "HTexture.h"
 #include "HBuffer.h"
 #include "HShader.h"
@@ -15,12 +15,7 @@ namespace qk::gfx::rhi {
     struct Descriptor_impl;
     struct DescriptorSet_impl;
 
-    enum class EDescriptorType {
-        Unknown,
-        Texture,
-        UniformBuffer,
-        StorageBuffer
-    };
+
 
     // Texture descriptor recipe
     struct Texture_desc {

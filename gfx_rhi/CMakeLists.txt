@@ -32,6 +32,7 @@ set(RHI_SOURCES
     gl/HVertexLayout.cpp
     gl/HTexture.cpp
     gl/HDescriptorSet.cpp
+    gl/HDescriptorSetLayout.cpp
     gl/HMaterial.cpp
     gl/HCommandBuffer.cpp
     gl/rhi_Resource.cpp
