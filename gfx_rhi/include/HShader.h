@@ -34,28 +34,28 @@ namespace qk::gfx::rhi {
 
 
     struct ShaderProgram_impl;
-    using RShaderProgram = ShaderProgram_impl*;
+    using HShaderProgram = ShaderProgram_impl*;
 
 
-    Result<RShaderProgram, str>
+    Result<HShaderProgram, str>
     ShaderProgram_ctor(const Shader_recipe& vertRecipe, const Shader_recipe& fragRecipe);
 
     /*
-    Result<RShaderProgram, str>
+    Result<HShaderProgram, str>
         ShaderProgram_ctor(
             str_view label,
             const HShader& hFragment,
             const HShader& hVertex,
             bool);*/
 
-    bool ShaderProgram_dtor(RShaderProgram& hProgram);
+    bool ShaderProgram_dtor(HShaderProgram& hProgram);
 
-    bool ShaderProgram_bind(const RShaderProgram& hProgram);
+    bool ShaderProgram_bind(const HShaderProgram& hProgram);
 
-    bool ShaderProgram_valid(const RShaderProgram& hProgram);
+    bool ShaderProgram_valid(const HShaderProgram& hProgram);
 
     bool ShaderProgram_bind_uniform_block(
-        const RShaderProgram& hProgram,
+        const HShaderProgram& hProgram,
         const char* id,
         u8 slot);
 

@@ -26,56 +26,56 @@ namespace qk::gfx::rhi {
 
     struct Buffer_impl;
 
-    using RBuffer = Buffer_impl*;
-    using RVertexBuffer = Buffer_impl*;
-    using RIndexBuffer = Buffer_impl*;
-    using RUniformBuffer = Buffer_impl*;
+    using HBuffer = Buffer_impl*;
+    using HVertexBuffer = Buffer_impl*;
+    using HIndexBuffer = Buffer_impl*;
+    using HUniformBuffer = Buffer_impl*;
 
     // ============================================================
     // Core API
     // ============================================================
     
     // Make a buffer and return the handle
-    RBuffer Buffer_ctor(
+    HBuffer Buffer_ctor(
         str_view label,
         BufferType type,
         BufferUsage usage = StaticDraw);
 
     // Get the internal name of the buffer
     str_view Buffer_name(
-        const RBuffer& hBuf);
+        const HBuffer& hBuf);
 
     // Destroy the buffer
     bool Buffer_dtor(
-        RBuffer& hBuf);
+        HBuffer& hBuf);
 
     // Upload to the buffer
     bool Buffer_upload(
-        const RBuffer& hBuf,
+        const HBuffer& hBuf,
         const void* pData,
         u32 count,
         u32 elem_size);
 
     // check handle validity
     bool Buffer_valid(
-        const RBuffer& hBuf);
+        const HBuffer& hBuf);
 
     // check buffer initialization status
     bool Buffer_initialized(
-        const RBuffer& hBuf);
+        const HBuffer& hBuf);
 
     // get the type of a generic buffer
     BufferType Buffer_type(
-        const RBuffer& hBuf);
+        const HBuffer& hBuf);
 
-    RBuffer Buffer_resolve(str_view label);
+    HBuffer Buffer_resolve(str_view label);
 
 
     // ============================================================
     // Vertex Buffer API
     // ============================================================
     // make a vertex buffer
-    inline RVertexBuffer VertexBuffer_ctor(
+    inline HVertexBuffer VertexBuffer_ctor(
         str_view label,
         BufferUsage usage = StaticDraw)
     {
@@ -86,18 +86,18 @@ namespace qk::gfx::rhi {
     }
     // bind a vertex buffer
     bool VertexBuffer_bind(
-        const RVertexBuffer& hBuf);
+        const HVertexBuffer& hBuf);
 
     // destroy a vertex buffer
     inline bool VertexBuffer_dtor(
-        RVertexBuffer& hBuf)
+        HVertexBuffer& hBuf)
     {
         return Buffer_dtor(hBuf);
     }
 
     // upload to a vertex buffer
     inline bool VertexBuffer_upload(
-        const RVertexBuffer& hBuf,
+        const HVertexBuffer& hBuf,
         const void* data,
         u32 count,
         u32 elem_size)
@@ -112,7 +112,7 @@ namespace qk::gfx::rhi {
     // upload to a vertex buffer
     template<typename vertex_t>
     inline bool VertexBuffer_upload(
-        const RVertexBuffer& hBuf,
+        const HVertexBuffer& hBuf,
         const std::vector<vertex_t>& vertices)
     {
         return VertexBuffer_upload(
@@ -124,14 +124,14 @@ namespace qk::gfx::rhi {
 
     // Check vertex buffer validity
     inline bool VertexBuffer_valid(
-        const RVertexBuffer& hBuf)
+        const HVertexBuffer& hBuf)
     {
         return Buffer_valid(hBuf);
     }
 
     // check whether vertex buffer is initialized
     inline bool VertexBuffer_initialized(
-        const RVertexBuffer& hBuf)
+        const HVertexBuffer& hBuf)
     {
         return Buffer_initialized(hBuf);
     }
@@ -141,7 +141,7 @@ namespace qk::gfx::rhi {
     // ============================================================
 
     // Construct index buffer
-    inline RIndexBuffer IndexBuffer_ctor(
+    inline HIndexBuffer IndexBuffer_ctor(
         str_view label,
         BufferUsage usage = StaticDraw)
     {
@@ -153,11 +153,11 @@ namespace qk::gfx::rhi {
 
     // bind the index buffer
     bool IndexBuffer_bind(
-        const RIndexBuffer& hBuf);
+        const HIndexBuffer& hBuf);
 
     // upload to the index buffer
     inline bool IndexBuffer_upload(
-        const RIndexBuffer& hBuf,
+        const HIndexBuffer& hBuf,
         const void* data,
         u32 count,
         u32 elem_size)
@@ -171,7 +171,7 @@ namespace qk::gfx::rhi {
 
     // check index buffer validity
     inline bool IndexBuffer_valid(
-        const RIndexBuffer& hBuf)
+        const HIndexBuffer& hBuf)
     {
         return Buffer_valid(hBuf);
     }
@@ -181,7 +181,7 @@ namespace qk::gfx::rhi {
     // ============================================================
     
     // Construct uniform buffer
-    inline RUniformBuffer UniformBuffer_ctor(
+    inline HUniformBuffer UniformBuffer_ctor(
         str_view label)
     {
         return Buffer_ctor(
@@ -191,18 +191,18 @@ namespace qk::gfx::rhi {
     }
     // bind uniform buffer
     bool UniformBuffer_bind(
-        const RUniformBuffer& hBuf,
+        const HUniformBuffer& hBuf,
         u8 slot);
 
     // destroy uniform buffer
     inline bool UniformBuffer_dtor(
-        RUniformBuffer& hBuf)
+        HUniformBuffer& hBuf)
     {
         return Buffer_dtor(hBuf);
     }
     // upload to uniform buffer
     inline bool UniformBuffer_upload(
-        const RUniformBuffer& hBuf,
+        const HUniformBuffer& hBuf,
         const void* data,
         u32 count,
         u32 elem_size)
@@ -216,7 +216,7 @@ namespace qk::gfx::rhi {
 
     // check uniform buffer validity
     inline bool UniformBuffer_valid(
-        const RUniformBuffer& hBuf)
+        const HUniformBuffer& hBuf)
     {
         return Buffer_valid(hBuf);
     }

@@ -21,18 +21,19 @@ namespace qk::gfx::rhi {
         UniformBuffer,
         StorageBuffer
     };
+
     // Texture descriptor recipe
     struct Texture_desc {
         HTexture hTex;
     };
     // Uniform buffer descriptor recipe
     struct UniformBuffer_desc {
-        RUniformBuffer hBuf;
+        HUniformBuffer hBuf;
     };
 
     // Storage buffer descriptor recipe
     struct StorageBuffer_desc {
-        RBuffer hBuf;
+        HBuffer hBuf;
     };
 
     // Descriptor recipe
@@ -64,6 +65,6 @@ namespace qk::gfx::rhi {
     bool DescriptorSet_valid(HDescriptorSet hDescriptorSet);
 
 
-    //void DescriptorSet_bindProgram(HDescriptorSet hDescriptorSet, RShaderProgram hProgram);
+    //void DescriptorSet_bindProgram(HDescriptorSet hDescriptorSet, HShaderProgram hProgram);
 
 }

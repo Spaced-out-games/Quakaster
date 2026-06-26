@@ -1983,9 +1983,9 @@ GLAPI PFNGLVERTEX4SVPROC glad_glVertex4sv;
 typedef void (APIENTRYP PFNGLCLIPPLANEPROC)(GLenum plane, const GLdouble *equation);
 GLAPI PFNGLCLIPPLANEPROC glad_glClipPlane;
 #define glClipPlane glad_glClipPlane
-typedef void (APIENTRYP PFNGLCOLORMATERIALPROC)(GLenum face, GLenum mode);
-GLAPI PFNGLCOLORMATERIALPROC glad_glColorMaterial;
-#define glColorMaterial glad_glColorMaterial
+typedef void (APIENTRYP PFNGLCOLOHMaterialPROC)(GLenum face, GLenum mode);
+GLAPI PFNGLCOLOHMaterialPROC glad_glColoHMaterial;
+#define glColoHMaterial glad_glColoHMaterial
 typedef void (APIENTRYP PFNGLFOGFPROC)(GLenum pname, GLfloat param);
 GLAPI PFNGLFOGFPROC glad_glFogf;
 #define glFogf glad_glFogf

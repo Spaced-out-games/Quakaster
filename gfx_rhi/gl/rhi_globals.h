@@ -253,7 +253,7 @@ namespace qk::gfx::rhi {
 
     struct Material_impl : qk::Resource
     {
-        RShaderProgram program = nullptr;
+        HShaderProgram program = nullptr;
         HDescriptorSet descriptor_set = nullptr;
 
 
@@ -266,13 +266,16 @@ namespace qk::gfx::rhi {
 
     };
 
+
+
+
     struct Descriptor_impl : public Descriptor {
 
         // we need a linker!
         union {
             HTexture hTex;
-            RUniformBuffer hUniformBuf;
-            RBuffer hStorageBuf;
+            HUniformBuffer hUniformBuf;
+            HBuffer hStorageBuf;
 
 
             //Texture_desc texture;
@@ -290,13 +293,9 @@ namespace qk::gfx::rhi {
 
 
 
-
-
-
-
     };
 
-
+    
 
 
     struct DescriptorSet_impl : qk::Resource

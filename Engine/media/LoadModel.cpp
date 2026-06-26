@@ -313,7 +313,7 @@ namespace qk::media {
 
 			case rhi::EDescriptorType::UniformBuffer:
 				// don't construct yet
-				//result.uniform.hBuf = rhi::RUniformBuffer(qk::string_hash{ str{j["id"]} }); // temporary
+				//result.uniform.hBuf = rhi::HUniformBuffer(qk::string_hash{ str{j["id"]} }); // temporary
 
 
 				result.id = str{j["id"]}.c_str();

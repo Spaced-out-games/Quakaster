@@ -74,7 +74,7 @@ namespace qk::gfx::rhi {
     }
 
 
-    RBuffer Buffer_ctor(str_view label, BufferType type, BufferUsage usage) {
+    HBuffer Buffer_ctor(str_view label, BufferType type, BufferUsage usage) {
 
 
 
@@ -87,14 +87,14 @@ namespace qk::gfx::rhi {
         );
     }
 
-    str_view Buffer_name(const RBuffer& hBuf)
+    str_view Buffer_name(const HBuffer& hBuf)
     {
         if (!hBuf) return {};
 
         return hBuf->label;
     }
 
-    bool Buffer_dtor(RBuffer& hBuf)
+    bool Buffer_dtor(HBuffer& hBuf)
     {
         if (!hBuf) return false;
 
@@ -109,41 +109,41 @@ namespace qk::gfx::rhi {
         return true;
     }
 
-    bool Buffer_upload(const RBuffer& hBuf, const void* pData, u32 count, u32 elem_size)
+    bool Buffer_upload(const HBuffer& hBuf, const void* pData, u32 count, u32 elem_size)
     {
         return hBuf->upload(pData, count, elem_size);
     }
 
-    bool Buffer_valid(const RBuffer& hBuf)
+    bool Buffer_valid(const HBuffer& hBuf)
     {
         //return hBuf != nullptr;//&& g_Buffers.valid(hBuf);
         return hBuf && g_Buffers.valid(hBuf);
     }
 
-    bool Buffer_initialized(const RBuffer& hBuf)
+    bool Buffer_initialized(const HBuffer& hBuf)
     {
         return hBuf && hBuf->initialized;
     }
 
-    BufferType Buffer_type(const RBuffer& hBuf)
+    BufferType Buffer_type(const HBuffer& hBuf)
     {
         if (!hBuf) return BufferType::Unknown;
 
         return hBuf->type;
     }
     
-    RBuffer Buffer_resolve(str_view label) {
+    HBuffer Buffer_resolve(str_view label) {
         return g_Buffers.find(label);
     }
 
-    bool VertexBuffer_bind(const RVertexBuffer& hBuf)
+    bool VertexBuffer_bind(const HVertexBuffer& hBuf)
     {
         if (!hBuf) return false;
 
         return hBuf->VertexBuffer_bind();
     }
 
-    bool IndexBuffer_bind(const RIndexBuffer& hBuf)
+    bool IndexBuffer_bind(const HIndexBuffer& hBuf)
     {
         if (!hBuf) return false;
 
@@ -151,7 +151,7 @@ namespace qk::gfx::rhi {
 
     }
 
-    bool UniformBuffer_bind(const RUniformBuffer& hBuf, u8 slot)
+    bool UniformBuffer_bind(const HUniformBuffer& hBuf, u8 slot)
     {
 
         if (!hBuf) return false;

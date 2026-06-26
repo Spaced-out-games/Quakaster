@@ -18,7 +18,7 @@ namespace qk::gfx::rhi {
     
     bool DescriptorSet_LNK(const Descriptor& desc, DescriptorSet_impl& impl) {
         //assert(false);
-        RBuffer resolved = Buffer_resolve(desc.id);
+        HBuffer resolved = Buffer_resolve(desc.id);
         impl.descriptors.emplace_back(desc.type, desc.binding, desc.id, UniformBuffer_desc{ resolved });
 
         return 1;
@@ -121,7 +121,7 @@ namespace qk::gfx::rhi {
 
     // ---------------- bind program ----------------
 
-    void DescriptorSet_bindProgram(HDescriptorSet hDescriptorSet, RShaderProgram hProgram)
+    void DescriptorSet_bindProgram(HDescriptorSet hDescriptorSet, HShaderProgram hProgram)
     {
         if (!hDescriptorSet)
             return;

@@ -11,7 +11,7 @@ namespace qk::gfx::rhi {
 
 	struct Pipeline_impl: qk::Resource {
 		std::array<HDescriptorSet, 4> descriptor_sets;
-		RShaderProgram				program;
+		HShaderProgram				program;
 		PrimitiveTopology			topology;
 		//VertexLayout_recipe			layout;
 		GLuint						vao;

@@ -348,7 +348,7 @@ PFNGLCOLOR4USPROC glad_glColor4us = NULL;
 PFNGLCOLOR4USVPROC glad_glColor4usv = NULL;
 PFNGLCOLORMASKPROC glad_glColorMask = NULL;
 PFNGLCOLORMASKIPROC glad_glColorMaski = NULL;
-PFNGLCOLORMATERIALPROC glad_glColorMaterial = NULL;
+PFNGLCOLOHMaterialPROC glad_glColoHMaterial = NULL;
 PFNGLCOLORP3UIPROC glad_glColorP3ui = NULL;
 PFNGLCOLORP3UIVPROC glad_glColorP3uiv = NULL;
 PFNGLCOLORP4UIPROC glad_glColorP4ui = NULL;
@@ -1192,7 +1192,7 @@ static void load_GL_VERSION_1_0(GLADloadproc load) {
 	glad_glVertex4s = (PFNGLVERTEX4SPROC)load("glVertex4s");
 	glad_glVertex4sv = (PFNGLVERTEX4SVPROC)load("glVertex4sv");
 	glad_glClipPlane = (PFNGLCLIPPLANEPROC)load("glClipPlane");
-	glad_glColorMaterial = (PFNGLCOLORMATERIALPROC)load("glColorMaterial");
+	glad_glColoHMaterial = (PFNGLCOLOHMaterialPROC)load("glColoHMaterial");
 	glad_glFogf = (PFNGLFOGFPROC)load("glFogf");
 	glad_glFogfv = (PFNGLFOGFVPROC)load("glFogfv");
 	glad_glFogi = (PFNGLFOGIPROC)load("glFogi");

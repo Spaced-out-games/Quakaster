@@ -180,7 +180,7 @@ namespace qk::gfx::rhi {
     // RHI frontend
 
 
-    Result<RShaderProgram, str>
+    Result<HShaderProgram, str>
         ShaderProgram_ctor(const Shader_recipe& vertRecipe, const Shader_recipe& fragRecipe) {
         str error = "";
 
@@ -202,17 +202,17 @@ namespace qk::gfx::rhi {
 
 
 
-    bool ShaderProgram_valid(const RShaderProgram& hProgram) {
+    bool ShaderProgram_valid(const HShaderProgram& hProgram) {
         return hProgram;
     }
 
-    bool ShaderProgram_bind(const RShaderProgram& hProgram) {
+    bool ShaderProgram_bind(const HShaderProgram& hProgram) {
         if (!hProgram) return false;
         return hProgram->bind();
     }
 
     bool ShaderProgram_dtor(
-        RShaderProgram& hProgram)
+        HShaderProgram& hProgram)
     {
         if (!hProgram) return false;
 
@@ -222,7 +222,7 @@ namespace qk::gfx::rhi {
         return true;
     }
 
-    bool ShaderProgram_bind_uniform_block(const RShaderProgram& hProgram, const char* id, u8 slot) {
+    bool ShaderProgram_bind_uniform_block(const HShaderProgram& hProgram, const char* id, u8 slot) {
         return hProgram->bind_uniform_block(id, slot);
     }
 

@@ -53,12 +53,12 @@ void Sandbox::init(int argc, char** argv) {
 
 
 	// upload vertex data
-	rhi::RVertexBuffer vbo = rhi::VertexBuffer_ctor("vbo", rhi::StaticDraw);
+	rhi::HVertexBuffer vbo = rhi::VertexBuffer_ctor("vbo", rhi::StaticDraw);
 	rhi::VertexBuffer_upload(vbo, g_Vertices);
 
 	
 	// create the uniform buffer that's linked by the descriptor set.
-	rhi::RUniformBuffer ubo = rhi::UniformBuffer_ctor("CameraData");
+	rhi::HUniformBuffer ubo = rhi::UniformBuffer_ctor("CameraData");
 
 
 

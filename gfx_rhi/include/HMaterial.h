@@ -27,19 +27,19 @@ namespace qk::gfx::rhi {
     struct Material_impl;
 
     // Material handle
-    using RMaterial = Material_impl*;
+    using HMaterial = Material_impl*;
 
     // Material constructor
-    Result<RMaterial, str>
+    Result<HMaterial, str>
     Material_ctor(const Material_recipe& MatInfo);
 
     // Material destructor
-    void Material_dtor(RMaterial& hMaterial);
+    void Material_dtor(HMaterial& hMaterial);
 
     // bind material
-    bool Material_bind(const RMaterial& hMaterial);
+    bool Material_bind(const HMaterial& hMaterial);
 
     // Material handle validity check
-    bool Material_valid(const RMaterial& hMaterial);
+    bool Material_valid(const HMaterial& hMaterial);
 
 }

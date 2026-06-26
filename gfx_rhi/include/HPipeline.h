@@ -13,7 +13,7 @@ namespace qk::gfx::rhi {
 	struct Pipeline_recipe {
 
 		std::array<HDescriptorSet, 4> descriptor_sets;
-		RShaderProgram				program;
+		HShaderProgram				program;
 		PrimitiveTopology			topology;
 		VertexLayout_recipe			layout;
 		//CullMode cull;

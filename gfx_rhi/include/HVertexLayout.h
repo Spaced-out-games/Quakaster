@@ -7,18 +7,18 @@ namespace qk::gfx::rhi {
 
     struct VertexLayout_impl;
 
-    using RVertexLayout = VertexLayout_impl*;
+    using HVertexLayout = VertexLayout_impl*;
 
-    RVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc);
+    HVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc);
 
     bool VertexLayout_dtor(
-        RVertexLayout& hLayout);
+        HVertexLayout& hLayout);
 
     bool VertexLayout_valid(
-        const RVertexLayout& hLayout);
+        const HVertexLayout& hLayout);
 
     // NOTICE: This assumes a VertexArray has already been bound.
     bool VertexLayout_apply(
-        const RVertexLayout& hLayout);
+        const HVertexLayout& hLayout);
 
 }

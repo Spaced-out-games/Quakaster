@@ -66,12 +66,12 @@ namespace qk::gfx::rhi {
 
     // API implementations
 
-    RVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc) {
+    HVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc) {
         return new VertexLayout_impl(desc);
     }
 
     bool VertexLayout_dtor(
-        RVertexLayout& hLayout)
+        HVertexLayout& hLayout)
     {
         if (!hLayout)
             return false;
@@ -84,13 +84,13 @@ namespace qk::gfx::rhi {
     }
 
     bool VertexLayout_valid(
-        const RVertexLayout& hLayout)
+        const HVertexLayout& hLayout)
     {
         return hLayout != nullptr;
     }
 
     bool VertexLayout_apply(
-        const RVertexLayout& hLayout)
+        const HVertexLayout& hLayout)
     {
         if (!hLayout)
             return false;

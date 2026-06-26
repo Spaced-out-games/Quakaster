@@ -67,7 +67,7 @@ namespace qk::gfx::rhi {
 
     // ---------------- public API ----------------
 
-    Result<RMaterial, str>
+    Result<HMaterial, str>
     Material_ctor(const Material_recipe& MatInfo)
     {
 
@@ -83,7 +83,7 @@ namespace qk::gfx::rhi {
 
     }
 
-    void Material_dtor(RMaterial& hMaterial)
+    void Material_dtor(HMaterial& hMaterial)
     {
         if (!hMaterial)
             return;
@@ -92,7 +92,7 @@ namespace qk::gfx::rhi {
         hMaterial = nullptr;
     }
 
-    bool Material_bind(const RMaterial& hMaterial)
+    bool Material_bind(const HMaterial& hMaterial)
     {
         if (!hMaterial)
             return false;
@@ -102,7 +102,7 @@ namespace qk::gfx::rhi {
 
     }
 
-    bool Material_valid(const RMaterial& hMaterial)
+    bool Material_valid(const HMaterial& hMaterial)
     {
         return hMaterial != nullptr &&
             hMaterial->descriptor_set != nullptr &&
