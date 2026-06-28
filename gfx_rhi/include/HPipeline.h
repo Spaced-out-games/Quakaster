@@ -1,6 +1,5 @@
 #pragma once
 #include "HCommandBuffer.h" // for PrimitiveTopology
-#include "HDescriptorSet.h"
 #include <array>
 #include "HShader.h"
 #include "core.h"
@@ -12,14 +11,12 @@ namespace qk::gfx::rhi {
 	// Recipe for pipeline creation
 	struct Pipeline_recipe {
 
-		std::array<HDescriptorSet, 4> descriptor_sets;
 		HShaderProgram				program;
 		PrimitiveTopology			topology;
-		VertexLayout_recipe			layout;
+		HVertexLayout				layout;
 		//CullMode cull;
 		//DepthState depth;
 		//BlendState blend;
-
 
 	};
 
@@ -34,6 +31,7 @@ namespace qk::gfx::rhi {
 
 	// Pipeline destruction
 	void Pipeline_dtor(HPipeline& pipeline);
+
 
 	bool Pipeline_bind(const HPipeline& pipeline);
 

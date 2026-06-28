@@ -10,7 +10,7 @@
 namespace qk::gfx::rhi {
 
 	struct Pipeline_impl: qk::Resource {
-		std::array<HDescriptorSet, 4> descriptor_sets;
+		//std::array<HDescriptorSet, 4> descriptor_sets;
 		HShaderProgram				program;
 		PrimitiveTopology			topology;
 		//VertexLayout_recipe			layout;
@@ -24,10 +24,10 @@ namespace qk::gfx::rhi {
 		bool destroy() override {
 			if(program)
 				program->release();
-			for (auto& set : descriptor_sets) {
-				if(set)
-					set->release();
-			}
+//			for (auto& set : descriptor_sets) {
+	//			if(set)
+		//			set->release();
+			//}
 			if (vao)
 				glDeleteVertexArrays(1, &vao);
 			return true;
@@ -40,7 +40,9 @@ namespace qk::gfx::rhi {
 
 	Pipeline_impl::Pipeline_impl(const Pipeline_recipe& recipe) {
 
-		descriptor_sets = recipe.descriptor_sets;
+		assert(recipe.program);
+
+		//descriptor_sets = recipe.descriptor_sets;
 		program = recipe.program;
 		topology = recipe.topology;
 		
@@ -48,42 +50,8 @@ namespace qk::gfx::rhi {
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 		
-
-		// Vertex layout
-		for (const auto& binding : recipe.layout.bindings) {
-			for (const auto& attr : binding.attributes) {
-				if (EScalarType_isInteger(attr.component.type) && attr.component.normalize) {
-					glVertexAttribIPointer(
-						attr.location, attr.component.count,
-						EScalarType_cast(attr.component.type), binding.stride,
-						(const void*)attr.offset
-					);
-				}
-				else
-				{
-					glVertexAttribPointer(
-						attr.location,
-						attr.component.count,
-						EScalarType_cast(attr.component.type),
-						attr.component.normalize,
-						binding.stride,
-						(const void*)attr.offset
-					);
-				}
-
-				glEnableVertexAttribArray(
-					attr.location
-				);
-
-				glVertexAttribDivisor(
-					attr.location,
-					InputRate_cast(binding.input_rate)
-				);
-			}
-		}
-
-
-
+		// apply the layout
+		recipe.layout->apply();
 
 	}
 
@@ -92,9 +60,9 @@ namespace qk::gfx::rhi {
 		ShaderProgram_bind(program);
 
 		// We still need a way to offset each descriptor set.
-		for (const auto& descriptor : descriptor_sets) {
-			descriptor->bind();
-		}
+		//for (const auto& descriptor : descriptor_sets) {
+		//	descriptor->bind();
+		//}
 
 	}
 

@@ -17,8 +17,5 @@ namespace qk::gfx::rhi {
     bool VertexLayout_valid(
         const HVertexLayout& hLayout);
 
-    // NOTICE: This assumes a VertexArray has already been bound.
-    bool VertexLayout_apply(
-        const HVertexLayout& hLayout);
 
 }

@@ -30,7 +30,6 @@
 
 // media
 #include "media/Image.h"
-#include "media/LoadModel.h"
 #include "media/json.h"
 
 // GUI
@@ -40,7 +39,6 @@
 #include "HVertexArray.h"
 #include "HVertexLayout.h"
 #include "HCommandBuffer.h"
-#include "HMaterial.h"
 #include "gfx_rhi.h"
 #include "Resource.h"
 struct Vertex {
@@ -61,8 +59,6 @@ class Sandbox : public qk::Application {
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
 
-	// rhi resources
-	rhi::HCommandBuffer CmdBuf;
 
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
@@ -87,7 +83,6 @@ class Sandbox : public qk::Application {
 	inline void render_init() {
 		qk::startup(); // calls glfwInit
 		m_Window.init(qk::Window::Size{ 1920, 1080 }, "Quakaster Demo", nullptr);
-		rhi::init(m_Window);
 	}
 
 	// this has to be called last because some m_Layers might depend on m_Window Resources

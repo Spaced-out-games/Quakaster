@@ -31,14 +31,14 @@ set(RHI_SOURCES
     gl/HBuffer.cpp
     gl/HVertexLayout.cpp
     gl/HTexture.cpp
-    gl/HDescriptorSet.cpp
+    #gl/HDescriptorSet.cpp
     gl/HDescriptorSetLayout.cpp
-    gl/HMaterial.cpp
-    gl/HCommandBuffer.cpp
+    
+    
     gl/rhi_Resource.cpp
     gl/HPipeline.cpp
-
-)
+    "gl/HShader.cpp"
+ "gl/HDescriptorSet.cpp")
 
 # ------------------------------------------------------------------------------
 # Backend selection
@@ -74,7 +74,7 @@ endif()
 # Define the RHI static library
 # This is the module the engine links against
 # ------------------------------------------------------------------------------
-add_library(${PROJECT_NAME} STATIC ${RHI_SOURCES} "gl/HShader.cpp")
+add_library(${PROJECT_NAME} STATIC ${RHI_SOURCES})
 
 # ------------------------------------------------------------------------------
 # PUBLIC include directory:

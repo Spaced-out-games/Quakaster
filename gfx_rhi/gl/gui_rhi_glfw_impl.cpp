@@ -65,7 +65,7 @@ namespace qk::gfx::rhi::gui {
 
         // Backends init
         ImGui_ImplGlfw_InitForOpenGL(glfw_win, false);
-        ImGui_ImplOpenGL3_Init("#version 330");
+        ImGui_ImplOpenGL3_Init("#version 430");
     }
 
     void shutdown()

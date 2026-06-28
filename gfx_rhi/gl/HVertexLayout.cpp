@@ -13,12 +13,9 @@ namespace qk::gfx::rhi {
     VertexLayout_impl::VertexLayout_impl(const VertexLayout_recipe& recipe) {
 
         bindings = recipe.bindings;
-
-        // we should PROBABLY ALSO VALIDATE DESCRIPTORS AND LOCK THEM HERE!!!
     }
 
     bool VertexLayout_impl::destroy() {
-        // release locks on descriptors
         return true;
     }
 
@@ -65,7 +62,6 @@ namespace qk::gfx::rhi {
 
 
     // API implementations
-
     HVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc) {
         return new VertexLayout_impl(desc);
     }
@@ -89,14 +85,6 @@ namespace qk::gfx::rhi {
         return hLayout != nullptr;
     }
 
-    bool VertexLayout_apply(
-        const HVertexLayout& hLayout)
-    {
-        if (!hLayout)
-            return false;
 
-
-        return hLayout->apply();
-    }
 
 }

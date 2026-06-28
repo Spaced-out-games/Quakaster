@@ -10,7 +10,8 @@ namespace qk::gfx::rhi {
     enum class ShaderType {
         Vertex,
         Fragment,
-        Geometry
+        Geometry,
+        Compute
     };
 
     struct Shader_recipe {

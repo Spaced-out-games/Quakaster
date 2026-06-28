@@ -1,45 +1,41 @@
 {
-	"layouts": {
-		"Vertex": {
-			"bindings": [
+	"pipelines": {
+		"PBRPipeline": {
+			"VertexAttributes": {
+				"input_rate": "per-vertex",
+				"stride": 12,
+				"attributes": [
+					{
+						"location": 0,
+						"offset": 0,
+						"type": "f32",
+						"count": 3,
+						"normalize": false
+					}
+				]
+			},
+
+			"ShaderModules": [
+
 				{
-					"input_rate": "vertex",
-					"stride": 12,
-					"attributes": [
-						{
-							"location": 0,
-							"offset": 0,
-							"type": "f32",
-							"multiplicity": "vector",
-							"count": 3,
-							"normalize": false
-						}
-					]
+					"type": "vertex",
+					"path": "assets/mat_solid.vert"
+				},
+				{
+					"type": "fragment",
+					"path": "assets/mat_solid.frag"
 				}
+
 			]
+
+
 		}
 	},
 
-	"descriptor_sets": {
-		
-		"CameraDataDescriptorSet": [
-			{
-				"id": "CameraData",
-				"type": "uniform",
-				"binding": 0
-			}
-		]
-	},
+	"DescriptorSets": {
 
-	
-	"materials": {
-		"mat_solid": {
-			"vert_shader_path": "assets/mat_solid.vert",
-			"frag_shader_path": "assets/mat_solid.frag",
-			"descriptor_set_labels": [
-				"CameraDataDescriptorSet"
-			]
-		}
+
 	}
-}
 
+
+}

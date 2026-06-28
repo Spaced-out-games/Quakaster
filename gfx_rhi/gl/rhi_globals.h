@@ -1,7 +1,7 @@
 #pragma once
 #include <VertexLayoutDesc.h>
-#include <HDescriptorSet.h>
-#include <HCommandBuffer.h>
+#include "HDescriptorSetLayout.h"
+#include "HCommandBuffer.h"
 #include <Resource.h>
 #include <HTexture.h>
 #include <HShader.h>
@@ -251,78 +251,16 @@ namespace qk::gfx::rhi {
 
 
 
-    struct Material_impl : qk::Resource
-    {
-        HShaderProgram program = nullptr;
-        HDescriptorSet descriptor_set = nullptr;
 
-
-        Material_impl(const Material_recipe& recipe, str& error);
-
-
-        bool destroy() override;
-
-        void bind();
-
-    };
 
 
     struct DescriptorSetLayout_impl {
         std::vector<DescriptorBinding> bindings;
     };
 
-    struct Descriptor_impl : public Descriptor {
-
-        // we need a linker!
-        union {
-            HTexture hTex;
-            HUniformBuffer hUniformBuf;
-            HBuffer hStorageBuf;
-
-
-            //Texture_desc texture;
-            UniformBuffer_desc uniform;
-            StorageBuffer_desc storage;
-        };
-        
-        Descriptor_impl() = default;
-        Descriptor_impl(EDescriptorType type, u8 binding, str id, UniformBuffer_desc uniform = {}) :
-            Descriptor(type, binding, id), uniform(uniform) {
-
-        }
-
-        bool bind() const;
-
-
-
-    };
-
     
 
-
-    struct DescriptorSet_impl : qk::Resource
-    {
-        std::vector<Descriptor_impl> descriptors;
-
-        DescriptorSet_impl(const DescriptorSet_createinfo& info);
-
-        // Needs properly implemented
-        bool destroy() override;
-
-        bool bind() const;
-    };
-
-    struct CommandBuffer_impl : qk::Resource {
-        std::vector<DrawCommand_desc> commands;
-
-        CommandBuffer_impl(const CommandBuffer_recipe& desc);
-
-        // Needs implemented
-        bool destroy() override;
-
-        bool execute();
-
-    };
+   
 
     struct Buffer_impl : qk::Resource
     {
