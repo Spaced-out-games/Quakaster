@@ -9,25 +9,20 @@
 
 namespace qk::gfx::rhi {
 
-	struct Pipeline_impl: qk::Resource {
-		//std::array<HDescriptorSet, 4> descriptor_sets;
+	struct Pipeline_impl : qk::Resource {
 		HShaderProgram				program;
 		PrimitiveTopology			topology;
-		//VertexLayout_recipe			layout;
 		GLuint						vao;
+		std::unordered_map<u8, u32> strides;
 		//CullMode cull;
 		//DepthState depth;
 		//BlendState blend;
-		
+
 		Pipeline_impl(const Pipeline_recipe& recipe);
 
 		bool destroy() override {
-			if(program)
+			if (program)
 				program->release();
-//			for (auto& set : descriptor_sets) {
-	//			if(set)
-		//			set->release();
-			//}
 			if (vao)
 				glDeleteVertexArrays(1, &vao);
 			return true;
@@ -40,18 +35,32 @@ namespace qk::gfx::rhi {
 
 	Pipeline_impl::Pipeline_impl(const Pipeline_recipe& recipe) {
 
-		assert(recipe.program);
-
-		//descriptor_sets = recipe.descriptor_sets;
-		program = recipe.program;
-		topology = recipe.topology;
-		
 		// initialize the vao
 		glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 		
-		// apply the layout
-		recipe.layout->apply();
+
+		// initialize shaders
+		str err;
+		const std::span<const ShaderModule> modules = recipe.shader_modules;
+
+		program = new ShaderProgram_impl(modules, err);
+		assert(program);
+
+		// copy the topology
+		topology = recipe.topology;
+
+
+
+		// apply the layout. Allocates memory for this for now
+		HVertexLayout hLayout = VertexLayout_ctor(recipe.layout);
+		hLayout->apply();
+
+		// also copy the strides
+		u8 slot = 0; // Once we add slots indices to the bindings, update this!!!
+		for (const auto& binding : recipe.layout.bindings) {
+			strides[slot] = binding.stride;
+		}
 
 	}
 
@@ -59,10 +68,6 @@ namespace qk::gfx::rhi {
 		glBindVertexArray(vao);
 		ShaderProgram_bind(program);
 
-		// We still need a way to offset each descriptor set.
-		//for (const auto& descriptor : descriptor_sets) {
-		//	descriptor->bind();
-		//}
 
 	}
 

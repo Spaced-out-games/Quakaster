@@ -24,7 +24,6 @@ namespace qk::gfx::rhi {
     using HTexture = Texture_impl*;
 
     Result<HTexture, str> Texture_ctor(
-        str_view label,
         TextureType type = TEX_2D);
 
     void Texture_upload_2D(

@@ -2,36 +2,26 @@
 
 #include <core.h>
 #include <Result.h>
+#include <vector>
+#include <span>
 
 namespace qk::gfx::rhi {
 
 
 
     enum class ShaderType {
+        Unknown,
         Vertex,
         Fragment,
         Geometry,
         Compute
     };
 
-    struct Shader_recipe {
+    struct ShaderModule {
         str source;
         ShaderType type;
     };
 
-
-    //struct Shader_impl;
-    //using HShader = Shader_impl*;
-
-    //Result<HShader, str> Shader_ctor(str_view label, ShaderType type);
-
-    //str Shader_upload(
-    //    const HShader& hShader,
-    //    const str& source);
-
-    //bool Shader_dtor(HShader& hShader);
-
-    //bool Shader_valid(const HShader& hShader);
 
 
     struct ShaderProgram_impl;
@@ -39,15 +29,9 @@ namespace qk::gfx::rhi {
 
 
     Result<HShaderProgram, str>
-    ShaderProgram_ctor(const Shader_recipe& vertRecipe, const Shader_recipe& fragRecipe);
+    ShaderProgram_ctor(const std::span<ShaderModule>& modules);
 
-    /*
-    Result<HShaderProgram, str>
-        ShaderProgram_ctor(
-            str_view label,
-            const HShader& hFragment,
-            const HShader& hVertex,
-            bool);*/
+
 
     bool ShaderProgram_dtor(HShaderProgram& hProgram);
 

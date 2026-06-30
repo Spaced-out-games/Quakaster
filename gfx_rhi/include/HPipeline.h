@@ -1,8 +1,10 @@
 #pragma once
 #include "HCommandBuffer.h" // for PrimitiveTopology
+#include "HVertexLayout.h"
 #include <array>
 #include "HShader.h"
 #include "core.h"
+#include <span>
 
 namespace qk::gfx::rhi {
 
@@ -11,9 +13,9 @@ namespace qk::gfx::rhi {
 	// Recipe for pipeline creation
 	struct Pipeline_recipe {
 
-		HShaderProgram				program;
+		std::vector<ShaderModule>   shader_modules;
 		PrimitiveTopology			topology;
-		HVertexLayout				layout;
+		VertexLayout_recipe			layout;
 		//CullMode cull;
 		//DepthState depth;
 		//BlendState blend;
@@ -34,8 +36,6 @@ namespace qk::gfx::rhi {
 
 
 	bool Pipeline_bind(const HPipeline& pipeline);
-
-
 
 
 }

@@ -10,7 +10,7 @@ namespace qk::gfx::rhi {
 
 
     // construction
-    ShaderProgram_impl::ShaderProgram_impl(std::span<Shader_recipe> recipes, str& error_out) {
+    ShaderProgram_impl::ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out) {
 
 
         std::vector<GLuint> shaders;
@@ -78,7 +78,7 @@ namespace qk::gfx::rhi {
 
     // helpers
     Result <GLuint, str>
-    ShaderProgram_impl::Shader_compile(const Shader_recipe& recipe) {
+    ShaderProgram_impl::Shader_compile(const ShaderModule& recipe) {
         GLuint hShader = glCreateShader(ShaderType_cast(recipe.type));
         if (!hShader) return str{ "glCreateShader failed" };
 
@@ -181,13 +181,12 @@ namespace qk::gfx::rhi {
 
 
     Result<HShaderProgram, str>
-        ShaderProgram_ctor(const Shader_recipe& vertRecipe, const Shader_recipe& fragRecipe) {
+    ShaderProgram_ctor(const std::span<ShaderModule>& modules) {
         str error = "";
 
-        Shader_recipe recipes[] = { vertRecipe, fragRecipe };
 
         auto* pProgram = new ShaderProgram_impl(
-            std::span{ recipes },
+            modules,
             error
         );
 

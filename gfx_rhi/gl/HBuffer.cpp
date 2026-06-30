@@ -39,16 +39,19 @@ namespace qk::gfx::rhi {
         glBindBuffer(BufferType_cast(type), hBuffer);
         glBufferData(BufferType_cast(type), count * elem_size, pData, BufferUsage_cast(usage));
 
+        // unbind it to ensure correctness
+        glBindBuffer(BufferType_cast(type), 0);
+
+
         return true;
     }
 
-    bool Buffer_impl::VertexBuffer_bind() {
+    bool Buffer_impl::VertexBuffer_bind(u8 slot, u32 offset, u32 stride) {
         assert(type == BufferType::Vertex);
 
         if (!initialized) return false;
-
-        glBindBuffer(GL_ARRAY_BUFFER, hBuffer);
-
+        glBindVertexBuffer(slot, hBuffer, offset, stride);
+        //glBindBuffer(GL_ARRAY_BUFFER, hBuffer);
         return true;
 
     }
@@ -74,25 +77,15 @@ namespace qk::gfx::rhi {
     }
 
 
-    HBuffer Buffer_ctor(str_view label, BufferType type, BufferUsage usage) {
+    HBuffer Buffer_ctor(BufferType type, BufferUsage usage) {
 
 
 
         auto* pBuf = new Buffer_impl(type, usage);
 
-        //return pBuf;
-        return g_Buffers.insert(
-            label,
-            pBuf
-        );
+        return pBuf;
     }
 
-    str_view Buffer_name(const HBuffer& hBuf)
-    {
-        if (!hBuf) return {};
-
-        return hBuf->label;
-    }
 
     bool Buffer_dtor(HBuffer& hBuf)
     {
@@ -102,7 +95,7 @@ namespace qk::gfx::rhi {
 
 
         //delete hBuf;
-        g_Buffers.destroy(hBuf);
+        delete hBuf;
 
         hBuf = nullptr;
 
@@ -117,7 +110,7 @@ namespace qk::gfx::rhi {
     bool Buffer_valid(const HBuffer& hBuf)
     {
         //return hBuf != nullptr;//&& g_Buffers.valid(hBuf);
-        return hBuf && g_Buffers.valid(hBuf);
+        return hBuf != nullptr;
     }
 
     bool Buffer_initialized(const HBuffer& hBuf)
@@ -132,15 +125,12 @@ namespace qk::gfx::rhi {
         return hBuf->type;
     }
     
-    HBuffer Buffer_resolve(str_view label) {
-        return g_Buffers.find(label);
-    }
 
-    bool VertexBuffer_bind(const HVertexBuffer& hBuf)
+    bool VertexBuffer_bind(const HVertexBuffer& hBuf, u8 slot, u32 offset, u32 stride)
     {
         if (!hBuf) return false;
 
-        return hBuf->VertexBuffer_bind();
+        return hBuf->VertexBuffer_bind(slot, offset, stride);
     }
 
     bool IndexBuffer_bind(const HIndexBuffer& hBuf)

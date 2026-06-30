@@ -13,38 +13,35 @@ namespace qk::gfx::rhi {
 		PerInstance,
 		Unknown
 	};
+	
 
 
+	struct VertexAttribute {
+		// component
+		EScalarMultiplicity multiplicity = EScalarMultiplicity::Scalar;
+		bool                normalize;
+		uint32_t            count;
+		EScalarType         type;
 
-	struct VertexAttribute_recipe {
 		uint32_t location;
-		ComponentDesc component;
 		uintptr_t offset;
 
 	};
 	
 	struct VertexAttributeBinding {
-		InputRate input_rate; // the divisor
+		InputRate input_rate;
 		uint32_t stride;
+		u8 slot = 0;
 
-		std::vector<VertexAttribute_recipe> attributes;
+		std::vector<VertexAttribute> attributes;
 
 	};
 
-	using VertexBinding = u8;
-
-	struct VertexAttributePreset {
-		EScalarType type;
-		uint32_t count;
-		EScalarMultiplicity multiplicity;
-		bool normalized;
-	};
 
 	
 
 
 	struct VertexLayout_recipe {
-		str label;
 		std::vector<VertexAttributeBinding> bindings;
 	};
 

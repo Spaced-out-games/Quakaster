@@ -12,4 +12,8 @@ namespace qk::gfx::rhi {
 		#endif
 		return result;
 	}
+
+	void draw_test() {
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+	}
 }

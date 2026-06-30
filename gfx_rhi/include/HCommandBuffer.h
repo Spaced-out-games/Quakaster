@@ -1,11 +1,12 @@
 #pragma once
 
-#include "HVertexArray.h"
+//#include "HVertexArray.h"
 
 namespace qk::gfx::rhi {
 
     // What to draw with
-    enum PrimitiveTopology {
+    enum class PrimitiveTopology {
+        Unknown,
         Triangle,
         Lines,
         Points,
@@ -51,6 +52,10 @@ namespace qk::gfx::rhi {
         return a;
     }
 
+
+    class CommandBuffer_recipe {
+
+    };
 
 
 }

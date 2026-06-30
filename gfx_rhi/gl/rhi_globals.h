@@ -199,7 +199,7 @@ namespace qk::gfx::rhi {
         GLuint hProgram = 0;
 
         static Result <GLuint, str>
-            Shader_compile(const Shader_recipe& recipe);
+            Shader_compile(const ShaderModule& recipe);
 
         static Result <GLuint, str>
             Shader_link(const std::span<GLuint>& recipes);
@@ -208,7 +208,7 @@ namespace qk::gfx::rhi {
         // temporary fix
         ShaderProgram_impl(GLuint hProgram) : hProgram(hProgram) {}
 
-        ShaderProgram_impl(std::span<Shader_recipe> recipes, str& error_out);
+        ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out);
 
         bool destroy() override;
 
@@ -280,7 +280,7 @@ namespace qk::gfx::rhi {
 
         bool upload(const void* pData, u32 count, u32 elem_size);
 
-        bool VertexBuffer_bind();
+        bool VertexBuffer_bind(u8 slot = 0, u32 offset = 0, u32 stride = 0);
 
         bool IndexBuffer_bind();
 
@@ -297,7 +297,7 @@ namespace qk::gfx::rhi {
     // Just the descriptor-ables for now. Eventually heap-allocate, then add an arena allocator.
 
     //static inline qk::ResourceRegistry<Texture_impl>        g_Textures;
-    static inline qk::ResourceRegistry<Buffer_impl>         g_Buffers;
+    //static inline qk::ResourceRegistry<Buffer_impl>         g_Buffers;
 
 
 }

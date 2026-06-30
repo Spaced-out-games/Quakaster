@@ -18,7 +18,7 @@ namespace qk::gfx::rhi {
 
 
     Result<HTexture, str>
-    Texture_ctor(str_view label, TextureType type)
+    Texture_ctor(TextureType type)
     {
         GLuint gl_tex = 0;
 

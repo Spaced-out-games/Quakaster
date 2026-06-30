@@ -27,7 +27,7 @@ set(RHI_SOURCES
     gl/gui_rhi_glfw_impl.cpp
     gl/gui_widget_input.cpp
     gl/gui_widget_rhi.cpp
-    gl/HVertexArray.cpp
+    
     gl/HBuffer.cpp
     gl/HVertexLayout.cpp
     gl/HTexture.cpp
@@ -36,9 +36,8 @@ set(RHI_SOURCES
     
     
     gl/rhi_Resource.cpp
-    gl/HPipeline.cpp
     "gl/HShader.cpp"
- "gl/HDescriptorSet.cpp")
+ "gl/HDescriptorSet.cpp" "gl/HPipeline.cpp")
 
 # ------------------------------------------------------------------------------
 # Backend selection

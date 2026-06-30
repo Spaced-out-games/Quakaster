@@ -31,16 +31,20 @@
 // media
 #include "media/Image.h"
 #include "media/json.h"
+#include "media/LoadPipeline.h"
 
 // GUI
 #include "gui/GUILayer.h"
 
 // RHI
-#include "HVertexArray.h"
 #include "HVertexLayout.h"
 #include "HCommandBuffer.h"
+#include "HPipeline.h"
+#include "HBuffer.h"
 #include "gfx_rhi.h"
 #include "Resource.h"
+
+using namespace qk::gfx::rhi;
 struct Vertex {
 	float x, y, z;
 };
@@ -59,7 +63,9 @@ class Sandbox : public qk::Application {
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
 
+	HPipeline hPipeline;
 
+	HVertexBuffer hVertexBuffer;
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
 	inline void add_symlinks() {
@@ -67,7 +73,8 @@ class Sandbox : public qk::Application {
 		namespace fs = std::filesystem;
 		#ifdef _DEBUG
 		// NOTE: Requires admin priviledges. 
-		if (!fs::exists("assets")) fs::create_directory_symlink("../../../../assets/", "assets/");
+		if (!fs::exists("assets"))
+			fs::create_directory_symlink("../../../../assets/", "assets/");
 
 
 		#endif

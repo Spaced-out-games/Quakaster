@@ -37,13 +37,9 @@ namespace qk::gfx::rhi {
     
     // Make a buffer and return the handle
     HBuffer Buffer_ctor(
-        str_view label,
         BufferType type,
         BufferUsage usage = StaticDraw);
 
-    // Get the internal name of the buffer
-    str_view Buffer_name(
-        const HBuffer& hBuf);
 
     // Destroy the buffer
     bool Buffer_dtor(
@@ -68,7 +64,6 @@ namespace qk::gfx::rhi {
     BufferType Buffer_type(
         const HBuffer& hBuf);
 
-    HBuffer Buffer_resolve(str_view label);
 
 
     // ============================================================
@@ -76,17 +71,15 @@ namespace qk::gfx::rhi {
     // ============================================================
     // make a vertex buffer
     inline HVertexBuffer VertexBuffer_ctor(
-        str_view label,
         BufferUsage usage = StaticDraw)
     {
         return Buffer_ctor(
-            label,
             BufferType::Vertex,
             usage);
     }
     // bind a vertex buffer
     bool VertexBuffer_bind(
-        const HVertexBuffer& hBuf);
+        const HVertexBuffer& hBuf, u8 slot, u32 offset = 0, u32 stride = 0);
 
     // destroy a vertex buffer
     inline bool VertexBuffer_dtor(
@@ -141,12 +134,9 @@ namespace qk::gfx::rhi {
     // ============================================================
 
     // Construct index buffer
-    inline HIndexBuffer IndexBuffer_ctor(
-        str_view label,
-        BufferUsage usage = StaticDraw)
+    inline HIndexBuffer IndexBuffer_ctor(BufferUsage usage = StaticDraw)
     {
         return Buffer_ctor(
-            label,
             BufferType::Index,
             usage);
     }
@@ -181,11 +171,9 @@ namespace qk::gfx::rhi {
     // ============================================================
     
     // Construct uniform buffer
-    inline HUniformBuffer UniformBuffer_ctor(
-        str_view label)
+    inline HUniformBuffer UniformBuffer_ctor()
     {
         return Buffer_ctor(
-            label,
             BufferType::Uniform,
             DynamicDraw);
     }
