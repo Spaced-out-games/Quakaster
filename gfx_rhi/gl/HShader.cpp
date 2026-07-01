@@ -80,7 +80,7 @@ namespace qk::gfx::rhi {
     Result <GLuint, str>
     ShaderProgram_impl::Shader_compile(const ShaderModule& recipe) {
         GLuint hShader = glCreateShader(ShaderType_cast(recipe.type));
-        if (!hShader) return str{ "glCreateShader failed" };
+        if (!hShader) return qk::Error<str>{ "glCreateShader failed" };
 
 
         const char* pSrc = recipe.source.c_str();
@@ -102,7 +102,7 @@ namespace qk::gfx::rhi {
             if (!log.empty() && log.back() == '\0')
                 log.pop_back();
 
-            return str{ log };
+            return qk::Error<str>{ log };
         }
 
         return hShader;
@@ -150,7 +150,9 @@ namespace qk::gfx::rhi {
 
         }
 
-        if (!error.empty()) return error;
+        
+
+        if (!error.empty()) return qk::Error<str>{error};
 
         return program;
 
@@ -192,7 +194,7 @@ namespace qk::gfx::rhi {
 
         if (!error.empty()) {
             delete pProgram;
-            return error;
+            return qk::Error<str>{error};
         }
 
         return pProgram;

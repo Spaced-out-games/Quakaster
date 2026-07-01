@@ -10,7 +10,7 @@
 #include <entt/entity/registry.hpp>
 #include "../components/CGraphNode.h"
 #include "core.h"
-using namespace qk::entity;
+using namespace qk;
 
 
 namespace qk::service {

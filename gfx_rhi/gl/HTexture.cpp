@@ -25,7 +25,7 @@ namespace qk::gfx::rhi {
         glGenTextures(1, &gl_tex);
 
         if (!gl_tex)
-            return str{ "glGenTextures failed" };
+            return qk::Error<str>{ "glGenTextures failed" };
 
 
         auto* pTex = new Texture_impl();
