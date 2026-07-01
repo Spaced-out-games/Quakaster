@@ -47,7 +47,14 @@ namespace qk {
         constexpr bool operator==(const string_hash& other) const {
             return hash == other.hash;
         }
+
+        
+
     };
+
+    [[nodiscard]] constexpr string_hash operator"" _sh(const char* str, std::size_t) noexcept {
+        return string_hash{ str };
+    }
 
 
 }
