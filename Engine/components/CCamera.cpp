@@ -4,7 +4,7 @@
 
 #define QK_CAMERA_ELIPSON 0.0001f
 
-namespace qk::components {
+namespace qk {
 
 	glm::mat4 CCamera::projection() const {
 		return glm::perspective(m_FovRadians, m_AspectRatio, m_Near, m_Far);

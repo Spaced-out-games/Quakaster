@@ -7,7 +7,7 @@
 #include "core.h"
 #include <glm/matrix.hpp>
 
-namespace qk::components {
+namespace qk {
 
 	// Camera component
 	class QK_API CCamera {

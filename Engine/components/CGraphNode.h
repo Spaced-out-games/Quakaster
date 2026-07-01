@@ -6,7 +6,7 @@
 
 #include <entt/entity/entity.hpp>
 
-namespace qk::entity {
+namespace qk {
 
 	// Used to define an entity heirarchy
 	struct CGraphNode {
