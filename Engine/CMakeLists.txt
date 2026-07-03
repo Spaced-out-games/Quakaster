@@ -74,11 +74,15 @@ target_link_libraries(${PROJECT_NAME}
         nlohmann_json::nlohmann_json
         spdlog::spdlog
         enet
-        ws2_32 # windows-specific for enet
-        winmm# windows-specific for enet
+        #ws2_32 # windows-specific for enet
+        #winmm# windows-specific for enet
     PRIVATE
         glfw
 )
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ws2_32 winmm)
+endif()
+       
 
 
 target_include_directories(Engine
