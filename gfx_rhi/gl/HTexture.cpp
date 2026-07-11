@@ -6,11 +6,11 @@
 
 namespace qk::gfx::rhi {
 
-    bool Texture_impl::destroy() {
-        if (!texture) return false;
+    void Texture_impl::destroy() {
+        if (!texture) return;
         glDeleteTextures(1, &texture);
 
-        return true;
+        return;
 
     }
 

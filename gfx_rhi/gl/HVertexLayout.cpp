@@ -15,8 +15,8 @@ namespace qk::gfx::rhi {
         bindings = recipe.bindings;
     }
 
-    bool VertexLayout_impl::destroy() {
-        return true;
+    void VertexLayout_impl::destroy() {
+        return;
     }
 
     // TODO: Move this functionality into a free function that takes the layout directly so we don't need to heap-allocate one in the GL implementation.

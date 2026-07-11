@@ -1,5 +1,5 @@
 #pragma once
-#include "rhi_Resource.h"
+#include "Resource.h"
 #include "HDescriptorSetLayout.h"
 
 namespace qk::gfx::rhi {

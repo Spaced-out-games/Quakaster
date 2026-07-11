@@ -20,12 +20,9 @@ namespace qk::gfx::rhi {
 
 		Pipeline_impl(const Pipeline_recipe& recipe);
 
-		bool destroy() override {
-			if (program)
-				program->release();
-			if (vao)
-				glDeleteVertexArrays(1, &vao);
-			return true;
+		void destroy() override {
+			if (!vao) return;
+			glDeleteVertexArrays(1, &vao);
 		}
 
 
@@ -93,6 +90,7 @@ namespace qk::gfx::rhi {
 		assert(pipeline);
 		if (!pipeline) return false;
 		pipeline->bind();
+		return true;
 	}
 
 

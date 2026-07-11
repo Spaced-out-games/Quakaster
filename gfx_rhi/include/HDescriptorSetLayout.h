@@ -1,7 +1,7 @@
 #pragma once
 #include "core.h"
 #include <vector>
-#include "rhi_Resource.h"
+#include "Resource.h"
 
 namespace qk::gfx::rhi {
 

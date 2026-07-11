@@ -1,6 +1,5 @@
 #pragma once
-
-#include <rhi_Resource.h>
+#include "Resource.h"
 #include <Result.h>
 #include <core.h>
 

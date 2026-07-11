@@ -21,10 +21,10 @@ namespace qk::gfx::rhi {
     }
 
 
-    bool Buffer_impl::destroy() {
-        if (!hBuffer) return false;
+    void Buffer_impl::destroy() {
+        if (!hBuffer) return;
         glDeleteBuffers(1, &hBuffer);
-        return true;
+        return;
     }
 
 

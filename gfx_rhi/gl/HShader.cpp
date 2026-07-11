@@ -38,13 +38,13 @@ namespace qk::gfx::rhi {
 
 
     // destruction
-    bool ShaderProgram_impl::destroy() {
+    void ShaderProgram_impl::destroy() {
 
-        if (!ready_for_deletion() || !hProgram) return false;
+        if (!hProgram) return;
 
         glDeleteProgram(hProgram);
         hProgram = 0;
-        return true;
+        return;
     }
 
     ShaderProgram_impl::~ShaderProgram_impl() {

@@ -210,7 +210,7 @@ namespace qk::gfx::rhi {
 
         ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out);
 
-        bool destroy() override;
+        void destroy() override;
 
         bool bind() const;
 
@@ -227,7 +227,7 @@ namespace qk::gfx::rhi {
 
         VertexLayout_impl(const VertexLayout_recipe& recipe);
 
-        virtual bool destroy() override;
+        virtual void destroy() override;
 
         ~VertexLayout_impl() = default; // just free it XD
 
@@ -244,7 +244,7 @@ namespace qk::gfx::rhi {
         TextureType type = TEX_2D;
         GLuint texture = 0;
 
-        bool destroy() override;
+        void destroy() override;
 
     };
 
@@ -271,7 +271,7 @@ namespace qk::gfx::rhi {
         u32 elem_count = 0;
         bool initialized = false;
 
-        bool destroy() override;
+        void destroy() override;
 
         Buffer_impl(BufferType type, BufferUsage usage, u32 elem_size = 0, u32 elem_count = 0, bool initialized = 0);
 

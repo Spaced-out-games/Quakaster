@@ -34,8 +34,7 @@ set(RHI_SOURCES
     #gl/HDescriptorSet.cpp
     gl/HDescriptorSetLayout.cpp
     
-    
-    gl/rhi_Resource.cpp
+        
     "gl/HShader.cpp"
  "gl/HDescriptorSet.cpp" "gl/HPipeline.cpp")
 
