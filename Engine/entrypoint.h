@@ -15,5 +15,7 @@ int main(int argc, char** argv) {
     while (app->status() == 0)
         app->run();
 
+    app->shutdown();
+
     return app->status();
 }
