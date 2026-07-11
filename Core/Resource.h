@@ -11,151 +11,90 @@
 #include <core.h>
 #include <fnv1a.h>
 #include <iostream>
+
+#ifdef _DEBUG
+#include <spdlog/spdlog.h>
+#endif
+
 namespace qk
 {
 
-    enum ResourceState: u8 {
-        Active,
-        Retired,
-        Destroyed
-    };
 
-    struct Resource
-    {
-        // label and hash code need depricated
-        str label;
-        u64 hash_code = 0;
-        u32 references = 0;
-        ResourceState state = Destroyed;
-        // NOTICE: When using initializer lists on derivative construction, the compiler would assume we were trying to construct Resource metadata, so it would forward the args here.
-        // This constructor is here to make Resource a non-aggregate, forcing the compiler to give the arguments to the derivative.
-        Resource() = default;
-
-        
-        bool ready_for_deletion() const {
-            bool result = references == 0  && state == Retired;
-            return result;
-        
-        }
-
-        // Whether or not the resource is valid
-        bool valid() const { return state == Active; }
-        
-        virtual bool destroy() {
-            return true;
-        }
-
-        bool try_destroy() {
-            // the logic for this needs fleshed out
-
-
-
-        }
-
-        void release() {
-            //references--;
-            //if (references == 0)
-            //    state = Retired;
-        }
-
-        bool acquire() {
-            //if (state != Active) return false;
-            //references++;
-            //return true;
-        }
-
-
-        // default destructor, for now.
-        virtual ~Resource() {
-            destroy();
-        }
-
-
-    };
-
-    // This probably needs cleaned up in order to make sure pimpl's stay valid, and that hash collisions don't occur
-    template<typename Resource_t>
-    class ResourceRegistry
-    {
-        static_assert(
-            std::is_base_of_v<Resource, Resource_t>,
-            "Resource_t must derive from qk::gfx::rhi::Resource"
-        );
+    class Resource {
+        #ifdef _DEBUG
+        str m_Label;
+        u64 m_Hash;
+        #endif
+        std::atomic<u32> m_RefCount = 0;
+        std::atomic<bool> m_FlaggedForDeletion = false;
 
     public:
 
-        ResourceRegistry() {
-            // This is here to prevent reallocations and subsequent invalidations of impl*s. 
-            m_Resources.reserve(1024);
+        virtual void destroy() {};
+
+        // Whether or not this resource is ready to be deleted. 
+        bool can_destroy() {
+            return m_RefCount == 0 && m_FlaggedForDeletion;
         }
 
-        ~ResourceRegistry()
-        {
-            for (const auto& resource : m_Resources) {
-                auto* pResource = resource.second;
-                delete pResource;
-                std::cout << pResource;
-            }
+        // Try to destroy the resource
+        bool try_destroy() {
+            if (!can_destroy()) return false;
+
+            destroy();
+            return true;
         }
 
-        // Insert a resource
-        Resource_t* insert(
-            str_view label,
-            Resource_t* resource);
+        // Sets the label in debug builds
+        void set_label(const str& label) {
+            #ifdef _DEBUG
+            m_Label = label;
+            m_Hash = (u64)hash_fnv1a(label);
+            #endif
+        }
 
-        // destroy a resource
-        bool destroy(
-            Resource_t*& resource);
+        // Returns the string value in debug builds, nullptr in release
+        const str* label() const {
+            #ifdef _DEBUG
+            return &m_Label;
+            #else
+            return nullptr;
+            #endif
 
-        // Validates an impl*
-        bool valid(
-            const Resource_t* resource) const;
+        }
 
-        Resource_t* find(
-            str_view label);
+        // Returns the hash code in debug builds, nullptr in release
+        const u64* hash_code() const {
+            #ifdef _DEBUG
+            return &m_Hash;
+            #else
+            return nullptr;
+            #endif
 
-        // Reverse lookup
-        const Resource_t* find(
-            str_view label) const;
+        }
 
-        // Reverse lookup
-        Resource_t* find(
-            u64 id);
+        u32 refcount() const {
+            return m_RefCount;
+        }
 
-        // Reverse lookup
-        const Resource_t* find(
-            u64 id) const;
+        bool flagged() const {
+            return m_FlaggedForDeletion;
+        }
 
-        // Increments the refcount of the resource by one
-        bool acquire(
-            const Resource_t* resource);
+        void flag_for_deletion() {
+            m_FlaggedForDeletion = true;
+        }
 
-        // Decrements the refcount of the resource by one
-        bool release(
-            const Resource_t* resource);
-
-        // Gets the refcount of the resource
-        int refcount(
-            const Resource_t* resource) const;
-
-        // gets the label of the resource
-        str_view label(
-            const Resource_t* resource) const;
-
-        // gets the resource identity hash code
-        u64 id(
-            const Resource_t* resource) const;
-
-        // Invalidates the resources so garbage collection can pick up on it
-        void clear();
-
-        size_t size() const;
-
-    private:
-
-        std::unordered_map<u64, Resource_t*> m_Resources;
+        ~Resource() {
+            #ifdef _DEBUG
+            spdlog::info("Destroyed resource `{}` at ", m_Label);
+            #endif
+        }
     };
+
+
+
+
 
 }
 
-#include "Resource.inl"
