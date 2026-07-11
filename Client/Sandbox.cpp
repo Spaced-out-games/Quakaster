@@ -59,7 +59,9 @@ void Sandbox::run() {
 
 }
 
-void Sandbox::shutdown() {}
+void Sandbox::shutdown() {
+	VertexBuffer_dtor(hVertexBuffer);
+}
 
 
 std::unique_ptr<qk::Application> qk::create_application(int argc, char** argv) {
