@@ -72,7 +72,7 @@ target_link_libraries(${PROJECT_NAME}
         glm::glm
         EnTT::EnTT
         nlohmann_json::nlohmann_json
-        spdlog::spdlog
+        #spdlog::spdlog
         enet
         #ws2_32 # windows-specific for enet
         #winmm# windows-specific for enet
