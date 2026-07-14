@@ -3,7 +3,7 @@
 /// Purpose: Handles Application initialization and management
 /// **************************************************************************************************
 #include "Application.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
 
 
 namespace qk {
