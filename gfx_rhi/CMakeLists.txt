@@ -31,12 +31,13 @@ set(RHI_SOURCES
     gl/HBuffer.cpp
     gl/HVertexLayout.cpp
     gl/HTexture.cpp
-    #gl/HDescriptorSet.cpp
-    gl/HDescriptorSetLayout.cpp
-    
-        
-    "gl/HShader.cpp"
- "gl/HDescriptorSet.cpp" "gl/HPipeline.cpp")
+    gl/HDescriptorSet.cpp
+    gl/HShader.cpp
+    gl/HPipeline.cpp
+    gl/HCommandBuffer.cpp
+    gl/DrawCommand.cpp
+
+)
 
 # ------------------------------------------------------------------------------
 # Backend selection
