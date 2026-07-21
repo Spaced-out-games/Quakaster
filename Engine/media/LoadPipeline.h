@@ -1,5 +1,5 @@
 #pragma once
-#include "HDescriptorSetLayout.h"
+#include "HDescriptorSet.h"
 #include "VertexLayoutDesc.h"
 #include "HPipeline.h"
 #include "HCommandBuffer.h"
@@ -9,7 +9,7 @@
 
 namespace qk::media {
 
-	using qk::gfx::rhi::DescriptorSetLayout_recipe;
+	using qk::gfx::rhi::DescriptorSet_recipe;
 	using qk::gfx::rhi::VertexAttributeBinding;
 	using qk::gfx::rhi::VertexLayout_recipe;
 	using qk::gfx::rhi::VertexAttribute;
@@ -34,7 +34,7 @@ namespace qk::media {
 	bool loadPipelinesFromJSON(
 		const json& j,
 		std::unordered_map<str, Pipeline_recipe>& pipelines,
-		std::unordered_map<str, DescriptorSetLayout_recipe>& descriptor_sets
+		std::unordered_map<str, DescriptorSet_recipe>& descriptor_sets
 	);
 
 }

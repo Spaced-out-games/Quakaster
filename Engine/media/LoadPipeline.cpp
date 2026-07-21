@@ -193,7 +193,7 @@ namespace qk::media {
 	bool loadPipelinesFromJSON(
 		const json& j,
 		std::unordered_map<str, Pipeline_recipe>& pipelines,
-		std::unordered_map<str, DescriptorSetLayout_recipe>& descriptor_sets
+		std::unordered_map<str, DescriptorSet_recipe>& descriptor_sets
 	) {
 		if (!j.is_object()) return false;
 
