@@ -8,9 +8,68 @@
 
 namespace qk::gfx::rhi {
 
+    // -------- Pipeline state -------- //
+
+    // What to draw with
+    enum class PrimitiveTopology {
+        Unknown,
+        Triangle,
+        Lines,
+        Points,
+        TriangleStrip,
+        LineStrip
+    };
+
+    // Which channels to clear
+    enum ClearChannels : u32 {
+        Color = 1u << 0,
+        Depth = 1u << 1,
+        Stencil = 1u << 2
+    };
+
+    inline constexpr ClearChannels operator|(ClearChannels a, ClearChannels b) {
+        return (ClearChannels)((u32)a | (u32)b);
+    }
+
+    inline constexpr ClearChannels operator&(ClearChannels a, ClearChannels b) {
+        return (ClearChannels)((u32)a & (u32)b);
+    }
+
+    inline constexpr ClearChannels operator^(ClearChannels a, ClearChannels b) {
+        return (ClearChannels)((u32)a ^ (u32)b);
+    }
+
+    inline constexpr ClearChannels operator~(ClearChannels a) {
+        return (ClearChannels)(~(u32)a);
+    }
+
+    inline ClearChannels& operator|=(ClearChannels& a, ClearChannels b) {
+        a = a | b;
+        return a;
+    }
+
+    inline ClearChannels& operator&=(ClearChannels& a, ClearChannels b) {
+        a = a & b;
+        return a;
+    }
+
+    inline ClearChannels& operator^=(ClearChannels& a, ClearChannels b) {
+        a = a ^ b;
+        return a;
+    }
 
 
-	// Recipe for pipeline creation
+
+
+
+
+
+
+
+
+
+    // -------- Pipeline creation recipe -------- //
+
 	struct Pipeline_recipe {
 
 		std::vector<ShaderModule>   shader_modules;
@@ -34,7 +93,7 @@ namespace qk::gfx::rhi {
 	// Pipeline destruction
 	void Pipeline_dtor(HPipeline& pipeline);
 
-
+    // todo: move to commandbuffer running implementation
 	bool Pipeline_bind(const HPipeline& pipeline);
 
 

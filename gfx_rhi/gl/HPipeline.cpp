@@ -9,26 +9,7 @@
 
 namespace qk::gfx::rhi {
 
-	struct Pipeline_impl : qk::Resource {
-		HShaderProgram				program;
-		PrimitiveTopology			topology;
-		GLuint						vao;
-		std::unordered_map<u8, u32> strides;
-		//CullMode cull;
-		//DepthState depth;
-		//BlendState blend;
 
-		Pipeline_impl(const Pipeline_recipe& recipe);
-
-		void destroy() override {
-			if (!vao) return;
-			glDeleteVertexArrays(1, &vao);
-		}
-
-
-		void bind() const;
-
-	};
 
 	Pipeline_impl::Pipeline_impl(const Pipeline_recipe& recipe) {
 
@@ -60,6 +41,13 @@ namespace qk::gfx::rhi {
 		}
 
 	}
+
+	void Pipeline_impl::destroy() {
+		if (!vao) return;
+		glDeleteVertexArrays(1, &vao);
+		// todo: fix shaders not being deleted here! Probably should just decrease the refcount instead of full on deletion!
+	}
+
 
 	void Pipeline_impl::bind() const {
 		glBindVertexArray(vao);

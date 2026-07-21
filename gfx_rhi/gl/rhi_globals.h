@@ -1,12 +1,14 @@
 #pragma once
 #include <VertexLayoutDesc.h>
-#include "HDescriptorSetLayout.h"
-#include "HCommandBuffer.h"
+#include "HDescriptorSet.h"
+#include "HPipeline.h"
 #include <Resource.h>
 #include <HTexture.h>
 #include <HShader.h>
 #include <HBuffer.h>
 #include <glad/glad.h>
+#include "DrawCommand.h" // temporary, so that I can check for a compiler error
+#include <unordered_map>
 
 #include <span> // temporary
 
@@ -220,6 +222,23 @@ namespace qk::gfx::rhi {
 
     };
 
+    struct Pipeline_impl : qk::Resource {
+        HShaderProgram				program;
+        PrimitiveTopology			topology;
+        GLuint						vao;
+        std::unordered_map<u8, u32> strides;
+        //CullMode cull;
+        //DepthState depth;
+        //BlendState blend;
+
+        Pipeline_impl(const Pipeline_recipe& recipe);
+
+        void destroy() override;
+
+
+        void bind() const;
+
+    };
 
     struct VertexLayout_impl : qk::Resource
     {
@@ -249,16 +268,23 @@ namespace qk::gfx::rhi {
     };
 
 
+    struct CommandBuffer_impl : qk::Resource {
+        std::unordered_set<Resource*> dependencies;
 
+        std::vector<DrawCmd>          draw_commands;
+        // belongs here for now
+        PrimitiveTopology             topology;
+        CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands);
 
-
-
-
-    struct DescriptorSetLayout_impl {
-        std::vector<DescriptorBinding> bindings;
+        void destroy() override;
     };
 
-    
+
+
+
+
+
+
 
    
 

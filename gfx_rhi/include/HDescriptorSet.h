@@ -1,16 +1,41 @@
 #pragma once
-#include "Resource.h"
-#include "HDescriptorSetLayout.h"
-
+#include "HTexture.h"
+#include "HBuffer.h"
 namespace qk::gfx::rhi {
-	//TODO: Update GLAD to GL 4.2, maybe 4.3, since we need UBO binding points.
-	// The alternative is misshaped descriptor sets in 3.3
+
+
+    enum class EDescriptorType {
+        Unknown,
+        Texture,
+        UniformBuffer,
+        StorageBuffer
+    };
+
+    struct DescriptorBinding {
+        EDescriptorType type;
+        // bindings are auto-generated sequentially
+    };
+
+
+
+    using DescriptorSet_recipe = std::vector<DescriptorBinding>;
 	struct DescriptorSet_impl;
 
 	using HDescriptorSet = DescriptorSet_impl*;
 
-	HDescriptorSet DescriptorSet_ctor(const HDescriptorSetLayout& hLayout);
+	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe);
 
-	void DescriptorSet_dtor(HDescriptorSetLayout& hLayout);
+	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HTexture hTexture);
+
+	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HUniformBuffer hUniformBuffer);
+
+
+	// this is temporary and should be deprecated ASAP. This is just for bootstrapping a test
+	void DescriptorSet_bind(HDescriptorSet hDescriptorSet);
+
+
+	void DescriptorSet_dtor(HDescriptorSet hDescriptorSet);
+
+
 
 }
