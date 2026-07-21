@@ -69,7 +69,10 @@ namespace qk {
     }
 
     void Resource::release() {
-        m_RefCount--;
+        if (m_RefCount > 0)
+            m_RefCount--;
+        else
+            if(m_FlaggedForDeletion) destroy(); // prevents a few extra checks from try_destroy()
     }
 
     Resource::~Resource() {
