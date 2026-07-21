@@ -21,13 +21,24 @@ void Sandbox::init(int argc, char** argv) {
 	qk::gfx::rhi::init(m_Window);
 	const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
 	std::unordered_map<str, Pipeline_recipe> pipelines;
-	std::unordered_map<str, DescriptorSetLayout_recipe> sets;
+	std::unordered_map<str, DescriptorSet_recipe> sets;
 	loadPipelinesFromJSON(pipeline_json, pipelines, sets);
 
 	hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
 	VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
 	hPipeline = Pipeline_ctor(pipelines["PBRPipeline"]);
+
+	CommandBuffer_recipe cmdBuf;
+	cmdBuf
+		.bindPipeline(hPipeline)
+		.bindVertexBuffer(hVertexBuffer, 0, 0, 12)
+		.drawArrays(0, 3);
+
+	hCmdBuf = CommandBuffer_ctor(cmdBuf);
+
+
+	//hCmdBuf
 
 }
 
@@ -43,10 +54,9 @@ void Sandbox::run() {
 	m_Window.pollEvents();
 	// flushes it
 	m_Layers.propagate_events();
-	Pipeline_bind(hPipeline);
-	VertexBuffer_bind(hVertexBuffer, 0, 0, 12);
 
-	draw_test();
+	CommandBuffer_execute(hCmdBuf);
+
 	m_Layers.render();
 
 

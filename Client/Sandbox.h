@@ -62,6 +62,7 @@ class Sandbox : public qk::Application {
 	qk::Window m_Window;
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
+	HCommandBuffer hCmdBuf = nullptr;
 
 	HPipeline hPipeline;
 
