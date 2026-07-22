@@ -1,6 +1,8 @@
 #pragma once
 #include "HTexture.h"
 #include "HBuffer.h"
+#define RHI_MAX_DESCRIPTORSETS_BOUND 4
+
 namespace qk::gfx::rhi {
 
 
