@@ -5,46 +5,106 @@
 namespace qk::gfx::rhi {
 
 
-	
-	struct DescriptorSetVTableEntry {
-		EDescriptorType type = EDescriptorType::Unknown;
-		u32 index = 0;
-	};
 
-	using DescriptorSetVTable = std::vector<DescriptorSetVTableEntry>;
+	DescriptorSet_impl::DescriptorSet_impl(const DescriptorSet_recipe& recipe) {
+		using enum EDescriptorType;
 
 
-	struct DescriptorSet_impl {
-		std::vector<HTexture> m_Textures;
-		std::vector<HUniformBuffer> m_UniformBuffers;
-
-		// Maps virtual descriptor binding to the real descriptor index
-		DescriptorSetVTable m_DescriptorVTable;
-
-
-		//todo: move to implementation file
-		DescriptorSet_impl(const DescriptorSet_recipe& recipe) {
-			using enum EDescriptorType;
-
-
-			for (const DescriptorBinding& binding : recipe) {
-				switch (binding.type)
-				{
-					case Texture:
-						m_DescriptorVTable.emplace_back(Texture, m_Textures.size());
-						m_Textures.push_back(nullptr);
-						break;
-					case UniformBuffer:
-						m_DescriptorVTable.emplace_back(UniformBuffer, m_UniformBuffers.size());
-						m_UniformBuffers.push_back(nullptr);
-						break;
-					default:
-						break;
-				}
+		for (const DescriptorBinding& binding : recipe) {
+			switch (binding.type)
+			{
+			case Texture:
+				m_DescriptorVTable.emplace_back(Texture, m_Textures.size());
+				m_Textures.emplace_back(nullptr, m_Textures.size());
+				break;
+			case UniformBuffer:
+				m_DescriptorVTable.emplace_back(UniformBuffer, m_UniformBuffers.size());
+				m_UniformBuffers.emplace_back(nullptr, m_UniformBuffers.size());
+				break;
+			default:
+				break;
 			}
 		}
+	}
 
-	};
+	void DescriptorSetsContext::next(HDescriptorSet hDescriptorSet) {
+		TexOffset += hDescriptorSet->m_Textures.size();
+		UniformBufferOffset += hDescriptorSet->m_UniformBuffers.size();
+	}
+
+
+
+	void DescriptorSet_impl::destroy() {
+		for (auto& TexSlot : m_Textures) {
+			if (TexSlot.hTex) TexSlot.hTex->release();
+		}
+
+		for (auto& BufSlot : m_UniformBuffers) {
+			if (BufSlot.hUniformBuffer) BufSlot.hUniformBuffer->release();
+		}
+	}
+
+
+	DescriptorSet_impl::~DescriptorSet_impl() {
+		destroy();
+	}
+
+	void DescriptorSet_impl::setResource(u32 binding, HTexture hTexture) {
+		assert(hTexture);
+		assert(binding < m_DescriptorVTable.size());
+		
+		const auto& details = m_DescriptorVTable[binding];
+
+		assert(details.type == EDescriptorType::Texture);
+		assert(m_Textures.size() > details.index);
+		auto& slot = m_Textures[details.index];
+
+		if (slot.hTex)
+			slot.hTex->release();
+
+		slot.hTex = hTexture;
+
+		slot.hTex->acquire();
+	}
+
+	void DescriptorSet_impl::setResource(u32 binding, HUniformBuffer hUniformBuffer) {
+		assert(hUniformBuffer);
+		assert(binding < m_DescriptorVTable.size());
+		
+		const auto& details = m_DescriptorVTable[binding];
+		
+		
+		assert(details.type == EDescriptorType::UniformBuffer);
+		assert(m_Textures.size() > details.index);
+
+
+		auto& slot = m_UniformBuffers[details.index];
+
+		if (slot.hUniformBuffer)
+			slot.hUniformBuffer->release();
+
+		slot.hUniformBuffer = hUniformBuffer;
+
+		slot.hUniformBuffer->acquire();
+	}
+	void DescriptorSet_impl::bind(DescriptorSetsContext& ctx) const {
+
+		for (auto& TexSlot : m_Textures) {
+			TexSlot.hTex->bind(TexSlot.slot + ctx.TexOffset);
+		}
+
+		for (auto& UniformBufSlot : m_UniformBuffers) {
+			UniformBufSlot.hUniformBuffer->UniformBuffer_bind(UniformBufSlot.slot + ctx.UniformBufferOffset);
+		}
+
+		ctx.TexOffset += m_Textures.size();
+		ctx.UniformBufferOffset += m_UniformBuffers.size();
+
+	}
+
+
+
+	
 
 	// this is just an empty layout
 	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe) {
@@ -56,42 +116,13 @@ namespace qk::gfx::rhi {
 
 	// todo: move implementations into member functions
 	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HTexture hTexture) {
-		assert(hDescriptorSet && hTexture);
-
-		if (binding >= hDescriptorSet->m_DescriptorVTable.size()) return;
-		const auto& details = hDescriptorSet->m_DescriptorVTable[binding];
-		if (details.type != EDescriptorType::Texture) return;
-
-
-		assert(hDescriptorSet->m_Textures.size() > details.index);
-		auto& slot = hDescriptorSet->m_Textures[details.index];
-
-		if (slot)
-			slot->release();
-
-		slot = hTexture;
-
-		slot->acquire();
+		return hDescriptorSet->setResource(binding, hTexture);
 
 	}
 
 	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HUniformBuffer hUniformBuffer) {
-		assert(hDescriptorSet && hUniformBuffer);
+		return hDescriptorSet->setResource(binding, hUniformBuffer);
 
-		if (binding >= hDescriptorSet->m_DescriptorVTable.size()) return;
-		const auto& details = hDescriptorSet->m_DescriptorVTable[binding];
-		if (details.type != EDescriptorType::UniformBuffer) return;
-
-
-		assert(hDescriptorSet->m_UniformBuffers.size() > details.index);
-		auto& slot = hDescriptorSet->m_UniformBuffers[details.index];
-
-		if (slot)
-			slot->release();
-
-		slot = hUniformBuffer;
-
-		slot->acquire();
 
 	}
 

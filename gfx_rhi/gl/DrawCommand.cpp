@@ -13,4 +13,10 @@ namespace qk::gfx::rhi {
     DrawCmd::DrawCmd(DrawArraysCmd drawArraysCmd) : drawArraysCmd(drawArraysCmd), type(EDrawCmdType::DrawArrays) {
 
     }
+
+
+    DrawCmd::DrawCmd(BindDescriptorSetCmd bindDescriptorSetCmd) : bindDescriptorSetCmd(bindDescriptorSetCmd), type(EDrawCmdType::BindDescriptorSet) {
+
+    }
+
 }

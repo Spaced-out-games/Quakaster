@@ -194,6 +194,15 @@ namespace qk::gfx::rhi {
 
     // ------------------------------------------------------- Implementations ------------------------------------------------------- //
 
+    struct DescriptorSetVTableEntry {
+        EDescriptorType type = EDescriptorType::Unknown;
+        u32 index = 0;
+    };
+
+    using DescriptorSetVTable = std::vector<DescriptorSetVTableEntry>;
+
+
+
 
         // Declaration. If you need it publicly, just move it to the `rhi_globals` header.
     struct ShaderProgram_impl : qk::Resource
@@ -265,6 +274,8 @@ namespace qk::gfx::rhi {
 
         void destroy() override;
 
+        void bind(u8 slot = 0) const;
+
     };
 
 
@@ -315,6 +326,49 @@ namespace qk::gfx::rhi {
 
 
     };
+
+    struct DescriptorSetsContext {
+        u8 TexOffset = 0;
+        u8 UniformBufferOffset = 0;
+
+        void next(HDescriptorSet hDescriptorSet);
+    };
+
+    struct TextureDescriptor {
+        HTexture hTex = nullptr;
+        u8 slot = 0; // compiled in
+    };
+
+    struct UniformBufferDescriptor {
+        HUniformBuffer hUniformBuffer = nullptr;
+        u8 slot = 0; // compiled in
+    };
+
+
+    struct DescriptorSet_impl: qk::Resource {
+        std::vector<TextureDescriptor> m_Textures;
+        std::vector<UniformBufferDescriptor> m_UniformBuffers;
+
+        // Maps virtual descriptor binding to the real descriptor index
+        DescriptorSetVTable m_DescriptorVTable;
+
+        
+
+        DescriptorSet_impl(const DescriptorSet_recipe& recipe);
+        ~DescriptorSet_impl();
+
+        void destroy() override;
+
+        void setResource(u32 binding, HTexture hTexture);
+
+        void setResource(u32 binding, HUniformBuffer hUniformBuffer);
+
+        
+        void bind(DescriptorSetsContext& ctx) const;
+
+    };
+
+
 
     // --------------------------------------------------------- registries --------------------------------------------------------- //
 

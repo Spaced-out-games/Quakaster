@@ -1,5 +1,6 @@
 #include "HCommandBuffer.h"
 #include "rhi_globals.h"
+#include <cassert>
 
 namespace qk::gfx::rhi {
     
@@ -33,13 +34,25 @@ namespace qk::gfx::rhi {
     }
 
     CommandBuffer_recipe& CommandBuffer_recipe::bindIndexBuffer(const HIndexBuffer& hIndexBuffer) {
-        if(!hIndexBuffer)  
-            return *this;
+        assert(hIndexBuffer);
+
 
         m_DrawCommands.emplace_back(
             DrawCmd{BindIndexBufferCmd{hIndexBuffer}}
         );
         m_pResources.insert((Resource*)hIndexBuffer);
+        return *this;
+    }
+
+    CommandBuffer_recipe& CommandBuffer_recipe::bindDescriptorSet(HDescriptorSet hDescriptorSet, u8 slot) {
+        assert(slot < RHI_MAX_DESCRIPTORSETS_BOUND);
+        assert(hDescriptorSet);
+
+        m_DrawCommands.emplace_back(
+            DrawCmd{ BindDescriptorSetCmd{hDescriptorSet, slot} }
+        );
+        m_pResources.insert((Resource*)hDescriptorSet);
+
         return *this;
     }
 
@@ -78,6 +91,8 @@ namespace qk::gfx::rhi {
 
     void CommandBuffer_execute(const HCommandBuffer& hCmdBuf) {
 
+        DescriptorSetsContext ctx = {};
+        HDescriptorSet hDescriptorSets[RHI_MAX_DESCRIPTORSETS_BOUND]{};
         assert(hCmdBuf != nullptr);
         for (const auto& drawCmd : hCmdBuf->draw_commands) {
 
@@ -86,7 +101,9 @@ namespace qk::gfx::rhi {
             const auto& bindPipelineCmd = drawCmd.bindPipelineCmd;
             const auto& drawArraysCmd = drawCmd.drawArraysCmd;
             const auto& type = drawCmd.type;
-
+            const auto& set = drawCmd.bindDescriptorSetCmd.set;
+            const auto& set_slot = drawCmd.bindDescriptorSetCmd.slot;
+            HDescriptorSet pDescriptorSet = nullptr;
             
             switch (type)
             {
@@ -108,6 +125,48 @@ namespace qk::gfx::rhi {
             case qk::gfx::rhi::EDrawCmdType::DrawArrays:
                 glDrawArrays(PrimitiveType_cast(hCmdBuf->topology), drawArraysCmd.offset, drawArraysCmd.count);
                 break;
+            case qk::gfx::rhi::EDrawCmdType::BindDescriptorSet:
+                // make sure we have a valid slot and set
+                assert(drawCmd.bindDescriptorSetCmd.slot < RHI_MAX_DESCRIPTORSETS_BOUND);
+                assert(drawCmd.bindDescriptorSetCmd.set);
+
+                // If we are replacing an old resource, release it and acquire on the new one ONE TIME
+
+
+                if (set != hDescriptorSets[set_slot])
+
+                {
+
+                    if (hDescriptorSets[set_slot])
+
+                        hDescriptorSets[set_slot]->release();
+
+
+
+                    hDescriptorSets[set_slot] = set;
+
+                    hDescriptorSets[set_slot]->acquire();
+
+                }
+
+
+
+                // hacky way to decrease state transition costs
+                ctx = {};
+
+                for (size_t i = 0; i < set_slot; i++) {
+                    if (hDescriptorSets)
+                        ctx.next(hDescriptorSets[i]);
+                }
+                // more correct
+                if(hDescriptorSets[set_slot])
+                    hDescriptorSets[set_slot]->bind(ctx);
+
+
+
+
+                break;
+
             default:
                 break;
             }
@@ -115,7 +174,9 @@ namespace qk::gfx::rhi {
 
     }
 
-    CommandBuffer_impl::CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands): dependencies(resources), draw_commands(commands) {
+    CommandBuffer_impl::CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands):
+        dependencies(resources),
+        draw_commands(commands) {
 
         for (Resource* pDependency : dependencies) {
             pDependency->acquire();

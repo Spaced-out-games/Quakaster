@@ -13,6 +13,12 @@ namespace qk::gfx::rhi {
         return;
 
     }
+    void Texture_impl::bind(u8 slot) const {
+        assert(texture);
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D, texture);
+    }
+
 
 
 
