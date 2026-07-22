@@ -16,9 +16,12 @@ namespace qk::gfx::rhi {
 
     
     struct Buffer_impl;
+
+    struct DescriptorSet_impl;
+
     using HVertexBuffer = Buffer_impl*;
     using HIndexBuffer = Buffer_impl*;
-
+    using HDescriptorSet = DescriptorSet_impl*;
 
 
 
@@ -26,7 +29,7 @@ namespace qk::gfx::rhi {
         BindPipeline,
         BindVertexBuffer,
         BindIndexBuffer,
-        // BindDescriptorSet, // not implemented yet.
+        BindDescriptorSet, // not implemented yet.
         DrawArrays
     };
 
@@ -50,6 +53,11 @@ namespace qk::gfx::rhi {
         u32 count = 0;
     };
 
+    struct BindDescriptorSetCmd {
+        HDescriptorSet set;
+        u8 slot = 0;
+    };
+
 
 
     struct DrawCmd {
@@ -57,12 +65,14 @@ namespace qk::gfx::rhi {
 
         union {
             BindPipelineCmd     bindPipelineCmd;
+            BindDescriptorSetCmd bindDescriptorSetCmd;
             BindVertexBufferCmd bindVertexBufferCmd;
             BindIndexBufferCmd  bindIndexBufferCmd;
             DrawArraysCmd       drawArraysCmd;
         };
 
         DrawCmd(BindPipelineCmd bindPipelineCmd);
+        DrawCmd(BindDescriptorSetCmd BindDescriptorSetCmd);
         DrawCmd(BindVertexBufferCmd bindVertexBufferCmd);
         DrawCmd(BindIndexBufferCmd bindIndexBufferCmd);
         DrawCmd(DrawArraysCmd drawArraysCmd);
