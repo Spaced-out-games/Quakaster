@@ -75,7 +75,7 @@ namespace qk::gfx::rhi {
 		
 		
 		assert(details.type == EDescriptorType::UniformBuffer);
-		assert(m_Textures.size() > details.index);
+		assert(m_UniformBuffers.size() > details.index);
 
 
 		auto& slot = m_UniformBuffers[details.index];
@@ -90,11 +90,13 @@ namespace qk::gfx::rhi {
 	void DescriptorSet_impl::bind(DescriptorSetsContext& ctx) const {
 
 		for (auto& TexSlot : m_Textures) {
-			TexSlot.hTex->bind(TexSlot.slot + ctx.TexOffset);
+			if(TexSlot.hTex)
+				TexSlot.hTex->bind(TexSlot.slot + ctx.TexOffset);
 		}
 
 		for (auto& UniformBufSlot : m_UniformBuffers) {
-			UniformBufSlot.hUniformBuffer->UniformBuffer_bind(UniformBufSlot.slot + ctx.UniformBufferOffset);
+			if(UniformBufSlot.hUniformBuffer)
+				UniformBufSlot.hUniformBuffer->UniformBuffer_bind(UniformBufSlot.slot + ctx.UniformBufferOffset);
 		}
 
 		ctx.TexOffset += m_Textures.size();

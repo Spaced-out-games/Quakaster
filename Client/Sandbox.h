@@ -49,23 +49,23 @@ struct Vertex {
 	float x, y, z;
 };
 
-struct CameraData {
-	glm::mat4 view = { 1.0f };
-	glm::mat4 proj = { 1.0f };
-
-};
 
 
-static inline CameraData g_Camera;
 
 class Sandbox : public qk::Application {
 	qk::Window m_Window;
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
+
+	std::unordered_map<str, Pipeline_recipe> pipelines;
+	std::unordered_map<str, DescriptorSet_recipe> sets;
+
 	HCommandBuffer hCmdBuf = nullptr;
-
-	HPipeline hPipeline;
-
+	HDescriptorSet hGlobals = nullptr;
+	HDescriptorSet hMaterial = nullptr;
+	HPipeline hPipeline = nullptr;
+	HTexture hTex = nullptr;
+	HUniformBuffer hUniformBuffer = nullptr;
 	HVertexBuffer hVertexBuffer;
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods

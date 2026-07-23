@@ -9,29 +9,69 @@ std::vector<Vertex> g_Vertices = {
 	{ 1.0f,  1.0f, 0.0f}, // top-right
 	{ 1.0f, -1.0f, 0.0f}, // bottom-right
 };
+glm::vec3 tint = { 0.5, 0.25, 0.0 };
 
 #define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
 
 #define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
 
 
-
 void Sandbox::init(int argc, char** argv) {
 	init_subsystems();
 	qk::gfx::rhi::init(m_Window);
+
+	// load pipelines and descriptor sets
 	const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
-	std::unordered_map<str, Pipeline_recipe> pipelines;
-	std::unordered_map<str, DescriptorSet_recipe> sets;
 	loadPipelinesFromJSON(pipeline_json, pipelines, sets);
 
+	// initialize vertex buffer
 	hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
 	VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
+
+	// Descriptor set #1 - mock globals (just the texture)
+	DescriptorSet_recipe globals;
+	globals.emplace_back(EDescriptorType::Texture);
+	hGlobals = DescriptorSet_ctor(globals);
+
+	// load the image
+	qk::media::Image img;
+	qk::media::load_image(img, TEST_IMAGE_PATH);
+
+	// create the texture
+	auto tex_result = Texture_ctor(TEX_2D);
+	assert(tex_result);
+	hTex = *tex_result;
+	Texture_upload_2D(hTex, img.data(), img.width(), img.height(), img.channels());
+
+	// Add to globals descriptor set
+	DescriptorSet_setResource(hGlobals, 0, hTex);
+
+
+	// Descriptor set #2 - mock material (just an offset)
+	DescriptorSet_recipe material;
+	material.emplace_back(EDescriptorType::UniformBuffer);
+	hMaterial = DescriptorSet_ctor(material);
+
+
+
+	// make the uniform buffer and add it
+	hUniformBuffer = UniformBuffer_ctor();
+	UniformBuffer_upload(hUniformBuffer, &tint, 3, sizeof(float));
+	DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
+
+
+
+
+	// initialize pipeline
 	hPipeline = Pipeline_ctor(pipelines["PBRPipeline"]);
 
+	// make the commandbuffer
 	CommandBuffer_recipe cmdBuf;
 	cmdBuf
 		.bindPipeline(hPipeline)
+		.bindDescriptorSet(hGlobals, 0)
+		.bindDescriptorSet(hMaterial, 1)
 		.bindVertexBuffer(hVertexBuffer, 0, 0, 12)
 		.drawArrays(0, 3);
 

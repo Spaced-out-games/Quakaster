@@ -314,7 +314,7 @@ namespace qk::gfx::rhi {
 
         ~Buffer_impl();
 
-
+        // Consider removing elem_size since it's kind of worthless
         bool upload(const void* pData, u32 count, u32 elem_size);
 
         bool VertexBuffer_bind(u8 slot = 0, u32 offset = 0, u32 stride = 0);
