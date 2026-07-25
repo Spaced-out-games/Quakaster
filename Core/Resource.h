@@ -29,13 +29,13 @@ namespace qk
      *     delete pResource;
      */
     class Resource {
-        #ifdef _DEBUG 
-        str m_Label;
-        #endif
-        // we should keep the hash in release
-        u64 m_Hash;
+
         std::atomic<u32> m_RefCount = 0;
         std::atomic<bool> m_FlaggedForDeletion = false;
+
+        #ifdef _DEBUG 
+        str m_Name;
+        #endif
 
     public:
 
@@ -48,13 +48,10 @@ namespace qk
         bool try_destroy();
 
         // Sets the label in debug builds
-        void set_label(const str& label);
+        void label(const str& name);
 
         // Returns the string value in debug builds, nullptr in release
         const str* label() const;
-
-        // Returns the hash code in debug builds, nullptr in release
-        const u64* hash_code();
 
         u32 refcount() const;
 
@@ -64,7 +61,7 @@ namespace qk
         void acquire();
 
         void release();
-
+        Resource();
         ~Resource();
     };
 

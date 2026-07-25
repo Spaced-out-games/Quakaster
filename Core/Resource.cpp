@@ -26,32 +26,23 @@ namespace qk {
 	}
 
 	// Sets the label in debug builds
-	void Resource::set_label(const str& label) {
+	void Resource::label(const str& name) {
 		#ifdef _DEBUG
-		m_Label = label;
-		m_Hash = (u64)hash_fnv1a(label);
+		m_Name = name;
 		#endif
 	}
 
     // Returns the string value in debug builds, nullptr in release
     const str* Resource::label() const {
         #ifdef _DEBUG
-        return &m_Label;
+        return &m_Name;
         #else
         return nullptr;
         #endif
 
     }
 
-    // Returns the hash code in debug builds, nullptr in release
-    const u64* Resource::hash_code() {
-        #ifdef _DEBUG
-        return &m_Hash;
-        #else
-        return nullptr;
-        #endif
 
-    }
 
     u32 Resource::refcount() const {
         return m_RefCount;
@@ -75,13 +66,16 @@ namespace qk {
             if(m_FlaggedForDeletion) destroy(); // prevents a few extra checks from try_destroy()
     }
 
-    Resource::~Resource() {
-        // don't want any UAFs
-        assert(refcount() == 0);
-        //QK_DEBUG_BREAK
-        #ifdef _DEBUG
-            spdlog::info("Destroyed resource `{}` at ", m_Label);
-        #endif
-    }
+	Resource::Resource() {
+		#ifdef _DEBUG
+		spdlog::info("Resource ctor called at {} on resource `{}`", (void*)this, m_Name);
+		#endif
+	}
+
+	Resource::~Resource() {
+		#ifdef _DEBUG
+		spdlog::info("Resource dtor called at {} on resource `{}`", (void*)this, m_Name);
+		#endif
+	}
 
 }
