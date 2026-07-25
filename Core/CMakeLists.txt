@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CORE_SOURCES
     "Resource.cpp"
-)
+ "NewResource.cpp")
 
 add_library(qk_core ${CORE_SOURCES})
 

@@ -15,7 +15,19 @@
 namespace qk
 {
 
-
+     /*
+     * NOTE:
+     * Resource destruction and object deallocation are fully decoupled.
+     *
+     * `try_destroy()` releases the underlying resource (e.g. GPU/API object)
+     * only when it is safe to do so. The C++ object itself must still be
+     * explicitly deallocated afterward. Calling just try_destroy() will cause a memory leak
+     *
+     * Example:
+     *
+     * if (pResource->try_destroy())
+     *     delete pResource;
+     */
     class Resource {
         #ifdef _DEBUG 
         str m_Label;
@@ -56,24 +68,7 @@ namespace qk
         ~Resource();
     };
 
-
-    template <class Resource_t>
-    class ResourceManager {
-        static_assert(std::is_base_of_v<Resource, Resource_t>);
-
-
-
-        std::unordered_map<u64, Resource*> m_Resources;
-
-    public:
-
-        void insert(u64 id, Resource_t* pResource);
-
-        Resource_t* get(u64 id);
-
-        bool can_destroy(u64 id);
-
-    };
+    // goal: make the rhi completely explicit, then wrap it at the registry level
 
 
 

@@ -27,7 +27,15 @@ namespace qk {
 		return glm::normalize(target);
 	}
 
-	//inline Vec3 flip_forward(const Vec3& )
+	inline Vec3 reflect(const Vec3& I, const Vec3& N) {
+		return glm::reflect(I, N);
+	}
+
+	inline Vec3 refract(const Vec3& I, const Vec3& N, const Vec3& eta) {
+		return glm::refract(I, N, eta);
+	}
+
+
 
 
 }

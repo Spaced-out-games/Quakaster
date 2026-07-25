@@ -76,6 +76,9 @@ namespace qk {
     }
 
     Resource::~Resource() {
+        // don't want any UAFs
+        assert(refcount() == 0);
+        //QK_DEBUG_BREAK
         #ifdef _DEBUG
             spdlog::info("Destroyed resource `{}` at ", m_Label);
         #endif
