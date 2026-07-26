@@ -8,22 +8,11 @@
 
 namespace qk {
 	
-	void Resource::destroy() {
 
-	}
 
-	// Whether or not this resource is ready to be deleted. 
-	bool Resource::can_destroy() {
-		return m_RefCount == 0 && m_FlaggedForDeletion;
-	}
 
-	// Try to destroy the resource
-	bool Resource::try_destroy() {
-		if (!can_destroy()) return false;
 
-		destroy();
-		return true;
-	}
+
 
 	// Sets the label in debug builds
 	void Resource::label(const str& name) {
@@ -60,13 +49,14 @@ namespace qk {
     }
 
     void Resource::release() {
-        if (m_RefCount > 0)
-            m_RefCount--;
-        else
-            if(m_FlaggedForDeletion) destroy(); // prevents a few extra checks from try_destroy()
+		assert(m_RefCount > 0);
+        m_RefCount--;
     }
 
-	Resource::Resource() {
+	Resource::Resource(const str& ResourceTypeName) {
+
+        m_Name = std::format("{}@{:p}", ResourceTypeName, static_cast<const void*>(this));
+
 		#ifdef _DEBUG
 		spdlog::info("Resource ctor called at {} on resource `{}`", (void*)this, m_Name);
 		#endif

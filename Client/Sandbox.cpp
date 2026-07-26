@@ -110,7 +110,37 @@ void Sandbox::run() {
 }
 
 void Sandbox::shutdown() {
+
+	auto* pCmdBuf = Resource_cast(hCmdBuf);
+	// commandbuffer has the topmost ownership
+	Resource_cast(hCmdBuf)->flag_for_deletion();
+	CommandBuffer_dtor(hCmdBuf);
+	CommandBuffer_free(hCmdBuf);
+	
+	Resource_cast(hPipeline)->flag_for_deletion();
+	Pipeline_dtor(hPipeline);
+	Pipeline_free(hPipeline);
+	
+	Resource_cast(hGlobals)->flag_for_deletion();
+	DescriptorSet_dtor(hGlobals);
+	DescriptorSet_free(hGlobals);
+
+	Resource_cast(hTex)->flag_for_deletion();
+	Texture_dtor(hTex);
+	Texture_free(hTex);
+
+	Resource_cast(hMaterial)->flag_for_deletion();
+	DescriptorSet_dtor(hMaterial);
+	DescriptorSet_free(hMaterial);
+	
+	Resource_cast(hUniformBuffer)->flag_for_deletion();
+	UniformBuffer_dtor(hUniformBuffer);
+	UniformBuffer_free(hUniformBuffer);
+
+	Resource_cast(hVertexBuffer)->flag_for_deletion();
 	VertexBuffer_dtor(hVertexBuffer);
+	VertexBuffer_free(hVertexBuffer);
+
 }
 
 

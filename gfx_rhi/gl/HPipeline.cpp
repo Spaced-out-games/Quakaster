@@ -11,7 +11,7 @@ namespace qk::gfx::rhi {
 
 
 
-	Pipeline_impl::Pipeline_impl(const Pipeline_recipe& recipe) {
+	Pipeline_impl::Pipeline_impl(const Pipeline_recipe& recipe) : Resource("Pipeline_impl") {
 
 		// initialize the vao
 		glGenVertexArrays(1, &vao);
@@ -24,15 +24,18 @@ namespace qk::gfx::rhi {
 
 		program = new ShaderProgram_impl(modules, err);
 		assert(program);
+		program->acquire();
 
 		// copy the topology
 		topology = recipe.topology;
 
 
-
+		
 		// apply the layout. Allocates memory for this for now
-		HVertexLayout hLayout = VertexLayout_ctor(recipe.layout);
+		hLayout = VertexLayout_ctor(recipe.layout);
+		hLayout->acquire();
 		hLayout->apply();
+
 
 		// also copy the strides
 		u8 slot = 0; // Once we add slots indices to the bindings, update this!!!
@@ -46,6 +49,18 @@ namespace qk::gfx::rhi {
 		if (!vao) return;
 		glDeleteVertexArrays(1, &vao);
 		// todo: fix shaders not being deleted here! Probably should just decrease the refcount instead of full on deletion!
+		assert(program);
+		program->release();
+		program->flag_for_deletion();
+		ShaderProgram_dtor(program);
+		ShaderProgram_free(program);
+
+		assert(hLayout);
+		hLayout->release();
+		hLayout->flag_for_deletion();
+		VertexLayout_dtor(hLayout);
+		VertexLayout_free(hLayout);
+
 	}
 
 
@@ -66,22 +81,35 @@ namespace qk::gfx::rhi {
 		return new Pipeline_impl(recipe);
 	}
 
-	void Pipeline_dtor(HPipeline& pipeline) {
-		assert(pipeline);
-		if (!pipeline) return;
-		delete pipeline; // would be better to use a try_delete interface
-		pipeline = nullptr;
+	void Pipeline_dtor(const HPipeline& hPipeline) {
+		assert(hPipeline);
+		assert(hPipeline->refcount() == 0 && hPipeline->flagged());
+
+		hPipeline->destroy();
 
 	}
 
-	bool Pipeline_bind(const HPipeline& pipeline) {
-		assert(pipeline);
-		if (!pipeline) return false;
-		pipeline->bind();
+	void Pipeline_free(HPipeline& hPipeline) {
+		assert(hPipeline);
+		assert(hPipeline->refcount() == 0 && hPipeline->flagged());
+
+
+		delete hPipeline;
+
+		hPipeline = nullptr;
+
+	}
+
+	bool Pipeline_bind(const HPipeline& hPipeline) {
+		assert(hPipeline);
+		if (!hPipeline) return false;
+		hPipeline->bind();
 		return true;
 	}
 
-
+	Resource* Resource_cast(const HPipeline& hPipeline) {
+		return static_cast<Resource*>(hPipeline);
+	}
 
 
 }

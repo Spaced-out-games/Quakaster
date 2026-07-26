@@ -10,13 +10,13 @@
 namespace qk::gfx::rhi {
 
 
-    VertexLayout_impl::VertexLayout_impl(const VertexLayout_recipe& recipe) {
+    VertexLayout_impl::VertexLayout_impl(const VertexLayout_recipe& recipe): Resource("VertexLayout_impl") {
 
         bindings = recipe.bindings;
     }
 
     void VertexLayout_impl::destroy() {
-        return;
+        bindings.clear();
     }
 
     // TODO: Move this functionality into a free function that takes the layout directly so we don't need to heap-allocate one in the GL implementation.
@@ -77,17 +77,25 @@ namespace qk::gfx::rhi {
         return new VertexLayout_impl(desc);
     }
 
-    bool VertexLayout_dtor(
-        HVertexLayout& hLayout)
+    void VertexLayout_dtor(
+        const HVertexLayout& hLayout)
     {
-        if (!hLayout)
-            return false;
+        assert(hLayout);
+        assert(hLayout->refcount() == 0 && hLayout->flagged());
+
+        hLayout->destroy();
+
+
+
+    }
+
+    void VertexLayout_free(HVertexLayout& hLayout) {
+        assert(hLayout);
+        assert(hLayout->refcount() == 0 && hLayout->flagged());
 
         delete hLayout;
 
         hLayout = nullptr;
-
-        return true;
     }
 
     bool VertexLayout_valid(

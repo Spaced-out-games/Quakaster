@@ -11,8 +11,9 @@ namespace qk::gfx::rhi {
 
     HVertexLayout VertexLayout_ctor(const VertexLayout_recipe& desc);
 
-    bool VertexLayout_dtor(
-        HVertexLayout& hLayout);
+    void VertexLayout_dtor(const HVertexLayout& hLayout);
+
+    void VertexLayout_free(HVertexLayout& hLayout);
 
     bool VertexLayout_valid(
         const HVertexLayout& hLayout);

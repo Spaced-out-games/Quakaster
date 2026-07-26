@@ -6,7 +6,7 @@ namespace qk::gfx::rhi {
 
 
 
-	DescriptorSet_impl::DescriptorSet_impl(const DescriptorSet_recipe& recipe) {
+	DescriptorSet_impl::DescriptorSet_impl(const DescriptorSet_recipe& recipe) : Resource("DescriptorSet_impl") {
 		using enum EDescriptorType;
 
 
@@ -39,14 +39,14 @@ namespace qk::gfx::rhi {
 			if (TexSlot.hTex) TexSlot.hTex->release();
 		}
 
+		m_Textures.clear();
+
 		for (auto& BufSlot : m_UniformBuffers) {
 			if (BufSlot.hUniformBuffer) BufSlot.hUniformBuffer->release();
 		}
-	}
 
+		m_UniformBuffers.clear();
 
-	DescriptorSet_impl::~DescriptorSet_impl() {
-		destroy();
 	}
 
 	void DescriptorSet_impl::setResource(u32 binding, HTexture hTexture) {
@@ -106,13 +106,31 @@ namespace qk::gfx::rhi {
 
 
 
-	
+	Resource* Resource_cast(const HDescriptorSet& hDescriptorSet) {
+		return static_cast<Resource*>(hDescriptorSet);
+	}
 
 	// this is just an empty layout
 	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe) {
 
 		return new DescriptorSet_impl(recipe);
 		
+	}
+
+	void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet) {
+
+		assert(hDescriptorSet->refcount() == 0 && hDescriptorSet->flagged());
+
+		hDescriptorSet->destroy();
+
+	}
+
+	void DescriptorSet_free(HDescriptorSet& hDescriptorSet) {
+		assert(hDescriptorSet->refcount() == 0 && hDescriptorSet->flagged());
+
+		delete hDescriptorSet;
+
+		hDescriptorSet = nullptr;
 
 	}
 
@@ -129,7 +147,7 @@ namespace qk::gfx::rhi {
 	}
 
 
-	void DescriptorSet_dtor(HDescriptorSet hDescriptorSet);
+
 
 
 }

@@ -35,6 +35,9 @@ namespace qk::gfx::rhi {
     // Core API
     // ============================================================
     
+    Resource* Resource_cast(const HBuffer& hBuffer);
+
+
     // Make a buffer and return the handle
     HBuffer Buffer_ctor(
         BufferType type,
@@ -42,8 +45,10 @@ namespace qk::gfx::rhi {
 
 
     // Destroy the buffer
-    bool Buffer_dtor(
-        HBuffer& hBuf);
+    void Buffer_dtor(const HBuffer& hBuf);
+
+    // free the buffer
+    void Buffer_free(HBuffer& hBuf);
 
     // Upload to the buffer
     bool Buffer_upload(
@@ -70,23 +75,29 @@ namespace qk::gfx::rhi {
     // Vertex Buffer API
     // ============================================================
     // make a vertex buffer
-    inline HVertexBuffer VertexBuffer_ctor(
-        BufferUsage usage = StaticDraw)
+    inline HVertexBuffer VertexBuffer_ctor(BufferUsage usage = StaticDraw)
     {
         return Buffer_ctor(
             BufferType::Vertex,
             usage);
     }
+
+    inline void VertexBuffer_dtor(const HVertexBuffer& hBuf)
+    {
+        Buffer_dtor(hBuf);
+    }
+
+    inline void VertexBuffer_free(HVertexBuffer& hBuf) {
+        Buffer_free(hBuf);
+    }
+
+
     // bind a vertex buffer
     bool VertexBuffer_bind(
         const HVertexBuffer& hBuf, u8 slot, u32 offset = 0, u32 stride = 0);
 
     // destroy a vertex buffer
-    inline bool VertexBuffer_dtor(
-        HVertexBuffer& hBuf)
-    {
-        return Buffer_dtor(hBuf);
-    }
+
 
     // upload to a vertex buffer
     inline bool VertexBuffer_upload(
@@ -141,9 +152,19 @@ namespace qk::gfx::rhi {
             usage);
     }
 
+    inline void IndexBuffer_dtor(const HIndexBuffer& hBuf)
+    {
+        Buffer_dtor(hBuf);
+    }
+    
+    inline void IndexBuffer_free(HIndexBuffer& hBuf) {
+        Buffer_free(hBuf);
+    }
+
     // bind the index buffer
-    bool IndexBuffer_bind(
-        const HIndexBuffer& hBuf);
+    bool IndexBuffer_bind(const HIndexBuffer& hBuf);
+
+
 
     // upload to the index buffer
     inline bool IndexBuffer_upload(
@@ -177,17 +198,24 @@ namespace qk::gfx::rhi {
             BufferType::Uniform,
             DynamicDraw);
     }
+
+    // destroy uniform buffer
+    inline void UniformBuffer_dtor(const HUniformBuffer& hBuf)
+    {
+        Buffer_dtor(hBuf);
+    }
+
+    inline void UniformBuffer_free(HUniformBuffer& hBuf) {
+        Buffer_free(hBuf);
+    }
+
     // bind uniform buffer
     bool UniformBuffer_bind(
         const HUniformBuffer& hBuf,
         u8 slot);
 
-    // destroy uniform buffer
-    inline bool UniformBuffer_dtor(
-        HUniformBuffer& hBuf)
-    {
-        return Buffer_dtor(hBuf);
-    }
+
+
     // upload to uniform buffer
     inline bool UniformBuffer_upload(
         const HUniformBuffer& hBuf,

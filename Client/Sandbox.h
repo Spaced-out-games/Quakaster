@@ -60,7 +60,7 @@ class Sandbox : public qk::Application {
 	std::unordered_map<str, Pipeline_recipe> pipelines;
 	std::unordered_map<str, DescriptorSet_recipe> sets;
 
-	HCommandBuffer hCmdBuf = nullptr;
+	HCommandBuffer hCmdBuf = nullptr; 
 	HDescriptorSet hGlobals = nullptr;
 	HDescriptorSet hMaterial = nullptr;
 	HPipeline hPipeline = nullptr;

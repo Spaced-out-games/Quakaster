@@ -10,7 +10,7 @@ namespace qk::gfx::rhi {
 
 
     // construction
-    ShaderProgram_impl::ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out) {
+    ShaderProgram_impl::ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out): Resource("CommandBuffer_impl") {
 
 
         std::vector<GLuint> shaders;
@@ -39,16 +39,12 @@ namespace qk::gfx::rhi {
 
     // destruction
     void ShaderProgram_impl::destroy() {
-
+        assert(refcount() == 0 && flagged());
         if (!hProgram) return;
 
         glDeleteProgram(hProgram);
         hProgram = 0;
         return;
-    }
-
-    ShaderProgram_impl::~ShaderProgram_impl() {
-        destroy();
     }
 
 
@@ -108,8 +104,6 @@ namespace qk::gfx::rhi {
         return hShader;
 
     }
-
-
 
 
     Result <GLuint, str>
@@ -181,7 +175,9 @@ namespace qk::gfx::rhi {
 
     // RHI frontend
 
-
+    Resource* Resource_cast(const HShaderProgram& hShaderProgram) {
+        return static_cast<Resource*>(hShaderProgram);
+    }
     Result<HShaderProgram, str>
     ShaderProgram_ctor(const std::span<ShaderModule>& modules) {
         str error = "";
@@ -201,27 +197,38 @@ namespace qk::gfx::rhi {
 
     }
 
+    void ShaderProgram_dtor(const HShaderProgram& hProgram) {
 
-
-    bool ShaderProgram_valid(const HShaderProgram& hProgram) {
-        return hProgram;
-    }
-
-    bool ShaderProgram_bind(const HShaderProgram& hProgram) {
-        if (!hProgram) return false;
-        return hProgram->bind();
-    }
-
-    bool ShaderProgram_dtor(
-        HShaderProgram& hProgram)
-    {
-        if (!hProgram) return false;
+        assert(hProgram);
+        assert(hProgram->refcount() == 0 && hProgram->flagged());
 
         hProgram->destroy();
 
 
-        return true;
+        return;
     }
+
+    void ShaderProgram_free(HShaderProgram& hProgram) {
+        assert(hProgram);
+        assert(hProgram->refcount() == 0 && hProgram->flagged());
+
+        delete hProgram;
+        hProgram = nullptr;
+        return;
+    }
+
+
+
+    bool ShaderProgram_valid(const HShaderProgram& hProgram) {
+        return hProgram != nullptr;
+    }
+
+    bool ShaderProgram_bind(const HShaderProgram& hProgram) {
+        assert(hProgram);
+        return hProgram->bind();
+    }
+
+    
 
     bool ShaderProgram_bind_uniform_block(const HShaderProgram& hProgram, const char* id, u8 slot) {
         return hProgram->bind_uniform_block(id, slot);

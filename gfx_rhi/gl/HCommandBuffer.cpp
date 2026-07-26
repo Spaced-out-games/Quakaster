@@ -74,22 +74,64 @@ namespace qk::gfx::rhi {
         return *this;
     }
 
+    CommandBuffer_impl::CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands) :
+        dependencies(resources),
+        draw_commands(commands),
+        Resource("CommandBuffer_impl") {
 
+        for (Resource* pDependency : dependencies) {
+            pDependency->acquire();
+        }
+
+
+    }
+
+    void CommandBuffer_impl::destroy() {
+        for (Resource* pDependency : dependencies) {
+            pDependency->release();
+        }
+    }
+
+    Resource* Resource_cast(const HCommandBuffer& hCmdBuf) {
+        return static_cast<Resource*>(hCmdBuf);
+    }
 
     HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& recipe) {
-        CommandBuffer_impl* pCmdBuf = new CommandBuffer_impl(recipe.dependencies(), recipe.commands());
+        return new CommandBuffer_impl(recipe.dependencies(), recipe.commands());
 
 
-        return pCmdBuf;
     }
 
     void CommandBuffer_dtor(const HCommandBuffer& hCmdBuf) {
+        assert(hCmdBuf);
+        assert(hCmdBuf->refcount() == 0 && hCmdBuf->flagged());
         
+        // since commandbuffers are entirely emulated in GL using standard types, 'destruction'
+        // is trivial:
 
+        for (auto* pResource : hCmdBuf->dependencies) {
+            pResource->release();
+        }
+
+        hCmdBuf->dependencies.clear();
+        hCmdBuf->draw_commands.clear();
+        hCmdBuf->topology = PrimitiveTopology::Unknown;
 
     }
 
+    void CommandBuffer_free(HCommandBuffer& hCmdBuf) {
+
+        assert(hCmdBuf);
+        assert(hCmdBuf->refcount() == 0 && hCmdBuf->flagged());
+
+        delete hCmdBuf;
+        hCmdBuf = nullptr;
+    }
+
+    // Maybe consider moving this to implementation and wrapping it here instead!
     void CommandBuffer_execute(const HCommandBuffer& hCmdBuf) {
+        assert(hCmdBuf);
+
 
         DescriptorSetsContext ctx = {};
         HDescriptorSet hDescriptorSets[RHI_MAX_DESCRIPTORSETS_BOUND]{};
@@ -133,22 +175,23 @@ namespace qk::gfx::rhi {
                 // If we are replacing an old resource, release it and acquire on the new one ONE TIME
 
 
-                if (set != hDescriptorSets[set_slot])
+                //if (set != hDescriptorSets[set_slot])
 
-                {
+                //{
 
-                    if (hDescriptorSets[set_slot])
+                //    if (hDescriptorSets[set_slot])
 
-                        hDescriptorSets[set_slot]->release();
+                //        hDescriptorSets[set_slot]->release();
 
 
 
-                    hDescriptorSets[set_slot] = set;
+               //     hDescriptorSets[set_slot] = set;
 
-                    hDescriptorSets[set_slot]->acquire();
+              //      hDescriptorSets[set_slot]->acquire();
 
-                }
+                //}
 
+                hDescriptorSets[set_slot] = set;
 
 
                 // hacky way to decrease state transition costs
@@ -174,21 +217,6 @@ namespace qk::gfx::rhi {
 
     }
 
-    CommandBuffer_impl::CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands):
-        dependencies(resources),
-        draw_commands(commands) {
 
-        for (Resource* pDependency : dependencies) {
-            pDependency->acquire();
-        }
-
-
-    }
-
-    void CommandBuffer_impl::destroy() {
-        for (Resource* pDependency : dependencies) {
-            pDependency->release();
-        }
-    }
 
 }

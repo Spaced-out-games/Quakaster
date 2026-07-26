@@ -12,7 +12,11 @@ namespace qk::gfx::rhi {
     class CommandBuffer_recipe;
     HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& recipe);
 
+    Resource* Resource_cast(const HCommandBuffer& hCmdBuf);
+
     void CommandBuffer_dtor(const HCommandBuffer& hCmdBuf);
+
+    void CommandBuffer_free(HCommandBuffer& hCmdBuf);
 
     void CommandBuffer_execute(const HCommandBuffer& hCmdBuf);
 

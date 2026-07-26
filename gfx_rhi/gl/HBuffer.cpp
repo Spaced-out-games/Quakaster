@@ -4,21 +4,21 @@
 #include <glad/glad.h>
 #include <stdexcept>
 #include "rhi_globals.h"
+#include <format>
 namespace qk::gfx::rhi {
 
 
 
-    Buffer_impl::Buffer_impl( BufferType type, BufferUsage usage, u32 size, u32 count, bool ready):
+    Buffer_impl::Buffer_impl(BufferType type, BufferUsage usage, u32 size, u32 count, bool ready) :
         initialized(ready), type(type), usage(usage),
-        elem_size(size), elem_count(count)
+        elem_size(size), elem_count(count), Resource("Buffer_impl")
         {
+            
             glGenBuffers(1, &hBuffer);
         }
 
 
-    Buffer_impl::~Buffer_impl() {
-        destroy();
-    }
+
 
 
     void Buffer_impl::destroy() {
@@ -76,46 +76,53 @@ namespace qk::gfx::rhi {
         return false;
     }
 
+    Resource* Resource_cast(const HBuffer& hBuffer) {
+        return static_cast<Resource*>(hBuffer);
+    }
+
 
     HBuffer Buffer_ctor(BufferType type, BufferUsage usage) {
-
-
 
         auto* pBuf = new Buffer_impl(type, usage);
 
         return pBuf;
+
     }
 
 
-    bool Buffer_dtor(HBuffer& hBuf)
+    void Buffer_dtor(const HBuffer& hBuf)
     {
-        if (!hBuf) return false;
+        assert(hBuf);
+        assert(hBuf->refcount() == 0 && hBuf->flagged());
 
-        glDeleteBuffers(1, &hBuf->hBuffer);
+        hBuf->destroy();
+        
+    }
 
+    void Buffer_free(HBuffer& hBuf) {
+        assert(hBuf);
+        assert(hBuf->refcount() == 0 && hBuf->flagged());
 
-        //delete hBuf;
         delete hBuf;
-
         hBuf = nullptr;
-
-        return true;
     }
 
     bool Buffer_upload(const HBuffer& hBuf, const void* pData, u32 count, u32 elem_size)
     {
+        assert(hBuf);
+
         return hBuf->upload(pData, count, elem_size);
     }
 
     bool Buffer_valid(const HBuffer& hBuf)
     {
-        //return hBuf != nullptr;//&& g_Buffers.valid(hBuf);
         return hBuf != nullptr;
     }
 
     bool Buffer_initialized(const HBuffer& hBuf)
     {
-        return hBuf && hBuf->initialized;
+        assert(hBuf);
+        return hBuf->initialized;
     }
 
     BufferType Buffer_type(const HBuffer& hBuf)
@@ -128,14 +135,14 @@ namespace qk::gfx::rhi {
 
     bool VertexBuffer_bind(const HVertexBuffer& hBuf, u8 slot, u32 offset, u32 stride)
     {
-        if (!hBuf) return false;
+        assert(hBuf);
 
         return hBuf->VertexBuffer_bind(slot, offset, stride);
     }
 
     bool IndexBuffer_bind(const HIndexBuffer& hBuf)
     {
-        if (!hBuf) return false;
+        assert(hBuf);
 
         return hBuf->IndexBuffer_bind();
 
@@ -144,7 +151,7 @@ namespace qk::gfx::rhi {
     bool UniformBuffer_bind(const HUniformBuffer& hBuf, u8 slot)
     {
 
-        if (!hBuf) return false;
+        assert(hBuf);
 
         return hBuf->UniformBuffer_bind(slot);
 

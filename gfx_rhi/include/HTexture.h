@@ -22,8 +22,14 @@ namespace qk::gfx::rhi {
     struct Texture_impl;
     using HTexture = Texture_impl*;
 
+    Resource* Resource_cast(HTexture& hTex);
+
     Result<HTexture, str> Texture_ctor(
         TextureType type = TEX_2D);
+
+    void Texture_dtor(const HTexture& hTex);
+
+    void Texture_free(HTexture& hTex);
 
     void Texture_upload_2D(
         const HTexture& hTex,
@@ -39,8 +45,7 @@ namespace qk::gfx::rhi {
     bool Texture_valid(
         const HTexture& hTex);
 
-    bool Texture_dtor(
-        HTexture& hTex);
+    
 
 
 }

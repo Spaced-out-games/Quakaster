@@ -25,19 +25,18 @@ namespace qk::gfx::rhi {
 
 	using HDescriptorSet = DescriptorSet_impl*;
 
-	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe);
+    HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe);
+
+    void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet);
+
+    void DescriptorSet_free(HDescriptorSet& hDescriptorSet);
 
 	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HTexture hTexture);
-
 	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HUniformBuffer hUniformBuffer);
-
 
 	// this is temporary and should be deprecated ASAP. This is just for bootstrapping a test
 	void DescriptorSet_bind(HDescriptorSet hDescriptorSet);
 
-
-	void DescriptorSet_dtor(HDescriptorSet hDescriptorSet);
-
-
+    Resource* Resource_cast(const HDescriptorSet& hDescriptorSet);
 
 }

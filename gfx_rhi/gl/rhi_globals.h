@@ -217,15 +217,13 @@ namespace qk::gfx::rhi {
 
 
         // temporary fix
-        ShaderProgram_impl(GLuint hProgram) : hProgram(hProgram) {}
+        //ShaderProgram_impl(GLuint hProgram) : hProgram(hProgram), Resource("ShaderProgram_impl") {}
 
         ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out);
 
-        void destroy() override;
+        void destroy();
 
         bool bind() const;
-
-        ~ShaderProgram_impl();
 
         bool bind_uniform_block(const char* pName, u8 slot);
 
@@ -235,6 +233,7 @@ namespace qk::gfx::rhi {
         HShaderProgram				program;
         PrimitiveTopology			topology;
         GLuint						vao;
+        HVertexLayout               hLayout;
         std::unordered_map<u8, u32> strides;
         //CullMode cull;
         //DepthState depth;
@@ -242,7 +241,7 @@ namespace qk::gfx::rhi {
 
         Pipeline_impl(const Pipeline_recipe& recipe);
 
-        void destroy() override;
+        void destroy();
 
 
         void bind() const;
@@ -255,7 +254,7 @@ namespace qk::gfx::rhi {
 
         VertexLayout_impl(const VertexLayout_recipe& recipe);
 
-        virtual void destroy() override;
+        void destroy();
 
         ~VertexLayout_impl() = default; // just free it XD
 
@@ -272,9 +271,13 @@ namespace qk::gfx::rhi {
         TextureType type = TEX_2D;
         GLuint texture = 0;
 
-        void destroy() override;
+        void destroy();
+
+        Texture_impl(TextureType type);
 
         void bind(u8 slot = 0) const;
+
+
 
     };
 
@@ -287,7 +290,7 @@ namespace qk::gfx::rhi {
         PrimitiveTopology             topology;
         CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands);
 
-        void destroy() override;
+        void destroy();
     };
 
 
@@ -308,11 +311,10 @@ namespace qk::gfx::rhi {
         u32 elem_count = 0;
         bool initialized = false;
 
-        void destroy() override;
+        void destroy();
 
         Buffer_impl(BufferType type, BufferUsage usage, u32 elem_size = 0, u32 elem_count = 0, bool initialized = 0);
 
-        ~Buffer_impl();
 
         // Consider removing elem_size since it's kind of worthless
         bool upload(const void* pData, u32 count, u32 elem_size);
@@ -355,9 +357,9 @@ namespace qk::gfx::rhi {
         
 
         DescriptorSet_impl(const DescriptorSet_recipe& recipe);
-        ~DescriptorSet_impl();
 
-        void destroy() override;
+
+        void destroy();
 
         void setResource(u32 binding, HTexture hTexture);
 

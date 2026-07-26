@@ -87,14 +87,18 @@ namespace qk::gfx::rhi {
 	// Pipeline handle
 	using HPipeline = Pipeline_impl*;
 
+
 	// Pipeline construction
 	HPipeline Pipeline_ctor(const Pipeline_recipe& recipe);
 
 	// Pipeline destruction
-	void Pipeline_dtor(HPipeline& pipeline);
+	void Pipeline_dtor(const HPipeline& hPipeline);
+
+    void Pipeline_free(HPipeline& hPipeline);
 
     // todo: move to commandbuffer running implementation
-	bool Pipeline_bind(const HPipeline& pipeline);
+	bool Pipeline_bind(const HPipeline& hPipeline);
 
+    Resource* Resource_cast(const HPipeline& hPipeline);
 
 }

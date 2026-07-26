@@ -39,13 +39,11 @@ namespace qk
 
     public:
 
-        virtual void destroy();
+        //virtual void destroy();
 
-        // Whether or not this resource is ready to be deleted. 
-        bool can_destroy();
 
-        // Try to destroy the resource
-        bool try_destroy();
+
+
 
         // Sets the label in debug builds
         void label(const str& name);
@@ -61,7 +59,7 @@ namespace qk
         void acquire();
 
         void release();
-        Resource();
+        Resource(const str& ResourceTypeName);
         ~Resource();
     };
 

@@ -1,12 +1,11 @@
 #pragma once
-
+#include "Resource.h"
 #include <core.h>
 #include <Result.h>
 #include <vector>
 #include <span>
 
 namespace qk::gfx::rhi {
-
 
 
     enum class ShaderType {
@@ -27,13 +26,16 @@ namespace qk::gfx::rhi {
     struct ShaderProgram_impl;
     using HShaderProgram = ShaderProgram_impl*;
 
+    Resource* Resource_cast(const HShaderProgram& hShaderProgram);
 
     Result<HShaderProgram, str>
     ShaderProgram_ctor(const std::span<ShaderModule>& modules);
 
 
 
-    bool ShaderProgram_dtor(HShaderProgram& hProgram);
+    void ShaderProgram_dtor(const HShaderProgram& hProgram);
+
+    void ShaderProgram_free(HShaderProgram& hProgram);
 
     bool ShaderProgram_bind(const HShaderProgram& hProgram);
 

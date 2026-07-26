@@ -19,6 +19,13 @@ namespace qk::gfx::rhi {
         glBindTexture(GL_TEXTURE_2D, texture);
     }
 
+    Texture_impl::Texture_impl(TextureType type): type(type), Resource("Texture_impl") {
+        glGenTextures(1, &texture);
+
+        assert(texture != 0);
+    }
+
+
 
 
 
@@ -26,20 +33,33 @@ namespace qk::gfx::rhi {
     Result<HTexture, str>
     Texture_ctor(TextureType type)
     {
-        GLuint gl_tex = 0;
+        return new Texture_impl(type);
 
-        glGenTextures(1, &gl_tex);
+    }
 
-        if (!gl_tex)
-            return qk::Error<str>{ "glGenTextures failed" };
+    Resource* Resource_cast(HTexture& hTex) {
+        return static_cast<Resource*>(hTex);
+    }
 
+    void Texture_dtor(const HTexture& hTex)
+    {
+        assert(hTex);
+        assert(hTex->refcount() == 0 && hTex->flagged());
 
-        auto* pTex = new Texture_impl();
+        hTex->destroy();
 
-        pTex->type = type;
-        pTex->texture = gl_tex;
+        return;
 
-        return pTex;
+    }
+
+    void Texture_free(HTexture& hTex) {
+
+        assert(hTex);
+        assert(hTex->refcount() == 0 && hTex->flagged());
+
+        delete hTex;
+
+        hTex = nullptr;
     }
 
     void Texture_upload_2D(const HTexture& hTex, const u8* pData,
@@ -105,17 +125,6 @@ namespace qk::gfx::rhi {
         return hTex;
     }
 
-    bool Texture_dtor(HTexture& hTex)
-    {
-        if (!hTex) return false;
-
-        glDeleteTextures(1, &hTex->texture);
-
-        delete hTex;
-
-        hTex = nullptr;
-
-        return true;
-    }
+    
 
 }
