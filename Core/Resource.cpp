@@ -37,6 +37,11 @@ namespace qk {
         return m_RefCount;
     }
 
+    void Resource::refcount_override(u32 new_refcount) {
+        m_RefCount = new_refcount;
+    }
+
+
     bool Resource::flagged() const {
         return m_FlaggedForDeletion;
     }
@@ -64,7 +69,9 @@ namespace qk {
 
 	Resource::~Resource() {
 		#ifdef _DEBUG
-		spdlog::info("Resource dtor called at {} on resource `{}`", (void*)this, m_Name);
+        void* pSelf = (void*)this;
+        const str& name = m_Name;
+		spdlog::info("Resource dtor called at {} on resource `{}`", pSelf, name);
 		#endif
 	}
 

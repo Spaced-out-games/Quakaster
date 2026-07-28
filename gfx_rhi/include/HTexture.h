@@ -38,14 +38,9 @@ namespace qk::gfx::rhi {
         int height,
         int channels);
 
-    bool Texture_bind(
-        const HTexture& hTex,
-        uint8_t slot);
 
-    bool Texture_valid(
-        const HTexture& hTex);
 
-    
+    using TextureRegistry = ResourceRegistry<Texture_impl, Texture_dtor, Texture_free>;
 
 
 }

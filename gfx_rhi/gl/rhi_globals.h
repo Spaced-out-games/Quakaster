@@ -277,8 +277,7 @@ namespace qk::gfx::rhi {
 
         void bind(u8 slot = 0) const;
 
-
-
+        void upload_2D(const u8* pData, int width, int height, int channels);
     };
 
 

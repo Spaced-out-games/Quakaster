@@ -16,6 +16,7 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 #define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
 
 
+
 void Sandbox::init(int argc, char** argv) {
 	init_subsystems();
 	qk::gfx::rhi::init(m_Window);
@@ -44,8 +45,11 @@ void Sandbox::init(int argc, char** argv) {
 	hTex = *tex_result;
 	Texture_upload_2D(hTex, img.data(), img.width(), img.height(), img.channels());
 
+	textures.insert(0, hTex);
+	textures.acquire(0); // try to trigger an assert
+	//textures.insert(1, nullptr);
 	// Add to globals descriptor set
-	DescriptorSet_setResource(hGlobals, 0, hTex);
+	DescriptorSet_setResource(hGlobals, 0, textures.peek(0));
 
 
 	// Descriptor set #2 - mock material (just an offset)
@@ -125,9 +129,9 @@ void Sandbox::shutdown() {
 	DescriptorSet_dtor(hGlobals);
 	DescriptorSet_free(hGlobals);
 
-	Resource_cast(hTex)->flag_for_deletion();
-	Texture_dtor(hTex);
-	Texture_free(hTex);
+	//Resource_cast(hTex)->flag_for_deletion();
+	//Texture_dtor(hTex);
+	//Texture_free(hTex);
 
 	Resource_cast(hMaterial)->flag_for_deletion();
 	DescriptorSet_dtor(hMaterial);

@@ -9,7 +9,7 @@ namespace qk::gfx::rhi {
     void Texture_impl::destroy() {
         if (!texture) return;
         glDeleteTextures(1, &texture);
-
+        texture = 0;
         return;
 
     }
@@ -25,6 +25,43 @@ namespace qk::gfx::rhi {
         assert(texture != 0);
     }
 
+    void Texture_impl::upload_2D(const u8* pData, int width, int height, int channels) {
+        assert(texture);
+        GLenum format = Channel_cast(channels);
+        glBindTexture(
+            GL_TEXTURE_2D,
+            texture
+        );
+
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, format,
+            width, height, 0, format,
+            GL_UNSIGNED_BYTE, pData
+        );
+
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MIN_FILTER,
+            GL_NEAREST);
+
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MAG_FILTER,
+            GL_LINEAR
+        );
+
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_S,
+            GL_REPEAT
+        );
+
+        glTexParameteri(
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_T,
+            GL_REPEAT
+        );
+    }
 
 
 
@@ -65,65 +102,15 @@ namespace qk::gfx::rhi {
     void Texture_upload_2D(const HTexture& hTex, const u8* pData,
         int width, int height, int channels) {
 
-        if (!hTex) return;
+        assert(hTex);
 
-        GLenum format = Channel_cast(channels);
-
-        glBindTexture(
-            GL_TEXTURE_2D,
-            hTex->texture
-        );
-
-        glTexImage2D(
-            GL_TEXTURE_2D, 0, format,
-            width, height, 0, format,
-            GL_UNSIGNED_BYTE, pData
-        );
-
-        glTexParameteri(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_MIN_FILTER,
-            GL_NEAREST);
-
-        glTexParameteri(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_MAG_FILTER,
-            GL_LINEAR
-        );
-
-        glTexParameteri(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_S,
-            GL_REPEAT
-        );
-
-        glTexParameteri(
-            GL_TEXTURE_2D,
-            GL_TEXTURE_WRAP_T,
-            GL_REPEAT
-        );
+        hTex->upload_2D(pData, width, height, channels);
+        
     }
 
-    bool Texture_bind(const HTexture& hTex, uint8_t slot)
-    {
-        if (!hTex) return false;
 
-        if (!hTex) return false;
 
-        glActiveTexture(GL_TEXTURE0 + slot);
 
-        glBindTexture(
-            TextureType_cast(hTex->type),
-            hTex->texture
-        );
-
-        return true;
-    }
-
-    bool Texture_valid(const HTexture& hTex)
-    {
-        return hTex;
-    }
 
     
 
