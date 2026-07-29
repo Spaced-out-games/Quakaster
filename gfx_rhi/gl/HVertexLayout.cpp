@@ -104,6 +104,8 @@ namespace qk::gfx::rhi {
         return hLayout != nullptr;
     }
 
-
+    Resource* Resource_cast(const HVertexLayout& hBuffer) {
+        return static_cast<Resource*>(hBuffer);
+    }
 
 }

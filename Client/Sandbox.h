@@ -56,7 +56,6 @@ class Sandbox : public qk::Application {
 	qk::Window m_Window;
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
-	TextureRegistry textures;
 
 	std::unordered_map<str, Pipeline_recipe> pipelines;
 	std::unordered_map<str, DescriptorSet_recipe> sets;

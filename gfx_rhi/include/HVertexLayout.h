@@ -18,5 +18,11 @@ namespace qk::gfx::rhi {
     bool VertexLayout_valid(
         const HVertexLayout& hLayout);
 
+    using VertexLayoutRegistry = ResourceRegistry<VertexLayout_impl, VertexLayout_dtor, VertexLayout_free>;
+
+    Resource* Resource_cast(const HVertexLayout& hBuffer);
+
+
+
 
 }

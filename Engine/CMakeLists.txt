@@ -59,7 +59,7 @@ set(ENGINE_SOURCES
     
     
 
-          "utility/ByteStream.cpp"   "net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp" "media/LoadPipeline.cpp" "components/CSignalListener.cpp")
+          "utility/ByteStream.cpp"   "net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp" "media/LoadPipeline.cpp" "components/CSignalListener.cpp" "gfx/gfx.cpp" "media/ComponentLoader.cpp" "level/LevelLoader.cpp")
 
 message("[ENGINE] Building target `Engine`...")
 add_library(${PROJECT_NAME} ${ENGINE_SOURCES})

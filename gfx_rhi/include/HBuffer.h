@@ -237,4 +237,8 @@ namespace qk::gfx::rhi {
         return Buffer_valid(hBuf);
     }
 
+
+    using BufferRegistry = ResourceRegistry<Buffer_impl, Buffer_dtor, Buffer_free>;
+
+
 }

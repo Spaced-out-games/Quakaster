@@ -46,4 +46,7 @@ namespace qk::gfx::rhi {
         const char* id,
         u8 slot);
 
+    using ShaderProgramRegistry = ResourceRegistry<ShaderProgram_impl, ShaderProgram_dtor, ShaderProgram_free>;
+
+
 }

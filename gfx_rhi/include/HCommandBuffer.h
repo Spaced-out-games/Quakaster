@@ -51,6 +51,7 @@ namespace qk::gfx::rhi {
 
     };
 
+    using CommandBufferRegistry = ResourceRegistry<CommandBuffer_impl, CommandBuffer_dtor, CommandBuffer_free>;
 
     
 

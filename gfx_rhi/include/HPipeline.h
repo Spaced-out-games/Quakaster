@@ -101,4 +101,7 @@ namespace qk::gfx::rhi {
 
     Resource* Resource_cast(const HPipeline& hPipeline);
 
+    using PipelineRegistry = ResourceRegistry<Pipeline_impl, Pipeline_dtor, Pipeline_free>;
+
+
 }

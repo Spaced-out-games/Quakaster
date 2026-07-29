@@ -39,4 +39,7 @@ namespace qk::gfx::rhi {
 
     Resource* Resource_cast(const HDescriptorSet& hDescriptorSet);
 
+    using DescriptorSetRegistry = ResourceRegistry<DescriptorSet_impl, DescriptorSet_dtor, DescriptorSet_free>;
+
+
 }

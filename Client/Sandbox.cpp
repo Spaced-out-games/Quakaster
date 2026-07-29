@@ -1,7 +1,21 @@
 #include "Sandbox.h"
+#include <gfx/gfx.h>
+#include <fnv1a.h>
 using namespace qk::media;
+using qk::operator""_sh;
+using namespace qk::gfx;
 
-using namespace qk::gfx::rhi;
+#include "level/LevelLoader.h"
+
+using ComponentLoader = qk::IComponentLoaderMap<str, int, float>;
+
+
+
+
+
+
+
+
 
 std::vector<Vertex> g_Vertices = {
 	{-1.0f,  1.0f, 0.0f}, // top-left
@@ -16,24 +30,31 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 #define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
 
 
-
+entt::registry reg;
+ComponentLoader ld;
 void Sandbox::init(int argc, char** argv) {
 	init_subsystems();
-	qk::gfx::rhi::init(m_Window);
+	rhi::init(m_Window);
+
+	
+	
 
 	// load pipelines and descriptor sets
 	const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
 	loadPipelinesFromJSON(pipeline_json, pipelines, sets);
 
-	// initialize vertex buffer
+	// initialize vertex buffer amd register
 	hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
+	GBuffers.insert("VertexBuffer"_sh, hVertexBuffer);
 	VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
-
-	// Descriptor set #1 - mock globals (just the texture)
+	// Descriptor set #1 - mock globals (just the texture) and register DS
 	DescriptorSet_recipe globals;
 	globals.emplace_back(EDescriptorType::Texture);
 	hGlobals = DescriptorSet_ctor(globals);
+	DescriptorSets.insert("hGlobals"_sh, hGlobals);
+
+	
 
 	// load the image
 	qk::media::Image img;
@@ -43,32 +64,35 @@ void Sandbox::init(int argc, char** argv) {
 	auto tex_result = Texture_ctor(TEX_2D);
 	assert(tex_result);
 	hTex = *tex_result;
+	Textures.insert(qk::string_hash{ TEST_IMAGE_PATH }, hTex);
+
 	Texture_upload_2D(hTex, img.data(), img.width(), img.height(), img.channels());
 
-	textures.insert(0, hTex);
-	textures.acquire(0); // try to trigger an assert
-	//textures.insert(1, nullptr);
 	// Add to globals descriptor set
-	DescriptorSet_setResource(hGlobals, 0, textures.peek(0));
-
+	DescriptorSet_setResource(hGlobals, 0, Textures.peek(qk::string_hash{ TEST_IMAGE_PATH }));
 
 	// Descriptor set #2 - mock material (just an offset)
 	DescriptorSet_recipe material;
 	material.emplace_back(EDescriptorType::UniformBuffer);
 	hMaterial = DescriptorSet_ctor(material);
+	DescriptorSets.insert("hMaterial"_sh, hMaterial);
+
+	
 
 
 
 	// make the uniform buffer and add it
 	hUniformBuffer = UniformBuffer_ctor();
+	GBuffers.insert("hUniformBuffer"_sh, hUniformBuffer);
+
 	UniformBuffer_upload(hUniformBuffer, &tint, 3, sizeof(float));
 	DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
 
 
 
-
 	// initialize pipeline
 	hPipeline = Pipeline_ctor(pipelines["PBRPipeline"]);
+	Pipelines.insert("PBRPipeline"_sh, hPipeline);
 
 	// make the commandbuffer
 	CommandBuffer_recipe cmdBuf;
@@ -77,20 +101,18 @@ void Sandbox::init(int argc, char** argv) {
 		.bindDescriptorSet(hGlobals, 0)
 		.bindDescriptorSet(hMaterial, 1)
 		.bindVertexBuffer(hVertexBuffer, 0, 0, 12)
-		.drawArrays(0, 3);
+		.drawArrays(0, 4);
 
 	hCmdBuf = CommandBuffer_ctor(cmdBuf);
+	CommandBuffers.insert(0, hCmdBuf);
+
 
 
 	//hCmdBuf
 
 }
 
-// TODO: It currently renders and we now have decoupled pipeline creation from vertexbuffer binding. It works, but is incredibly
-// fragile, for the sake of testing. The vertex buffer layout strides are cached in Pipeline_impl and is ready for CommandBuffer
-// to link it and use it when CmdBuf.bindVertexBuffer() is eventually called. For now, vertex buffer bind indices are generated
-// from the VertexLayout's binding[] index, but each binding should be able to explicitly declare its bind slot, which will of
-// course map to the pipeline's stride
+
 
 void Sandbox::run() {
 
@@ -115,35 +137,7 @@ void Sandbox::run() {
 
 void Sandbox::shutdown() {
 
-	auto* pCmdBuf = Resource_cast(hCmdBuf);
-	// commandbuffer has the topmost ownership
-	Resource_cast(hCmdBuf)->flag_for_deletion();
-	CommandBuffer_dtor(hCmdBuf);
-	CommandBuffer_free(hCmdBuf);
-	
-	Resource_cast(hPipeline)->flag_for_deletion();
-	Pipeline_dtor(hPipeline);
-	Pipeline_free(hPipeline);
-	
-	Resource_cast(hGlobals)->flag_for_deletion();
-	DescriptorSet_dtor(hGlobals);
-	DescriptorSet_free(hGlobals);
-
-	//Resource_cast(hTex)->flag_for_deletion();
-	//Texture_dtor(hTex);
-	//Texture_free(hTex);
-
-	Resource_cast(hMaterial)->flag_for_deletion();
-	DescriptorSet_dtor(hMaterial);
-	DescriptorSet_free(hMaterial);
-	
-	Resource_cast(hUniformBuffer)->flag_for_deletion();
-	UniformBuffer_dtor(hUniformBuffer);
-	UniformBuffer_free(hUniformBuffer);
-
-	Resource_cast(hVertexBuffer)->flag_for_deletion();
-	VertexBuffer_dtor(hVertexBuffer);
-	VertexBuffer_free(hVertexBuffer);
+	destroy_all_resources();
 
 }
 
