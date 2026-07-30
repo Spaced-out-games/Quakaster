@@ -7,7 +7,7 @@ using qk::media::json;
 namespace qk {
 
 	template <class ...Ts>
-	void AddComponents(entt::registry& registry, entt::entity target, const IArgumentMap<Ts...>& args, const IComponentLoaderMap<Ts...>& loader) {
+	void AddEntity(entt::registry& registry, entt::entity target, const IArgumentMap<Ts...>& args, const IComponentLoaderMap<Ts...>& loader) {
 		assert(target != entt::null);
 
 		// This might not be the most efficient way of doing it but it is the most generic and easy-to-use approach.
@@ -18,7 +18,7 @@ namespace qk {
 	}
 
 	template <class... Ts>
-	std::vector<entt::entity> LoadLevel(
+	std::vector<entt::entity> LoadEntities(
 		entt::registry& registry,
 		std::span<const IArgumentMap<Ts...>> argset,
 		const IComponentLoaderMap<Ts...>& loader)
