@@ -80,4 +80,26 @@ namespace qk::media {
 
 
     }
+
+    void flatten_json(const json& in, json& out, const str& separator, const str& prefix) {
+        str new_key;
+        for (const auto& [k, v] : in.items()) {
+            if (prefix.empty()) new_key = k;
+            else new_key = prefix + separator + k;
+            
+            if (v.is_array()) {
+                out[new_key] = json::array();
+                for (const auto& item : v) {
+                    if (item.is_object()) {
+                        flatten_json(item, out[k], separator, "");
+                    }
+                }
+            } else if (v.is_object()) {
+                flatten_json(v, out, separator, new_key);
+            } else  {
+                out[new_key] = v;
+
+            }
+        }
+    }
 }

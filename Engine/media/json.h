@@ -4,6 +4,7 @@
 /// **************************************************************************************************
 #pragma once
 #include <nlohmann/json.hpp>
+#include "core.h"
 
 namespace qk::media {
 
@@ -17,5 +18,7 @@ namespace qk::media {
 
 	// Loads a json file
 	json loadJSON(const std::filesystem::path& path);
+
+	void flatten_json(const json& in, json& out, const str& separator, const str& prefix);
 
 }
