@@ -44,12 +44,61 @@
 #include "gfx_rhi.h"
 #include "Resource.h"
 
+#include "spacial/SpatialHashMap_qk_impl.h"
+
+
 using namespace qk::gfx::rhi;
 struct Vertex {
 	float x, y, z;
 };
 
+#include "math/geometric/Vec3.h"
+using namespace qk;
 
+void spatial_demo() {
+	SpatialHashMap3D<int, 4> map;
+	
+	
+
+	map.insert(Vec3{ 0,0,0 }, 0);
+	map.insert(Vec3{ 0,0,1 }, 1);
+	map.insert(Vec3{ 0,0,2 }, 2);
+	map.insert(Vec3{ 0,0,3 }, 3);
+
+	map.insert(Vec3{ 0,0,4 }, 4);
+
+	const auto& cell1 = map.values_at(Vec3i{ 0,0,0 });
+	const auto& cell2 = map.values_at(Vec3i{ 0,0,1 });
+
+	
+	assert(cell1.contains(0) && cell1.contains(1) && cell1.contains(2) && cell1.contains(3) && !cell1.contains(4));
+
+	assert(!cell2.contains(0) && !cell2.contains(1) && !cell2.contains(2) && !cell2.contains(3) && cell2.contains(4));
+	//*/
+
+	map.insert(Vec3{ 3.999f,0,0 }, 0);
+	map.insert(Vec3{ 4.000f,0,0 }, 1);
+
+	assert(map.contains(Vec3i{ 0,0,0 }, 0));
+	assert(map.contains(Vec3i{ 1,0,0 }, 1));
+
+	map.remove(Vec3{ 0,0,2 }, 2);
+
+	assert(!map.contains(Vec3i{ 0,0,0 }, 2));
+
+	map.remove(Vec3{ 0,0,0 }, 0);
+	map.remove(Vec3{ 0,0,1 }, 1);
+	map.remove(Vec3{ 0,0,3 }, 3);
+	assert(map.contains(Vec3i{ 0,0,1 }, 4));
+
+
+	
+	map.for_each_cell([](const Vec3i& cell, const SpatialHashMap3D<int, 4>::Bucket_t& bucket) {
+
+		std::cout << cell << ": " << bucket.size() << "item(s)" << '\n';
+	});
+
+}
 
 
 class Sandbox : public qk::Application {

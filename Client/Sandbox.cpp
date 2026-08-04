@@ -30,85 +30,66 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 #define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
 
 
+
+
+
+
 entt::registry reg;
 ComponentLoader ld;
 void Sandbox::init(int argc, char** argv) {
-	init_subsystems();
-	rhi::init(m_Window);
 
-	
-	
+    init_subsystems();
+    rhi::init(m_Window);
+    spatial_demo();
 
-	// load pipelines and descriptor sets
-	const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
-	loadPipelinesFromJSON(pipeline_json, pipelines, sets);
+    // Define assets
+    const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
+    loadPipelinesFromJSON(pipeline_json, pipelines);
+    loadDescriptorSetsFromJSON(pipeline_json, sets);
+    registry_upload(DescriptorSets, sets);
+    registry_upload(Pipelines, pipelines);
 
-	// initialize vertex buffer amd register
-	hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
-	GBuffers.insert("VertexBuffer"_sh, hVertexBuffer);
-	VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
-	// Descriptor set #1 - mock globals (just the texture) and register DS
-	DescriptorSet_recipe globals;
-	globals.emplace_back(EDescriptorType::Texture);
-	hGlobals = DescriptorSet_ctor(globals);
-	DescriptorSets.insert("hGlobals"_sh, hGlobals);
+    // retreive the handles
+    hPipeline = Pipelines.peek("PBRPipeline"_sh);
+    hGlobals = DescriptorSets.peek("hGlobals"_sh);
+    hMaterial = DescriptorSets.peek("hMaterial"_sh);
 
-	
 
-	// load the image
-	qk::media::Image img;
-	qk::media::load_image(img, TEST_IMAGE_PATH);
-
-	// create the texture
-	auto tex_result = Texture_ctor(TEX_2D);
-	assert(tex_result);
-	hTex = *tex_result;
-	Textures.insert(qk::string_hash{ TEST_IMAGE_PATH }, hTex);
-
-	Texture_upload_2D(hTex, img.data(), img.width(), img.height(), img.channels());
-
-	// Add to globals descriptor set
-	DescriptorSet_setResource(hGlobals, 0, Textures.peek(qk::string_hash{ TEST_IMAGE_PATH }));
-
-	// Descriptor set #2 - mock material (just an offset)
-	DescriptorSet_recipe material;
-	material.emplace_back(EDescriptorType::UniformBuffer);
-	hMaterial = DescriptorSet_ctor(material);
-	DescriptorSets.insert("hMaterial"_sh, hMaterial);
-
-	
+    // build the vertex buffer
+    hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
+    GBuffers.insert("VertexBuffer"_sh, hVertexBuffer);
+    VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
 
 
-	// make the uniform buffer and add it
-	hUniformBuffer = UniformBuffer_ctor();
-	GBuffers.insert("hUniformBuffer"_sh, hUniformBuffer);
-
-	UniformBuffer_upload(hUniformBuffer, &tint, 3, sizeof(float));
-	DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
+    hTex = load_or_reload(Textures, TEST_IMAGE_PATH);
 
 
 
-	// initialize pipeline
-	hPipeline = Pipeline_ctor(pipelines["PBRPipeline"]);
-	Pipelines.insert("PBRPipeline"_sh, hPipeline);
+    // Texture
 
-	// make the commandbuffer
-	CommandBuffer_recipe cmdBuf;
-	cmdBuf
-		.bindPipeline(hPipeline)
-		.bindDescriptorSet(hGlobals, 0)
-		.bindDescriptorSet(hMaterial, 1)
-		.bindVertexBuffer(hVertexBuffer, 0, 0, 12)
-		.drawArrays(0, 4);
+    DescriptorSet_setResource(hGlobals, 0, Textures.peek(qk::string_hash{ TEST_IMAGE_PATH }));
 
-	hCmdBuf = CommandBuffer_ctor(cmdBuf);
-	CommandBuffers.insert(0, hCmdBuf);
+    // Uniform buffer
+    hUniformBuffer = UniformBuffer_ctor();
+    GBuffers.insert("hUniformBuffer"_sh, hUniformBuffer);
+    UniformBuffer_upload(hUniformBuffer, &tint, 3, sizeof(float));
+    DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
 
 
 
-	//hCmdBuf
+    // Command buffer
+    CommandBuffer_recipe cmdBuf;
+    cmdBuf
+        .bindPipeline(hPipeline)
+        .bindDescriptorSet(hGlobals, 0)
+        .bindDescriptorSet(hMaterial, 1)
+        .bindVertexBuffer(hVertexBuffer, 0, 0, sizeof(Vertex))
+        .drawArrays(0, 4);
+
+    hCmdBuf = CommandBuffer_ctor(cmdBuf);
+    CommandBuffers.insert(0, hCmdBuf);
 
 }
 
