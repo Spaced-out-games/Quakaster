@@ -6,6 +6,7 @@
 #include "Image.h"
 #include "../vendor/stb_image.h"
 #include <cassert>
+#include <spdlog/spdlog.h>
 namespace qk::media {
 
 	Image::Image(const std::string& path) {
@@ -66,7 +67,7 @@ namespace qk::media {
 	}
 
 	void Image::destroy() {
-
+		if (!m_pData) return;
 		stbi_image_free(m_pData);
 		m_pData = nullptr;
 		m_Channels = 0;
@@ -74,7 +75,7 @@ namespace qk::media {
 		m_Width = 0;
 	}
 
-	void load_image(Image& target, const std::string& path)
+	bool load_image(Image& target, const std::string& path)
 	{
 		assert(path != "");
 		assert(target.m_pData == nullptr);
@@ -89,8 +90,11 @@ namespace qk::media {
 			0
 		);
 
-		if (!target.m_pData)
-			throw std::runtime_error(stbi_failure_reason());
+		if (!target.m_pData) {
+			spdlog::info("Image `{}` failed to load: {}", path, stbi_failure_reason());
+			return false;
+		}
+		return true;
 	}
 
 	void make_image(Image& target, int width, int height, int channels)

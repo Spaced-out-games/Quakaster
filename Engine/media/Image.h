@@ -47,7 +47,7 @@ namespace qk::media {
 			int channels() const;
 			size_t size_bytes() const;
 			void destroy();
-			friend void load_image(Image& target, const std::string& path);
+			friend bool load_image(Image& target, const std::string& path);
 			friend void make_image(Image& target, int width, int height, int channels);
 	};
 
@@ -57,7 +57,7 @@ namespace qk::media {
 	/// </summary>
 	/// <param name="target"></param>
 	/// <param name="path"></param>
-	void load_image(Image& target, const std::string& path);
+	bool load_image(Image& target, const std::string& path);
 
 	/// <summary>
 	/// Creates an empty (black) image. Assumes `target` has already been destroyed.
