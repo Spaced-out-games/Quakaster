@@ -2,11 +2,13 @@
 	"pipelines": {
 		"PBRPipeline": {
 			"topology": "triangle_strip",
+
 			"layout": [
 				{
 					"slot": 0,
 					"input_rate": "per-vertex",
 					"stride": 12,
+
 					"attributes": [
 						{
 							"location": 0,
@@ -20,7 +22,6 @@
 			],
 
 			"shader_modules": [
-
 				{
 					"type": "vertex",
 					"path": "assets/mat_solid.vert"
@@ -29,17 +30,21 @@
 					"type": "fragment",
 					"path": "assets/mat_solid.frag"
 				}
-
 			]
-
-
 		}
 	},
 
-	"descriptor_set_layouts": {
+	"descriptor_sets": {
+		"hGlobals": [
+			{
+				"type": "texture"
+			}
+		],
 
-
+		"hMaterial": [
+			{
+				"type": "uniform_buffer"
+			}
+		]
 	}
-
-
 }
