@@ -15,6 +15,7 @@
 
 #define QK_ASSERT(exp) assert(exp)
 
+constexpr float QK_EPSILON = 0.0e6;
 
 #pragma once
 #ifdef QK_SHARED
