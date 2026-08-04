@@ -4,6 +4,8 @@ using qk::gfx::rhi::EScalarType;
 using qk::gfx::rhi::InputRate;
 using qk::gfx::rhi::ShaderType;
 using qk::gfx::rhi::PrimitiveTopology;
+using qk::gfx::rhi::EDescriptorType;
+using qk::gfx::rhi::DescriptorBinding;
 namespace qk::media {
 
 
@@ -22,7 +24,7 @@ namespace qk::media {
 
 		else if (value == "f32") return EScalarType::f32;
 		else if (value == "f64") return EScalarType::f64;
-		return EScalarType::unknown;
+		else assert(false);
 	}
 
 	inline ShaderType ShaderType_fromString(const str& value) {
@@ -30,7 +32,7 @@ namespace qk::media {
 		else if (value == "fragment") return ShaderType::Fragment;
 		else if (value == "geometry") return ShaderType::Geometry;
 		else if (value == "compute") return ShaderType::Compute;
-		return ShaderType::Unknown;
+		else assert(false);
 	}
 
 	inline PrimitiveTopology PrimitiveTopology_fromString(const str& value) {
@@ -39,7 +41,14 @@ namespace qk::media {
 		else if (value == "points") return PrimitiveTopology::Points;
 		else if (value == "triangle_strip") return PrimitiveTopology::TriangleStrip;
 		else if (value == "line_strip") return PrimitiveTopology::LineStrip;
-		else return PrimitiveTopology::Unknown;
+		else assert(false);
+	}
+
+	inline EDescriptorType EDescriptorType_fromString(const str& value) {
+		if (value == "texture") return EDescriptorType::Texture;
+		else if (value == "uniform_buffer") return EDescriptorType::UniformBuffer;
+		else
+			assert(false);
 	}
 
 
@@ -190,10 +199,36 @@ namespace qk::media {
 
 	}
 
+	bool DescriptorBindingFromJSON(const json& j, DescriptorBinding& out) {
+		if (!j.is_object()) return false;
+
+		// for now, it's dead simple - just push the type
+
+		if (j.contains("type") && j["type"].is_string()) {
+			out.type = EDescriptorType_fromString(j["type"]);
+			return true;
+		}
+
+		return false;
+
+	}
+
+	bool DescriptorSetFromJSON(const json& j, DescriptorSet_recipe& out) {
+		if (!j.is_array()) return false;
+		DescriptorBinding binding;
+		for (const auto& item : j) {
+			bool status = DescriptorBindingFromJSON(item, binding);
+			if (status)
+				out.push_back(binding);
+			else
+				return false;
+		}
+		return true;
+	}
+
 	bool loadPipelinesFromJSON(
 		const json& j,
-		std::unordered_map<str, Pipeline_recipe>& pipelines,
-		std::unordered_map<str, DescriptorSet_recipe>& descriptor_sets
+		std::unordered_map<str, Pipeline_recipe>& pipelines
 	) {
 		if (!j.is_object()) return false;
 
@@ -205,6 +240,40 @@ namespace qk::media {
 				pipelines[pipeline_name] = pipeline_recipe;
 			} else return false;
 		}
+
+
+
+
+	}
+
+	bool loadDescriptorSetsFromJSON(
+		const json& j,
+		std::unordered_map<str, DescriptorSet_recipe>& out)
+	{
+		if (!j.is_object())
+			return false;
+
+		if (!j.contains("descriptor_sets"))
+			return false;
+
+		const auto& sets = j["descriptor_sets"];
+
+		if (!sets.is_object())
+			return false;
+
+		for (const auto& [name, info] : sets.items())
+		{
+			assert(!out.contains(name));
+
+			DescriptorSet_recipe recipe;
+
+			if (!DescriptorSetFromJSON(info, recipe))
+				return false;
+
+			out.emplace(name, std::move(recipe));
+		}
+
+		return true;
 	}
 
 

@@ -2,6 +2,8 @@
 #include "rhi_globals.h"
 #include <cassert>
 
+using qk::gfx::rhi::EDrawCmdType;
+
 namespace qk::gfx::rhi {
     
     // commandbuffer builder.
@@ -65,14 +67,24 @@ namespace qk::gfx::rhi {
     }
 
 
-    CommandBuffer_recipe& CommandBuffer_recipe::drawArrays(u32 offset, u32 count) {
+    CommandBuffer_recipe& CommandBuffer_recipe::drawArrays(u32 offset, u32 numVertices) {
 
         m_DrawCommands.emplace_back(
-            DrawCmd{DrawArraysCmd{offset, count}}
+            DrawCmd{DrawArraysCmd{offset, numVertices}}
         );
 
         return *this;
     }
+
+    CommandBuffer_recipe& CommandBuffer_recipe::drawArraysInstanced(u32 offset, u32 numVertices, u32 numInstances) {
+
+        m_DrawCommands.emplace_back(
+            DrawCmd{ DrawArraysInstancedCmd{offset, numVertices, numInstances} }
+        );
+
+        return *this;
+    }
+
 
     CommandBuffer_impl::CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands) :
         dependencies(resources),
@@ -128,93 +140,109 @@ namespace qk::gfx::rhi {
         hCmdBuf = nullptr;
     }
 
-    // Maybe consider moving this to implementation and wrapping it here instead!
-    void CommandBuffer_execute(const HCommandBuffer& hCmdBuf) {
-        assert(hCmdBuf);
 
 
-        DescriptorSetsContext ctx = {};
-        HDescriptorSet hDescriptorSets[RHI_MAX_DESCRIPTORSETS_BOUND]{};
-        assert(hCmdBuf != nullptr);
-        for (const auto& drawCmd : hCmdBuf->draw_commands) {
 
-            const auto& bindVertexBufferCmd = drawCmd.bindVertexBufferCmd;
-            const auto& bindIndexBufferCmd = drawCmd.bindIndexBufferCmd;
-            const auto& bindPipelineCmd = drawCmd.bindPipelineCmd;
-            const auto& drawArraysCmd = drawCmd.drawArraysCmd;
-            const auto& type = drawCmd.type;
-            const auto& set = drawCmd.bindDescriptorSetCmd.set;
-            const auto& set_slot = drawCmd.bindDescriptorSetCmd.slot;
-            HDescriptorSet pDescriptorSet = nullptr;
-            
-            switch (type)
+
+    static void DrawCmd_execute(
+        const DrawCmd& drawCmd,
+        HCommandBuffer hCmdBuf,
+        DescriptorSetsContext& ctx,
+        HDescriptorSet(&hDescriptorSets)[RHI_MAX_DESCRIPTORSETS_BOUND]
+    )
+    {
+        const auto& bindVertexBufferCmd = drawCmd.bindVertexBufferCmd;
+        const auto& bindIndexBufferCmd = drawCmd.bindIndexBufferCmd;
+        const auto& bindPipelineCmd = drawCmd.bindPipelineCmd;
+        const auto& drawArraysCmd = drawCmd.drawArraysCmd;
+        const auto& drawArraysInstancedCmd = drawCmd.drawArraysInstancedCmd;
+        const auto& type = drawCmd.type;
+
+        switch (type)
+        {
+        case EDrawCmdType::BindPipeline:
+            Pipeline_bind(bindPipelineCmd.hPipeline);
+            hCmdBuf->topology = bindPipelineCmd.hPipeline->topology;
+            break;
+
+        case EDrawCmdType::BindVertexBuffer:
+            VertexBuffer_bind(
+                bindVertexBufferCmd.hVertexBuffer,
+                bindVertexBufferCmd.slot,
+                bindVertexBufferCmd.offset,
+                bindVertexBufferCmd.stride
+            );
+            break;
+
+        case EDrawCmdType::BindIndexBuffer:
+            IndexBuffer_bind(bindIndexBufferCmd.hIndexBuffer);
+            break;
+
+        case EDrawCmdType::DrawArrays:
+            glDrawArrays(
+                PrimitiveType_cast(hCmdBuf->topology),
+                drawArraysCmd.offset,
+                drawArraysCmd.count
+            );
+            break;
+
+        case EDrawCmdType::DrawArraysInstanced:
+            glDrawArraysInstanced(
+                PrimitiveType_cast(hCmdBuf->topology),
+                drawArraysInstancedCmd.offset,
+                drawArraysInstancedCmd.numVertices,
+                drawArraysInstancedCmd.numInstances
+            );
+            break;
+
+        case EDrawCmdType::BindDescriptorSet:
+        {
+            const auto& cmd = drawCmd.bindDescriptorSetCmd;
+
+            assert(cmd.slot < RHI_MAX_DESCRIPTORSETS_BOUND);
+            assert(cmd.set);
+
+            hDescriptorSets[cmd.slot] = cmd.set;
+
+            // rebuild context
+            ctx = {};
+
+            for (size_t i = 0; i < cmd.slot; ++i)
             {
-            case qk::gfx::rhi::EDrawCmdType::BindPipeline:
-                Pipeline_bind(bindPipelineCmd.hPipeline);
-                hCmdBuf->topology = bindPipelineCmd.hPipeline->topology;
-                break;
-            case qk::gfx::rhi::EDrawCmdType::BindVertexBuffer:
-                VertexBuffer_bind(
-                    bindVertexBufferCmd.hVertexBuffer,
-                    bindVertexBufferCmd.slot,
-                    bindVertexBufferCmd.offset,
-                    bindVertexBufferCmd.stride
-                );
-                break;
-            case qk::gfx::rhi::EDrawCmdType::BindIndexBuffer:
-                IndexBuffer_bind(bindIndexBufferCmd.hIndexBuffer);
-                break;
-            case qk::gfx::rhi::EDrawCmdType::DrawArrays:
-                glDrawArrays(PrimitiveType_cast(hCmdBuf->topology), drawArraysCmd.offset, drawArraysCmd.count);
-                break;
-            case qk::gfx::rhi::EDrawCmdType::BindDescriptorSet:
-                // make sure we have a valid slot and set
-                assert(drawCmd.bindDescriptorSetCmd.slot < RHI_MAX_DESCRIPTORSETS_BOUND);
-                assert(drawCmd.bindDescriptorSetCmd.set);
-
-                // If we are replacing an old resource, release it and acquire on the new one ONE TIME
-
-
-                //if (set != hDescriptorSets[set_slot])
-
-                //{
-
-                //    if (hDescriptorSets[set_slot])
-
-                //        hDescriptorSets[set_slot]->release();
-
-
-
-               //     hDescriptorSets[set_slot] = set;
-
-              //      hDescriptorSets[set_slot]->acquire();
-
-                //}
-
-                hDescriptorSets[set_slot] = set;
-
-
-                // hacky way to decrease state transition costs
-                ctx = {};
-
-                for (size_t i = 0; i < set_slot; i++) {
-                    if (hDescriptorSets)
-                        ctx.next(hDescriptorSets[i]);
-                }
-                // more correct
-                if(hDescriptorSets[set_slot])
-                    hDescriptorSets[set_slot]->bind(ctx);
-
-
-
-
-                break;
-
-            default:
-                break;
+                if (hDescriptorSets[i])
+                    ctx.next(hDescriptorSets[i]);
             }
+
+            hDescriptorSets[cmd.slot]->bind(ctx);
+            break;
         }
 
+        default:
+            break;
+        }
+    }
+
+
+
+
+
+    // Maybe consider moving this to implementation and wrapping it here instead!
+    void CommandBuffer_execute(const HCommandBuffer& hCmdBuf)
+    {
+        assert(hCmdBuf);
+
+        DescriptorSetsContext ctx{};
+        HDescriptorSet hDescriptorSets[RHI_MAX_DESCRIPTORSETS_BOUND]{};
+
+        for (const auto& drawCmd : hCmdBuf->draw_commands)
+        {
+            DrawCmd_execute(
+                drawCmd,
+                hCmdBuf,
+                ctx,
+                hDescriptorSets
+            );
+        }
     }
 
 

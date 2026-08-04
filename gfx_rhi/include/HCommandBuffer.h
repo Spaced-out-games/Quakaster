@@ -39,10 +39,11 @@ namespace qk::gfx::rhi {
             CommandBuffer_recipe& bindIndexBuffer(const HIndexBuffer& hIndexBuffer);
 
 
-
             CommandBuffer_recipe& bindDescriptorSet(HDescriptorSet hDescriptorSet, u8 slot = 0);
 
-            CommandBuffer_recipe& drawArrays(u32 offset, u32 count);
+            CommandBuffer_recipe& drawArrays(u32 offset, u32 numVertices);
+
+            CommandBuffer_recipe& drawArraysInstanced(u32 offset, u32 numVertices, u32 numInstances);
 
             // get a list of all the resources this commandbuffer recipe is dependent on.
             const std::unordered_set<Resource*>& dependencies() const;

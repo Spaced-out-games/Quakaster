@@ -31,10 +31,8 @@ namespace qk::media {
 
 
 
-	bool loadPipelinesFromJSON(
-		const json& j,
-		std::unordered_map<str, Pipeline_recipe>& pipelines,
-		std::unordered_map<str, DescriptorSet_recipe>& descriptor_sets
-	);
+	bool loadPipelinesFromJSON(const json& j, std::unordered_map<str, Pipeline_recipe>& pipelines);
+
+	bool loadDescriptorSetsFromJSON(const json& j, std::unordered_map<str, DescriptorSet_recipe>& out);
 
 }

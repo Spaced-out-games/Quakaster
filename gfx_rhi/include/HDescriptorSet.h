@@ -10,7 +10,7 @@ namespace qk::gfx::rhi {
         Unknown,
         Texture,
         UniformBuffer,
-        StorageBuffer
+        //StorageBuffer
     };
 
     struct DescriptorBinding {

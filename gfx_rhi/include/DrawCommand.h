@@ -29,8 +29,9 @@ namespace qk::gfx::rhi {
         BindPipeline,
         BindVertexBuffer,
         BindIndexBuffer,
-        BindDescriptorSet, // not implemented yet.
-        DrawArrays
+        BindDescriptorSet,
+        DrawArrays,
+        DrawArraysInstanced // not implemented yet.
     };
 
     struct BindPipelineCmd {
@@ -53,11 +54,17 @@ namespace qk::gfx::rhi {
         u32 count = 0;
     };
 
+    struct DrawArraysInstancedCmd {
+        u32 offset = 0;
+        u32 numVertices = 0;
+        u32 numInstances = 0;
+    };
+
     struct BindDescriptorSetCmd {
         HDescriptorSet set;
         u8 slot = 0;
     };
-
+    
 
 
     struct DrawCmd {
@@ -69,6 +76,7 @@ namespace qk::gfx::rhi {
             BindVertexBufferCmd bindVertexBufferCmd;
             BindIndexBufferCmd  bindIndexBufferCmd;
             DrawArraysCmd       drawArraysCmd;
+            DrawArraysInstancedCmd drawArraysInstancedCmd;
         };
 
         DrawCmd(BindPipelineCmd bindPipelineCmd);
@@ -76,6 +84,7 @@ namespace qk::gfx::rhi {
         DrawCmd(BindVertexBufferCmd bindVertexBufferCmd);
         DrawCmd(BindIndexBufferCmd bindIndexBufferCmd);
         DrawCmd(DrawArraysCmd drawArraysCmd);
+        DrawCmd(DrawArraysInstancedCmd drawArraysInstancedCmd);
 
     };
 
