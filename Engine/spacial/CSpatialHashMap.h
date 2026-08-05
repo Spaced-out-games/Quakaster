@@ -18,7 +18,7 @@ namespace std
     struct hash<Vec2i>
     {
         size_t operator()(const Vec2i& c) const noexcept {
-            return c.x() * 73856093u ^ c.y() * 19349663u;
+            return c.x * 73856093u ^ c.y * 19349663u;
         }
     };
 
@@ -26,7 +26,7 @@ namespace std
     struct hash<Vec3i>
     {
         size_t operator()(const Vec3i& c) const noexcept {
-            return c.x() * 73856093u ^ c.y() * 19349663u ^ c.z() * 83492791u;
+            return c.x * 73856093u ^ c.y * 19349663u ^ c.z * 83492791u;
         }
     };
 }
@@ -40,7 +40,7 @@ namespace qk {
     template <>
     struct SpatialTraits<Vec3i, Vec3> {
         static Vec3i to_cell(const Vec3& position, size_t CellSize) {
-            return (Vec3i)(position / CellSize);
+            return (Vec3i)(position / (float)CellSize);
         }
 
         class iterator
@@ -63,15 +63,15 @@ namespace qk {
             iterator& operator++() {
 
 
-                m_Current.x()++;
+                m_Current.x++;
 
-                if (m_Current.x() > m_Max.x()) {
-                    m_Current.x() = m_Min.x();
-                    m_Current.y()++;
+                if (m_Current.x > m_Max.x) {
+                    m_Current.x = m_Min.x;
+                    m_Current.y++;
 
-                    if (m_Current.y() > m_Max.y()) {
-                        m_Current.y() = m_Min.y();
-                        m_Current.z()++;
+                    if (m_Current.y > m_Max.y) {
+                        m_Current.y = m_Min.y;
+                        m_Current.z++;
                         
                     }
 
@@ -100,7 +100,7 @@ namespace qk {
             Vec3i current = min;
 
             // One-past-the-end sentinel.
-            current.z() = max.z() + 1;
+            current.z = max.z + 1;
 
             return iterator(min, max, current);
         }

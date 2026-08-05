@@ -7,96 +7,58 @@
 namespace qk
 {
 
-    class Vec3i;
-
-    class Vec3
+    struct Vec3 : glm::vec3
     {
-    public:
-        Vec3();
-        explicit Vec3(float xyz);
-        Vec3(float x, float y, float z);
-        explicit Vec3(const glm::vec3& v);
+        using glm::vec3::vec3;
 
-        explicit operator glm::vec3() const;
-        explicit operator Vec3i() const;
+        [[nodiscard]] static constexpr Vec3 zero() { return { 0, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec3 one() { return { 1, 1, 1 }; }
+        [[nodiscard]] static constexpr Vec3 Up() { return { 0, 1, 0 }; }
+        [[nodiscard]] static constexpr Vec3 Right() { return { 1, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec3 Forward() { return { 0, 0,-1 }; }
 
-        float& x();
-        float& y();
-        float& z();
-
-        const float& x() const;
-        const float& y() const;
-        const float& z() const;
-
-        float length() const;
-        float lengthSquared() const;
-
-        void normalize();
-        Vec3 normalized() const;
-
-        bool operator==(const Vec3& rhs) const;
-        bool operator!=(const Vec3& rhs) const;
-
-        static Vec3 Zero();
-        static Vec3 One();
-        static Vec3 Up();
-        static Vec3 Right();
-        static Vec3 Forward();
-
-    private:
-        glm::vec3 m_Data;
+        // just forward to GLM
+        constexpr Vec3(const glm::vec3& v) : glm::vec3(v) {}
     };
 
-    // Arithmetic
-    Vec3 operator+(const Vec3& lhs, const Vec3& rhs);
-    Vec3 operator-(const Vec3& lhs, const Vec3& rhs);
-    Vec3 operator*(const Vec3& lhs, float rhs);
-    Vec3 operator*(float lhs, const Vec3& rhs);
-    Vec3 operator/(const Vec3& lhs, float rhs);
-
-    // Math
-    float Dot(const Vec3& a, const Vec3& b);
-    Vec3 Cross(const Vec3& a, const Vec3& b);
-
-
-
-    class Vec3i
+    [[nodiscard]] inline bool operator<=(const Vec3& lhs, const Vec3& rhs)
     {
-    public:
-        Vec3i();
-        explicit Vec3i(int xyz);
-        Vec3i(int x, int y, int z);
-        explicit Vec3i(const glm::ivec3&);
+        return lhs.x <= rhs.x &&
+            lhs.y <= rhs.y &&
+            lhs.z <= rhs.z;
+    }
 
-        explicit operator const glm::ivec3& () const;
-        explicit operator Vec3 () const;
+    [[nodiscard]] inline bool operator>=(const Vec3& lhs, const Vec3& rhs)
+    {
+        return lhs.x >= rhs.x &&
+            lhs.y >= rhs.y &&
+            lhs.z >= rhs.z;
+    }
 
-        int& x();
-        int& y();
-        int& z();
 
-        const int& x() const;
-        const int& y() const;
-        const int& z() const;
+    // defaults
+    [[nodiscard]] float length(const Vec3& target);
+    [[nodiscard]] float length_squared(const Vec3& target);
+    void normalize(Vec3& target);
+    [[nodiscard]] Vec3 normalized(const Vec3& target);
+    [[nodiscard]] float dot(const Vec3& a, const Vec3& b);
+    [[nodiscard]] float cross(const Vec3& a, const Vec3& b);
 
-        bool operator==(const Vec3i&) const;
-        bool operator!=(const Vec3i&) const;
 
-        static Vec3i Zero();
-        static Vec3i One();
-        static Vec3i Up();
-        static Vec3i Right();
-        static Vec3i Forward();
+    struct Vec3i : glm::ivec3
+    {
+        using glm::ivec3::ivec3;
 
-    private:
-        glm::ivec3 m_Data;
+        [[nodiscard]] static constexpr Vec3i zero() { return { 0, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec3i one() { return { 1, 1, 1 }; }
+        [[nodiscard]] static constexpr Vec3i Up() { return { 0, 1, 0 }; }
+        [[nodiscard]] static constexpr Vec3i Right() { return { 1, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec3i Forward() { return { 0, 0,-1 }; }
+
+        // just forward to GLM
+        constexpr Vec3i(const glm::ivec3& v) : glm::ivec3(v) {}
+
     };
-
-    Vec3i operator+(const Vec3i&, const Vec3i&);
-    Vec3i operator-(const Vec3i&, const Vec3i&);
-    Vec3i operator*(const Vec3i&, int);
-    Vec3i operator*(int, const Vec3i&);
-    Vec3i operator/(const Vec3i&, int);
 
 
 

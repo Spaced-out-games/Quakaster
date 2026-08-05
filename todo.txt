@@ -1,0 +1,40 @@
+CUINavGraphNode:
+	-four entt::entity in the cardinal directions
+	-Used for keyboard navigation
+
+COnEventCallback:
+	-Just a function pointer
+	-Called when an entity is to receive a qk::Event
+	-How it is called is implementation-specific - UI would call this only when a widegt is focused for example.
+
+CUIButton:
+	-Just a bounding box that forwards events to COnEventCallback
+
+CAxisAlignedBoundingBox<Position_t>:
+	-Templated on Position_t
+	-Position_t + Position_t
+Ray: // mine
+	-templated on Position_t
+	-Geometric type
+	-position + direction
+Plane: // mine
+	-templated on Position_t
+	-normal vector + scalar D
+Line segment: // mine
+	-templated on Position_t
+	-Position_t + Position_t
+CMeshInstance:
+	For now, just an HVertexBuffer since instancebuffers are vertex buffers
+Instance buffer creation:
+	-scan through all entities with a matrix and CMeshInstance, build the instancebuffers using them, upload the data per-frame
+
+Need to figure out:
+	How to handle pipelines...do they need rebuilt?
+	How about commandbuffers?
+	How do we handle when instance counts increase and the instancing command uses a stale size?
+	How do we get informed about this?
+		Perhaps we could use entt's built-in on_destroy protocol so that when CMeshInstance is created, we can check when the buffer expands and retracts, and consider a rebuild
+
+		How about LODs?
+			Instancebuffer for each lod, probably. Irrelevant for now
+	How 

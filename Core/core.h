@@ -8,6 +8,7 @@
 #include <string_view>
 #include <string>
 
+
 #define QK_API_VERSION(variant, major, minor, patch) \
     ((((u32)(variant)) << 29U) | (((u32)(major)) << 22U) | (((u32)(minor)) << 12U) | ((u32)(patch)))
 // pre-release
@@ -15,7 +16,7 @@
 
 #define QK_ASSERT(exp) assert(exp)
 
-constexpr float QK_EPSILON = 0.0e6;
+constexpr float QK_EPSILON = 0.0e5;
 
 #pragma once
 #ifdef QK_SHARED

@@ -8,121 +8,42 @@
 namespace qk
 {
 
-    Quat::Quat()
-        : m_Data(1.f, 0.f, 0.f, 0.f)
+
+    float Quat::length() const
     {
+        return glm::length((const glm::quat&)*this);
     }
 
-    Quat::Quat(float x, float y, float z, float w)
-        : m_Data(w, x, y, z)
+    float Quat::lengthSquared() const
     {
+        return glm::dot((const glm::quat&)*this, (const glm::quat&)*this);
     }
 
-    Quat::Quat(const glm::quat& q)
-        : m_Data(q)
+    void Quat::normalize()
     {
+        *this = glm::normalize((const glm::quat&)*this);
     }
 
-    Quat::operator const glm::quat& () const
+    Quat Quat::normalized() const
     {
-        return m_Data;
+        return Quat(glm::normalize((const glm::quat&)*this));
     }
 
-    float& Quat::x() { return m_Data.x; }
-    float& Quat::y() { return m_Data.y; }
-    float& Quat::z() { return m_Data.z; }
-    float& Quat::w() { return m_Data.w; }
-
-    const float& Quat::x() const { return m_Data.x; }
-    const float& Quat::y() const { return m_Data.y; }
-    const float& Quat::z() const { return m_Data.z; }
-    const float& Quat::w() const { return m_Data.w; }
-
-    float Quat::Length() const
+    void Quat::invert()
     {
-        return glm::length(m_Data);
+        *this = glm::inverse((const glm::quat&)*this);
     }
 
-    float Quat::LengthSquared() const
+    Quat Quat::inverse() const
     {
-        return glm::dot(m_Data, m_Data);
+        return Quat(glm::inverse((const glm::quat&)*this));
     }
 
-    void Quat::Normalize()
-    {
-        m_Data = glm::normalize(m_Data);
-    }
+    
 
-    Quat Quat::Normalized() const
-    {
-        return Quat(glm::normalize(m_Data));
-    }
 
-    void Quat::Invert()
-    {
-        m_Data = glm::inverse(m_Data);
-    }
 
-    Quat Quat::Inverse() const
-    {
-        return Quat(glm::inverse(m_Data));
-    }
-
-    bool Quat::operator==(const Quat& rhs) const
-    {
-        return glm::all(glm::epsilonEqual(m_Data, rhs.m_Data, QK_EPSILON));
-    }
-
-    bool Quat::operator!=(const Quat& rhs) const
-    {
-        return !(*this == rhs);
-    }
-
-    Quat Quat::Identity()
-    {
-        return Quat();
-    }
-
-    Quat operator+(const Quat& a, const Quat& b)
-    {
-        return Quat(static_cast<const glm::quat&>(a) + static_cast<const glm::quat&>(b));
-    }
-
-    Quat operator-(const Quat& a, const Quat& b)
-    {
-        return Quat(static_cast<const glm::quat&>(a) - static_cast<const glm::quat&>(b));
-    }
-
-    Quat operator*(const Quat& q, float s)
-    {
-        return Quat(static_cast<const glm::quat&>(q) * s);
-    }
-
-    Quat operator*(float s, const Quat& q)
-    {
-        return Quat(s * static_cast<const glm::quat&>(q));
-    }
-
-    Quat operator*(const Quat& lhs, const Quat& rhs)
-    {
-        return Quat(
-            static_cast<const glm::quat&>(lhs) *
-            static_cast<const glm::quat&>(rhs));
-    }
-
-    Quat operator/(const Quat& q, float s)
-    {
-        return Quat(static_cast<const glm::quat&>(q) / s);
-    }
-
-    Quat Multiply(const Quat& a, const Quat& b)
-    {
-        return Quat(
-            static_cast<const glm::quat&>(a) *
-            static_cast<const glm::quat&>(b));
-    }
-
-    float Dot(const Quat& a, const Quat& b)
+    float dot(const Quat& a, const Quat& b)
     {
         return glm::dot(
             static_cast<const glm::quat&>(a),
@@ -145,38 +66,39 @@ namespace qk
             t)));
     }
 
-    Vec3 Rotate(const Quat& q, const Vec3& v)
+    Vec3 rotate(const Quat& q, const Vec3& v)
     {
         return Vec3(glm::quat(q) *glm::vec3(v));
     }
 
-    Vec4 Rotate(const Quat& q, const Vec4& v)
+    Vec4 rotate(const Quat& q, const Vec4& v)
     {
         glm::vec3 xyz =
             static_cast<const glm::quat&>(q) *
             glm::vec3(
                 static_cast<const glm::vec4&>(v));
 
-        return Vec4(xyz.x, xyz.y, xyz.z, v.w());
+        return Vec4(xyz.x, xyz.y, xyz.z, v.w);
     }
 
-    Quat AngleAxis(float radians, const Vec3& axis)
+    Quat angleAxis(float radians, const Vec3& axis)
     {
         return Quat(glm::angleAxis(radians, glm::vec3(axis)));
     }
 
-    Quat Euler(float pitch, float yaw, float roll)
+    Quat euler(float pitch, float yaw, float roll)
     {
-        return Quat(glm::quat(glm::vec3(
-            pitch,
-            yaw,
-            roll)));
+        return Quat(glm::quat(glm::vec3(pitch,yaw,roll)));
     }
 
-    Vec3 EulerAngles(const Quat& q)
+    Vec3 eulerAngles(const Quat& q)
     {
         return Vec3(glm::eulerAngles(
             static_cast<const glm::quat&>(q)));
     }
 
+}
+
+std::ostream& operator<<(std::ostream& os, const qk::Quat& rot) {
+    return os << "Quat(" << rot.x << ", " << rot.y << ", " << rot.z << ", " << rot.w << ")";
 }

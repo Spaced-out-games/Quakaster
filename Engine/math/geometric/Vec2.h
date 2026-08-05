@@ -6,83 +6,55 @@
 
 namespace qk
 {
-    class Vec2
+
+    struct Vec2 : glm::vec2
     {
-    public:
-        Vec2();
-        explicit Vec2(float xy);
-        Vec2(float x, float y);
-        explicit Vec2(const glm::vec2& v);
+        using glm::vec2::vec2;
 
-        explicit operator const glm::vec2& () const;
+        [[nodiscard]] static constexpr Vec2 zero() { return { 0, 0 }; }
+        [[nodiscard]] static constexpr Vec2 one() { return { 1, 1 }; }
+        [[nodiscard]] static constexpr Vec2 up() { return { 0, 1 }; }
+        [[nodiscard]] static constexpr Vec2 right() { return { 1, 0 }; }
 
-        float& x();
-        float& y();
-
-        const float& x() const;
-        const float& y() const;
-
-        float length() const;
-        float lengthSquared() const;
-
-        void normalize();
-        Vec2 normalized() const;
-
-        bool operator==(const Vec2& rhs) const;
-        bool operator!=(const Vec2& rhs) const;
-
-        static Vec2 Zero();
-        static Vec2 One();
-        static Vec2 Up();
-        static Vec2 Right();
-
-    private:
-        glm::vec2 m_Data;
+        // just forward to GLM
+        constexpr Vec2(const glm::vec2& v): glm::vec2(v) {}
     };
 
-    Vec2 operator+(const Vec2&, const Vec2&);
-    Vec2 operator-(const Vec2&, const Vec2&);
-    Vec2 operator*(const Vec2&, float);
-    Vec2 operator*(float, const Vec2&);
-    Vec2 operator/(const Vec2&, float);
+    // defaults
+    [[nodiscard]] float length(const Vec2& target);
+    [[nodiscard]] float length_squared(const Vec2& target);
+    void normalize(Vec2& target);
+    [[nodiscard]] Vec2 normalized(const Vec2& target);
+    [[nodiscard]] float dot(const Vec2& a, const Vec2& b);
+    [[nodiscard]] float cross(const Vec2& a, const Vec2& b);
 
-    float Dot(const Vec2&, const Vec2&);
-
-
-
-    class Vec2i
+    [[nodiscard]] inline bool operator<=(const Vec2& lhs, const Vec2& rhs)
     {
-    public:
-        Vec2i();
-        explicit Vec2i(int xy);
-        Vec2i(int x, int y);
-        explicit Vec2i(const glm::ivec2& v);
+        return lhs.x <= rhs.x &&
+            lhs.y <= rhs.y;
+    }
 
-        explicit operator const glm::ivec2& () const;
+    [[nodiscard]] inline bool operator>=(const Vec2& lhs, const Vec2& rhs)
+    {
+        return lhs.x >= rhs.x &&
+            lhs.y >= rhs.y;
+    }
 
-        int& x();
-        int& y();
 
-        const int& x() const;
-        const int& y() const;
+    struct Vec2i : glm::ivec2
+    {
+        using glm::ivec2::ivec2;
 
-        bool operator==(const Vec2i&) const;
-        bool operator!=(const Vec2i&) const;
+        [[nodiscard]] static constexpr Vec2i zero() { return { 0, 0 }; }
+        [[nodiscard]] static constexpr Vec2i one() { return { 1, 1 }; }
+        [[nodiscard]] static constexpr Vec2i up() { return { 0, 1 }; }
+        [[nodiscard]] static constexpr Vec2i right() { return { 1, 0 }; }
 
-        static Vec2i Zero();
-        static Vec2i One();
-        static Vec2i Up();
-        static Vec2i Right();
+        // just forward to GLM
+        constexpr Vec2i(const glm::ivec2& v) : glm::ivec2(v) {}
 
-    private:
-        glm::ivec2 m_Data;
     };
 
-    Vec2i operator+(const Vec2i&, const Vec2i&);
-    Vec2i operator-(const Vec2i&, const Vec2i&);
-    Vec2i operator*(const Vec2i&, int);
-    Vec2i operator*(int, const Vec2i&);
-    Vec2i operator/(const Vec2i&, int);
 
 
 }

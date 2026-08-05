@@ -44,7 +44,7 @@
 #include "gfx_rhi.h"
 #include "Resource.h"
 
-#include "spacial/SpatialHashMap_qk_impl.h"
+#include "spacial/CSpatialHashMap.h"
 
 
 using namespace qk::gfx::rhi;

@@ -3,89 +3,49 @@
 #include <glm/vec4.hpp>
 #include "geometric.h"
 #include <ostream>
+
+
 namespace qk
 {
-    class Vec4
+
+    struct Vec4 : glm::vec4
     {
-    public:
-        Vec4();
-        explicit Vec4(float xyzw);
-        Vec4(float x, float y, float z, float w);
-        explicit Vec4(const glm::vec4& v);
+        using glm::vec4::vec4;
 
-        explicit operator const glm::vec4& () const;
+        [[nodiscard]] static constexpr Vec4 zero() { return { 0, 0, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec4 one() { return { 1, 1, 1, 0 }; }
+        [[nodiscard]] static constexpr Vec4 Up() { return { 0, 1, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec4 Right() { return { 1, 0, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec4 Forward() { return { 0, 0,-1, 0 }; }
 
-        float& x();
-        float& y();
-        float& z();
-        float& w();
-
-        const float& x() const;
-        const float& y() const;
-        const float& z() const;
-        const float& w() const;
-
-        float length() const;
-        float lengthSquared() const;
-
-        void normalize();
-        Vec4 normalized() const;
-
-        bool operator==(const Vec4&) const;
-        bool operator!=(const Vec4&) const;
-
-        static Vec4 Zero();
-        static Vec4 One();
-
-    private:
-        glm::vec4 m_Data;
+        // just forward to GLM
+        constexpr Vec4(const glm::vec4& v) : glm::vec4(v) {}
     };
 
+    // defaults
+    [[nodiscard]] float length(const Vec4& target);
+    [[nodiscard]] float length_squared(const Vec4& target);
+    void normalize(Vec4& target);
+    [[nodiscard]] Vec4 normalized(const Vec4& target);
+    [[nodiscard]] float dot(const Vec4& a, const Vec4& b);
+    [[nodiscard]] float cross(const Vec4& a, const Vec4& b);
 
 
-    Vec4 operator+(const Vec4&, const Vec4&);
-    Vec4 operator-(const Vec4&, const Vec4&);
-    Vec4 operator*(const Vec4&, float);
-    Vec4 operator*(float, const Vec4&);
-    Vec4 operator/(const Vec4&, float);
-
-    float Dot(const Vec4&, const Vec4&);
-
-    class Vec4i
+    struct Vec4i : glm::ivec4
     {
-    public:
-        Vec4i();
-        explicit Vec4i(int xyzw);
-        Vec4i(int x, int y, int z, int w);
-        explicit Vec4i(const glm::ivec4&);
+        using glm::ivec4::ivec4;
 
-        explicit operator const glm::ivec4& () const;
+        [[nodiscard]] static constexpr Vec4i zero() { return { 0, 0, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec4i one() { return { 1, 1, 1, 0 }; }
+        [[nodiscard]] static constexpr Vec4i Up() { return { 0, 1, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec4i Right() { return { 1, 0, 0, 0 }; }
+        [[nodiscard]] static constexpr Vec4i Forward() { return { 0, 0,-1, 0 }; }
 
-        int& x();
-        int& y();
-        int& z();
-        int& w();
+        // just forward to GLM
+        constexpr Vec4i(const glm::ivec4& v) : glm::ivec4(v) {}
 
-        const int& x() const;
-        const int& y() const;
-        const int& z() const;
-        const int& w() const;
-
-        bool operator==(const Vec4i&) const;
-        bool operator!=(const Vec4i&) const;
-
-        static Vec4i Zero();
-        static Vec4i One();
-
-    private:
-        glm::ivec4 m_Data;
     };
 
-    Vec4i operator+(const Vec4i&, const Vec4i&);
-    Vec4i operator-(const Vec4i&, const Vec4i&);
-    Vec4i operator*(const Vec4i&, int);
-    Vec4i operator*(int, const Vec4i&);
-    Vec4i operator/(const Vec4i&, int);
 
 
 }
