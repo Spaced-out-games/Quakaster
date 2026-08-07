@@ -4,31 +4,31 @@
 #include <unordered_map>
 #include <variant>
 #include <core.h>
+#include <media/json.h>
+using qk::media::json;
 namespace qk {
 
 	// Represents a single value
-	template <class ...Ts>
-	using IComponentArgument = std::variant<Ts...>;
+	using EntityComponentArgument = std::variant<bool, i32, u32, f32, str, std::vector<bool>, std::vector<i32>, std::vector<u32>, std::vector<f32>, std::vector<str>>;
 
 
 	// Argument identifier
 	using ArgumentID = u64;
 
 	// key-value map
-	template <class... Ts>
-	class IArgumentMap {
-		std::unordered_map<ArgumentID, IComponentArgument<Ts...>> m_ArgMap;
+	class EntityArgumentMap {
+		std::unordered_map<ArgumentID, EntityComponentArgument> m_ArgMap;
 
 	public:
-		using value_type = std::pair<const ArgumentID, IComponentArgument<Ts...>>;
+		using value_type = std::pair<const ArgumentID, EntityComponentArgument>;
 
-		IArgumentMap() = default;
+		EntityArgumentMap() = default;
 
-		IArgumentMap(std::initializer_list<value_type> init)
+		EntityArgumentMap(std::initializer_list<value_type> init)
 			: m_ArgMap(init)
 		{}
 
-		operator const std::unordered_map<ArgumentID, IComponentArgument<Ts...>>& () const {
+		operator const std::unordered_map<ArgumentID, EntityComponentArgument>& () const {
 			return m_ArgMap;
 		}
 
@@ -42,7 +42,7 @@ namespace qk {
 			return m_ArgMap.contains(key);
 		}
 
-		IComponentArgument<Ts...>& operator[](ArgumentID key) {
+		EntityComponentArgument& operator[](ArgumentID key) {
 			return m_ArgMap[key];
 		}
 
@@ -50,44 +50,45 @@ namespace qk {
 			return m_ArgMap;
 		}
 
-		const IComponentArgument<Ts...>& at(ArgumentID id) const {
+		const EntityComponentArgument& at(ArgumentID id) const {
 			return m_ArgMap.at(id);
 		}
+		template<typename T>
+		T* try_get(ArgumentID id)
+		{
+			auto it = m_ArgMap.find(id);
+			if (it == m_ArgMap.end())
+				return nullptr;
+
+			return std::get_if<T>(&it->second);
+		}
+		template<typename T>
+		const T* try_get(ArgumentID id) const
+		{
+			auto it = m_ArgMap.find(id);
+			if (it == m_ArgMap.end())
+				return nullptr;
+
+			return std::get_if<T>(&it->second);
+		}
+
 	};
 
-	using BasicArgumentMap = IArgumentMap<bool, i32, u32, f32, str, std::vector<bool>, std::vector<i32>, std::vector<u32>, std::vector<f32>, std::vector<str>>;
+
+	EntityArgumentMap from_json(const json& j);
 
 
 	// returns the union of the argument maps
-	template <class ...Ts>
-	IArgumentMap<Ts...> operator+(const IArgumentMap<Ts...>& self, const IArgumentMap<Ts...>& other) {
-
-		IArgumentMap<Ts...> arg_map;
-
-		for (const auto& [k, v] : self) {
-			assert(!arg_map.contains(k));
-			arg_map[k] = v;
-		}
-
-		for (const auto& [k, v] : other) {
-			assert(!arg_map.contains(k));
-			arg_map[k] = v;
-		}
-
-		return arg_map;
-
-	}
+	EntityArgumentMap operator+(const EntityArgumentMap& self, const EntityArgumentMap& other);
 
 	// takes a key-value set and adds the component to the target entity.
-	template <class ...Ts>
-	using IComponentLoader_pfn = void (*)(entt::registry& registry, entt::entity target, const IArgumentMap<Ts...>& arguments);
+	using EntityComponentLoader_pfn_t = void (*)(entt::registry& registry, entt::entity target, const EntityArgumentMap& arguments);
 
 
-	using ComponentID = u64;
+	using EntityComponentID = u64;
 
 	// Maps a component to the respective function that handles its deserialization
-	template <class ...Ts>
-	using IComponentLoaderMap = std::unordered_map<ComponentID, IComponentLoader_pfn<Ts...>>;
+	using EntityComponentLoaderMap = std::unordered_map<EntityComponentID, EntityComponentLoader_pfn_t>;
 
 
 }

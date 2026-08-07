@@ -80,7 +80,7 @@ namespace qk::media {
 
 
     }
-
+    // this needs to be inline on the same in/out to reduce memory churn in large files
     void flatten_json(const json& in, json& out, const str& separator, const str& prefix) {
         str new_key;
         for (const auto& [k, v] : in.items()) {
@@ -88,8 +88,8 @@ namespace qk::media {
             else new_key = prefix + separator + k;
             
             if (v.is_array()) {
-                out[new_key] = json::array();
-                for (const auto& item : v) {
+                out[new_key] = v;
+                for (const auto& item : out[new_key]) {
                     if (item.is_object()) {
                         flatten_json(item, out[k], separator, "");
                     }

@@ -51,7 +51,7 @@ namespace qk
     // Extraction
     [[nodiscard]] Vec3 eulerAngles(const Quat&);
 
-    
+    float toRadians(float degrees);
 }
 
 

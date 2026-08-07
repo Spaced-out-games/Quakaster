@@ -96,6 +96,9 @@ namespace qk
         return Vec3(glm::eulerAngles(
             static_cast<const glm::quat&>(q)));
     }
+    float toRadians(float degrees) {
+        return glm::radians(degrees);
+    }
 
 }
 
