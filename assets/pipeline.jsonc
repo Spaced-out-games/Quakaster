@@ -4,6 +4,7 @@
 			"topology": "triangle_strip",
 
 			"layout": [
+				// vertices
 				{
 					"slot": 0,
 					"input_rate": "per-vertex",
@@ -15,6 +16,43 @@
 							"offset": 0,
 							"type": "f32",
 							"count": 3,
+							"normalize": false
+						}
+					]
+				},
+				// instancing
+				{
+					"slot": 1,
+					"input_rate": "per-instance",
+					"stride": 64,
+
+					"attributes": [
+						{
+							"location": 1,
+							"offset": 0,
+							"type": "f32",
+							"count": 4,
+							"normalize": false
+						},
+						{
+							"location": 2,
+							"offset": 16,
+							"type": "f32",
+							"count": 4,
+							"normalize": false
+						},
+						{
+							"location": 3,
+							"offset": 32,
+							"type": "f32",
+							"count": 4,
+							"normalize": false
+						},
+						{
+							"location": 4,
+							"offset": 48,
+							"type": "f32",
+							"count": 4,
 							"normalize": false
 						}
 					]
