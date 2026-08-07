@@ -151,11 +151,10 @@ namespace qk::media {
 	bool VertexLayout_recipeFromJSON(const json& j, VertexLayout_recipe& layout) {
 		if (!j.is_array()) return false;
 		
-		VertexAttributeBinding binding;
 
 
 		for (const auto& buffer_binding : j) {
-
+			VertexAttributeBinding binding;
 			if (VertexAttributeBindingFromJSON(buffer_binding, binding))
 				layout.bindings.push_back(binding);
 			else
