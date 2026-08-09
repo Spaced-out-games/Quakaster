@@ -38,3 +38,5 @@ Need to figure out:
 		How about LODs?
 			Instancebuffer for each lod, probably. Irrelevant for now
 	How 
+
+Need to correct some functions, members, and methds being named in ways that are incoherent with the broader design goals
