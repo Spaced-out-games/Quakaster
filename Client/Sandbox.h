@@ -141,6 +141,8 @@ class Sandbox : public qk::Application {
 	inline void render_init() {
 		qk::startup(); // calls glfwInit
 		m_Window.init(qk::Window::Size{ 1920, 1080 }, "Quakaster Demo", nullptr);
+		qk::gfx::rhi::init(m_Window);
+
 	}
 
 	// this has to be called last because some m_Layers might depend on m_Window Resources
@@ -154,6 +156,7 @@ class Sandbox : public qk::Application {
 		attach_event_queues();
 		render_init();
 		attach_layers();
+
 	}
 
 

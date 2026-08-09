@@ -46,7 +46,6 @@ qk::EntityComponentLoaderMap ld;
 void Sandbox::init(int argc, char** argv) {
 
     init_subsystems();
-    rhi::init(m_Window);
     spatial_demo();
 
     // Define assets
