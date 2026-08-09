@@ -26,7 +26,7 @@ namespace qk::gfx::rhi {
     }
 
     void Texture_impl::upload_2D(const u8* pData, int width, int height, int channels) {
-        assert(texture);
+        assert(texture && type == TextureType::TEX_2D);
         GLenum format = Channel_cast(channels);
         glBindTexture(
             GL_TEXTURE_2D,

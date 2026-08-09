@@ -34,8 +34,6 @@ namespace qk::gfx::rhi {
 	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HTexture hTexture);
 	void DescriptorSet_setResource(HDescriptorSet hDescriptorSet, u32 binding, HUniformBuffer hUniformBuffer);
 
-	// this is temporary and should be deprecated ASAP. This is just for bootstrapping a test
-	void DescriptorSet_bind(HDescriptorSet hDescriptorSet);
 
     Resource* Resource_cast(const HDescriptorSet& hDescriptorSet);
 

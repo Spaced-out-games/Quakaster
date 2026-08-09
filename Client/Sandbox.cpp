@@ -7,8 +7,7 @@ using namespace qk::gfx;
 
 #include "level/LevelLoader.h"
 
-using ComponentLoader = qk::IComponentLoaderMap<str, int, float>;
-
+#include "math/geometric/Mat4.h"
 
 
 
@@ -23,6 +22,14 @@ std::vector<Vertex> g_Vertices = {
 	{ 1.0f,  1.0f, 0.0f}, // top-right
 	{ 1.0f, -1.0f, 0.0f}, // bottom-right
 };
+
+
+std::vector<Mat4> g_Instances = {
+    Mat4(1.0),
+    Mat4(1.0).translate({0.2,0.0,0.0}),
+    Mat4(1.0).translate({0.2,0.2,0.0})
+};
+
 glm::vec3 tint = { 0.5, 0.25, 0.0 };
 
 #define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
@@ -35,11 +42,10 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 
 
 entt::registry reg;
-ComponentLoader ld;
+qk::EntityComponentLoaderMap ld;
 void Sandbox::init(int argc, char** argv) {
 
     init_subsystems();
-    rhi::init(m_Window);
     spatial_demo();
 
     // Define assets
@@ -60,6 +66,11 @@ void Sandbox::init(int argc, char** argv) {
     hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
     GBuffers.insert("VertexBuffer"_sh, hVertexBuffer);
     VertexBuffer_upload(hVertexBuffer, g_Vertices);
+
+    // build the instancebuffer
+    hInstanceBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
+    GBuffers.insert("InstanceBuffer"_sh, hInstanceBuffer);
+    VertexBuffer_upload(hInstanceBuffer, g_Instances);
 
 
 
@@ -85,8 +96,9 @@ void Sandbox::init(int argc, char** argv) {
         .bindPipeline(hPipeline)
         .bindDescriptorSet(hGlobals, 0)
         .bindDescriptorSet(hMaterial, 1)
+        .bindVertexBuffer(hInstanceBuffer, 1, 0, sizeof(Mat4))
         .bindVertexBuffer(hVertexBuffer, 0, 0, sizeof(Vertex))
-        .drawArrays(0, 4);
+        .drawArraysInstanced(0, 4, 3);
 
     hCmdBuf = CommandBuffer_ctor(cmdBuf);
     CommandBuffers.insert(0, hCmdBuf);

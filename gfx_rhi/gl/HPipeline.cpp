@@ -38,9 +38,8 @@ namespace qk::gfx::rhi {
 
 
 		// also copy the strides
-		u8 slot = 0; // Once we add slots indices to the bindings, update this!!!
 		for (const auto& binding : recipe.layout.bindings) {
-			strides[slot] = binding.stride;
+			strides[binding.slot] = binding.stride;
 		}
 
 	}
