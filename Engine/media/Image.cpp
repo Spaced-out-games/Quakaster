@@ -13,7 +13,7 @@ namespace qk::media {
 		load_image(*this, path);
 	}
 
-	Image::Image(int width, int height, int channels) {
+	Image::Image(u32 width, u32 height, u32 channels) {
 		make_image(*this, width, height, channels);
 	}
 
@@ -59,9 +59,9 @@ namespace qk::media {
 	}
 
 	uint8_t* Image::data() const { return m_pData; }
-	int Image::width() const { return m_Width; }
-	int Image::height() const { return m_Height; }
-	int Image::channels() const { return m_Channels; }
+	u32 Image::width() const { return m_Width; }
+	u32 Image::height() const { return m_Height; }
+	u32 Image::channels() const { return m_Channels; }
 	size_t Image::size_bytes() const {
 		return (size_t)m_Width * (size_t)m_Height * (size_t)m_Channels;
 	}
@@ -80,15 +80,21 @@ namespace qk::media {
 		assert(path != "");
 		assert(target.m_pData == nullptr);
 
+		int width, height, channels;
 
 
 		target.m_pData = stbi_load(
 			path.c_str(),
-			&target.m_Width,
-			&target.m_Height,
-			&target.m_Channels,
+			&width,
+			&height,
+			&channels,
 			0
 		);
+
+		target.m_Width = (u32)width;
+		target.m_Height = (u32)height;
+		target.m_Channels = (u32)channels;
+
 
 		if (!target.m_pData) {
 			spdlog::info("Image `{}` failed to load: {}", path, stbi_failure_reason());
@@ -97,14 +103,12 @@ namespace qk::media {
 		return true;
 	}
 
-	void make_image(Image& target, int width, int height, int channels)
+	void make_image(Image& target, u32 width, u32 height, u32 channels)
 	{
 
 		assert(target.m_pData == nullptr);
 		
 		assert(channels > 0);
-		assert(height > 0);
-		assert(width > 0);
 
 		size_t size = (size_t)width * (size_t)height * (size_t)channels;
 

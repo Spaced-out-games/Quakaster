@@ -14,15 +14,15 @@
 
 namespace qk::media {
 	class QK_API Image {
-		uint8_t* m_pData = nullptr;
-		int m_Width = 0;
-		int m_Height = 0;
-		int m_Channels = 0;
+		u8* m_pData = nullptr;
+		u32 m_Width = 0;
+		u32 m_Height = 0;
+		u32 m_Channels = 0;
 		public:
 
 			Image() = default;
 			Image(const std::string& path);
-			Image(int width, int height, int channels);
+			Image(u32 width, u32 height, u32 channels);
 
 
 			// Hot-reloads the image
@@ -41,14 +41,14 @@ namespace qk::media {
 
 			Image& operator=(Image&& other) noexcept;
 
-			uint8_t* data() const;
-			int width() const;
-			int height() const;
-			int channels() const;
+			u8* data() const;
+			u32 width() const;
+			u32 height() const;
+			u32 channels() const;
 			size_t size_bytes() const;
 			void destroy();
 			friend bool load_image(Image& target, const std::string& path);
-			friend void make_image(Image& target, int width, int height, int channels);
+			friend void make_image(Image& target, u32 width, u32 height, u32 channels);
 	};
 
 
@@ -66,6 +66,6 @@ namespace qk::media {
 	/// <param name="width"></param>
 	/// <param name="height"></param>
 	/// <param name="channels"></param>
-	void make_image(Image& target, int width, int height, int channels);
+	void make_image(Image& target, u32 width, u32 height, u32 channels);
 
 }
