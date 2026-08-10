@@ -39,4 +39,5 @@ Need to figure out:
 			Instancebuffer for each lod, probably. Irrelevant for now
 	How 
 
-Need to correct some functions, members, and methds being named in ways that are incoherent with the broader design goals
+Need to correct some functions, members, typenames, filenames, and methods being named in ways that are incoherent with the broader design goals
+Need to re-organize file structure

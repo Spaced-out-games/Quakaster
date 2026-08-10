@@ -9,7 +9,7 @@
 #include "fnv1a.h"
 #include <media/Image.h>
 
-
+using namespace qk::gfx::rhi;
 
 namespace qk::gfx {
 
@@ -40,13 +40,38 @@ namespace qk::gfx {
 	// note to self: these were not adequately moved to a decent living home. They might not be the best place for these
 
 	inline rhi::HTexture Texture_fromImage(const media::Image& img) {
-		auto texResult = rhi::Texture_ctor(rhi::TEX_2D);
+		HTexture hTex = rhi::Texture_ctor({
+			.type = TextureType::TEX_2D,
+			.format = TextureFormat::RGB_8,
+			.width = img.width(),
+			.height = img.height(),
+			.depth = 0,
+			.mip_levels = 0,
+			.array_layers = 0,
+			.usage = TextureUsage::Sampled
 
-		if (!texResult) return nullptr;
+		});
 
-		rhi::Texture_upload_2D(*texResult, img.data(), img.width(), img.height(), img.channels());
+		if (!hTex) return nullptr;
 
-		return *texResult;
+		rhi::Texture_upload(hTex, {
+			.pData = img.data(),
+			.format = rhi::TextureFormat::RGBA_8,
+			.mip_level = 0,
+			.array_layer = 0,
+			.width = img.width(),
+			.height = img.height(),
+			.depth = 0
+		});
+
+		rhi::Texture_setSamplingParameters(hTex, {
+			.min_filter = rhi::TextureFilter::Nearest,
+			.mag_filter = rhi::TextureFilter::Nearest
+		});
+
+
+
+		return hTex;
 
 	}
 

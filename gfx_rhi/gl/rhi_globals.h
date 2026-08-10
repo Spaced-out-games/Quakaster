@@ -27,18 +27,69 @@ namespace qk::gfx::rhi {
         case qk::gfx::rhi::Unknown:
             throw std::runtime_error("unexpected Input Rate!");
         default:
+            assert(false);
             break;
         }
     }
+
+    inline GLint TextureFilter_cast(TextureFilter filter) {
+        switch (filter)
+        {
+        case qk::gfx::rhi::TextureFilter::Nearest:
+            return GL_NEAREST;
+            break;
+        case qk::gfx::rhi::TextureFilter::Linear:
+            return GL_LINEAR;
+            break;
+        case qk::gfx::rhi::TextureFilter::NearestMipmapNearest:
+            return GL_NEAREST_MIPMAP_NEAREST;
+            break;
+        case qk::gfx::rhi::TextureFilter::LinearMipmapNearest:
+            return GL_LINEAR_MIPMAP_NEAREST;
+            break;
+        case qk::gfx::rhi::TextureFilter::NearestMipmapLinear:
+            return GL_NEAREST_MIPMAP_LINEAR;
+            break;
+        case qk::gfx::rhi::TextureFilter::LinearMipmapLinear:
+            return GL_LINEAR_MIPMAP_LINEAR;
+            break;
+        default:
+            break;
+        }
+    }
+
+    inline GLint TextureWrap_cast(TextureWrap wrap) {
+        switch (wrap)
+        {
+        case qk::gfx::rhi::TextureWrap::Repeat:
+            return GL_REPEAT;
+            break;
+        case qk::gfx::rhi::TextureWrap::MirroredRepeat:
+            return GL_MIRRORED_REPEAT;
+            break;
+        case qk::gfx::rhi::TextureWrap::ClampToEdge:
+            return GL_CLAMP_TO_EDGE;
+            break;
+        case qk::gfx::rhi::TextureWrap::ClampToBorder:
+            return GL_CLAMP_TO_BORDER;
+            break;
+        default:
+            break;
+        }
+    }
+
 
     inline GLenum BufferUsage_cast(
         BufferUsage usage)
     {
         switch (usage)
         {
-        case StaticDraw:  return GL_STATIC_DRAW;
-        case DynamicDraw: return GL_DYNAMIC_DRAW;
-        case StreamDraw:  return GL_STREAM_DRAW;
+            case StaticDraw:  return GL_STATIC_DRAW;
+            case DynamicDraw: return GL_DYNAMIC_DRAW;
+            case StreamDraw:  return GL_STREAM_DRAW;
+            default:
+                assert(false);
+                break;
         }
 
         throw std::runtime_error("Invalid BufferUsage");
@@ -59,8 +110,8 @@ namespace qk::gfx::rhi {
             return GL_UNIFORM_BUFFER;
 
         default:
-            throw std::runtime_error(
-                "Invalid BufferType");
+            assert(false);
+            break;
         }
     }
 
@@ -94,43 +145,77 @@ namespace qk::gfx::rhi {
             return GL_DOUBLE;
 
         default:
-            return GL_NONE;
+            assert(false);
+            break;
         }
     }
 
     inline GLuint TextureType_cast(TextureType type)
     {
+        using enum TextureType;
+
         switch (type)
         {
-        case TEX_1D:       return GL_TEXTURE_1D;
-        case TEX_2D:       return GL_TEXTURE_2D;
-        case TEX_3D:       return GL_TEXTURE_3D;
-        case TEX_CUBEMAP:  return GL_TEXTURE_CUBE_MAP;
-        case TEX_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
-        default:           return 0;
+            case TEX_1D:       return GL_TEXTURE_1D;
+            case TEX_2D:       return GL_TEXTURE_2D;
+            case TEX_3D:       return GL_TEXTURE_3D;
+            case TEX_CUBEMAP:  return GL_TEXTURE_CUBE_MAP;
+            case TEX_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
+
+            default:
+                assert(false);
+                break;
+
         }
     }
 
-    inline GLint TextureFilterMode_cast(TextureFilterMode mode)
+    inline GLenum TextureStorageFormat_cast(TextureFormat format)
     {
-        switch (mode)
+        switch (format)
         {
-        case TEXEL:    return GL_NEAREST;
-        case BILINEAR: return GL_LINEAR;
-        default:       return 0;
+        case TextureFormat::R:
+            return GL_R8;
+
+        case TextureFormat::RG:
+            return GL_RG8;
+
+        case TextureFormat::RGB:
+            return GL_RGB8;
+
+        case TextureFormat::RGB_8:
+            return GL_RGB8;
+
+        case TextureFormat::RGBA:
+            return GL_RGBA8;
+
+        case TextureFormat::RGBA_8:
+            return GL_RGBA8;
+
+        default:
+            assert(false);
+            return GL_RGBA8;
         }
     }
 
-    inline GLenum Channel_cast(int channels)
+    inline GLenum TextureSourceFormat_cast(TextureFormat format)
     {
-        QK_ASSERT(channels != 2);
-
-        switch (channels)
+        switch (format)
         {
-        case 1: return GL_RED;
-        case 3: return GL_RGB;
-        case 4: return GL_RGBA;
-        default:return GL_RGB;
+        case TextureFormat::R:
+        case TextureFormat::RGB_8:
+        case TextureFormat::RGB:
+            return GL_RGB;
+
+        case TextureFormat::RG:
+            return GL_RG;
+
+        case TextureFormat::RGBA:
+        case TextureFormat::RGBA_8:
+            return GL_RGBA;
+
+        default:
+            assert(false);
+            return GL_RGBA;
         }
     }
 
@@ -145,7 +230,7 @@ namespace qk::gfx::rhi {
         case ShaderType::Geometry:
             return GL_GEOMETRY_SHADER;
         default:
-            throw std::runtime_error("Shader type not supported");
+            assert(false);
             break;
         }
     }
@@ -187,7 +272,8 @@ namespace qk::gfx::rhi {
             return GL_LINE_STRIP;
 
         default:
-            return GL_TRIANGLES;
+            assert(false);
+            break;
         }
     }
 
@@ -268,16 +354,22 @@ namespace qk::gfx::rhi {
 
     struct Texture_impl : qk::Resource
     {
-        TextureType type = TEX_2D;
+        TextureType type = TextureType::TEX_2D;
+        // this should be set in the constructor tbh but this works for now
+        TextureFormat storage_format = TextureFormat::RGB_8;
         GLuint texture = 0;
 
         void destroy();
 
-        Texture_impl(TextureType type);
+        Texture_impl(const Texture_storage& recipe);
+
 
         void bind(u8 slot = 0) const;
 
-        void upload_2D(const u8* pData, int width, int height, int channels);
+        void upload(const Texture_source& source);
+        void set_sampling_parameters(const Sampler_recipe& recipe);
+
+
     };
 
 
