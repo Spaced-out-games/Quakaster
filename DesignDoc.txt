@@ -3,6 +3,7 @@
 /// Purpose: prevent us from losing our fucking minds
 /// **************************************************************************************************
 
+Don't #include <the universe> if you don't need to
 Definitions:
 Entity: A single atomic object in the game world
 
@@ -65,6 +66,10 @@ Don't use objects; use free functions using the convention:
 TypeName_method_name
 
 Other conventions:
+
+Files that are prefixed with 'C' are typically presumed to be component types that require ECS to work.
+Non component types are still allowed to use ECS without this convention but should do so very sparingly
+and minimally. Don't #include <the universe> if you don't need to
 
 headers get the following heading:
 
