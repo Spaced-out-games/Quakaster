@@ -63,15 +63,13 @@ namespace qk {
         m_Name = std::format("{}@{:p}", ResourceTypeName, static_cast<const void*>(this));
 
 		#ifdef _DEBUG
-		spdlog::info("`{}`: ctor called.", m_Name);
+		//spdlog::info("`{}`: ctor called.", m_Name);
 		#endif
 	}
 
 	Resource::~Resource() {
 		#ifdef _DEBUG
-        void* pSelf = (void*)this;
-        const str& name = m_Name;
-        spdlog::info("`{}`: dtor called.", m_Name);
+        //spdlog::info("`{}`: dtor called.", m_Name);
 
 		#endif
 	}

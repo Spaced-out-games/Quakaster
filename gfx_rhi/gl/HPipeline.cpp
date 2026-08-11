@@ -6,6 +6,7 @@
 #include "rhi_globals.h"
 #include "HShader.h"
 #include <array>
+#include <spdlog/spdlog.h>
 
 namespace qk::gfx::rhi {
 

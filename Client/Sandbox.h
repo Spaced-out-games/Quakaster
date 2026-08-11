@@ -45,59 +45,95 @@
 #include "Resource.h"
 
 #include "spacial/CSpatialHashMap.h"
+#include "scene/ComponentLoader.h"
+#include "scene/EntityLoader.h"
+#include "scene/SceneLoader.h"
+#include "fnv1a.h"
 
 
 using namespace qk::gfx::rhi;
 struct Vertex {
 	float x, y, z;
 };
+using qk::operator""_sh;
 
 #include "math/geometric/Vec3.h"
 using namespace qk;
+qk::EntityLoader loader;
 
-void spatial_demo() {
-	SpatialHashMap3D<int, 4> map;
-	
-	
+const qk::ComponentLoader component_loaders[] = {
+	ComponentLoader{
+		.name = "CTransform",
+		.dependencies = {
+			"CTransform/position"_sh,
+			"CTransform/rotation"_sh,
+			"CTransform/scale"_sh
+		},
+		.loader = [](entt::registry&, entt::entity, const EntityArgumentMap& args) {
+			if (args.contains("CTransform/position"_sh)) {
+				const auto& position =
+					std::get<std::vector<f32>>(args.at("CTransform/position"_sh));
 
-	map.insert(Vec3{ 0,0,0 }, 0);
-	map.insert(Vec3{ 0,0,1 }, 1);
-	map.insert(Vec3{ 0,0,2 }, 2);
-	map.insert(Vec3{ 0,0,3 }, 3);
+				spdlog::info(
+					"CTransform/position: {}, {}, {}",
+					position[0],
+					position[1],
+					position[2]
+				);
+			}
 
-	map.insert(Vec3{ 0,0,4 }, 4);
+			if (args.contains("CTransform/rotation"_sh)) {
+				const auto& rotation =
+					std::get<std::vector<f32>>(args.at("CTransform/rotation"_sh));
 
-	const auto& cell1 = map.values_at(Vec3i{ 0,0,0 });
-	const auto& cell2 = map.values_at(Vec3i{ 0,0,1 });
+				spdlog::info(
+					"CTransform/rotation: {}, {}, {}",
+					rotation[0],
+					rotation[1],
+					rotation[2]
+				);
+			}
 
-	
-	assert(cell1.contains(0) && cell1.contains(1) && cell1.contains(2) && cell1.contains(3) && !cell1.contains(4));
+			if (args.contains("CTransform/scale"_sh)) {
+				const auto& scale =
+					std::get<std::vector<f32>>(args.at("CTransform/scale"_sh));
 
-	assert(!cell2.contains(0) && !cell2.contains(1) && !cell2.contains(2) && !cell2.contains(3) && cell2.contains(4));
-	//*/
+				spdlog::info(
+					"CTransform/scale: {}, {}, {}",
+					scale[0],
+					scale[1],
+					scale[2]
+				);
+			}
 
-	map.insert(Vec3{ 3.999f,0,0 }, 0);
-	map.insert(Vec3{ 4.000f,0,0 }, 1);
-
-	assert(map.contains(Vec3i{ 0,0,0 }, 0));
-	assert(map.contains(Vec3i{ 1,0,0 }, 1));
-
-	map.remove(Vec3{ 0,0,2 }, 2);
-
-	assert(!map.contains(Vec3i{ 0,0,0 }, 2));
-
-	map.remove(Vec3{ 0,0,0 }, 0);
-	map.remove(Vec3{ 0,0,1 }, 1);
-	map.remove(Vec3{ 0,0,3 }, 3);
-	assert(map.contains(Vec3i{ 0,0,1 }, 4));
+		}	
+	}
 
 
-	
-	map.for_each_cell([](const Vec3i& cell, const SpatialHashMap3D<int, 4>::Bucket_t& bucket) {
+};
+void loader_demo(entt::registry& registry, entt::entity target) {
+	qk::EntityLoader loader;
+	loader.push_loaders(component_loaders);
 
-		std::cout << cell << ": " << bucket.size() << "item(s)" << '\n';
-	});
+	EntityArgumentMap args = {
+		{
+			"CTransform/position"_sh,
+			std::vector<f32>{ 0.0f, 0.0f, 0.0f }
+		},
+		{
+			"CTransform/rotation"_sh,
+			std::vector<f32>{ 0.0f, 90.0f, 0.0f }
+		},
+		{
+			"CTransform/scale"_sh,
+			std::vector<f32>{ 1.0f, 1.0f, 1.0f }
+		},
+		{
+			"GARBAGE"_sh, 0
+		}
+	};
 
+	loader.execute(registry, target, args);
 }
 
 
