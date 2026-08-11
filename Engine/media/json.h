@@ -22,19 +22,19 @@ namespace qk::media {
 	void flatten_json(const json& in, json& out, const str& separator = "/", const str& prefix = "");
 
 
-	template<typename Pred>
-	bool array_matches(const json& j, Pred pred)
-	{
-		if (!j.is_array())
-			return false;
+	enum class JSONArrayClassification {
+		Empty,
+		NotAnArray,
+		Bool,
+		Int,
+		UInt,
+		Float,
+		String,
+		Object,
+		Array,
+		Heterogeneous
+	};
 
-		for (const auto& item : j)
-		{
-			if (!pred(item))
-				return false;
-		}
-
-		return true;
-	}
+	JSONArrayClassification classify(const json& j);
 
 }

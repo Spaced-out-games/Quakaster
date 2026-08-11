@@ -102,4 +102,61 @@ namespace qk::media {
             }
         }
     }
+
+    JSONArrayClassification classify(const json& j) {
+        if (j.is_null() || j.empty()) return JSONArrayClassification::Empty;
+        if (!j.is_array()) return JSONArrayClassification::NotAnArray;
+
+        bool has_bool = false;
+        bool has_int = false;
+        bool has_uint = false;
+        bool has_float = false;
+        bool has_array = false;
+        bool has_object = false;
+        bool has_string = false;
+
+        for (const auto& element : j) {
+            if (element.is_number_float())
+                has_float = true;
+            else if (element.is_number_unsigned())
+                has_uint = true;
+            else if (element.is_number_integer())
+                has_int = true;
+            else if (element.is_boolean())
+                has_bool = true;
+            else if (element.is_string())
+                has_string = true;
+            else if (element.is_array())
+                has_array = true;
+            else if (element.is_object())
+                has_object = true;
+        }
+        // exclusively array of arrays
+        if (has_array && !has_object && !has_bool && !has_int && !has_uint && !has_float && !has_string)
+            return JSONArrayClassification::Array;
+
+        // exclusively array of objects
+        else if (has_object && !has_array && !has_bool && !has_int && !has_uint && !has_float && !has_string)
+            return JSONArrayClassification::Object;
+        // exclusively string array
+        else if (has_string && !has_object && !has_array && !has_bool && !has_int && !has_uint && !has_float)
+            return JSONArrayClassification::String;
+
+        if (has_float)
+            return JSONArrayClassification::Float;
+
+        else if (has_int)
+            return JSONArrayClassification::Int;
+
+        else if (has_uint)
+            return JSONArrayClassification::UInt;
+
+        else if (has_bool)
+            return JSONArrayClassification::Bool;
+
+        return JSONArrayClassification::Heterogeneous;
+
+
+
+    }
 }

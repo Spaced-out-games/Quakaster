@@ -73,11 +73,11 @@ namespace qk {
 
             if (loader == m_Loaders.end())
             {
-                //spdlog::warn(
-               //     "EntityLoader@{}: Unknown entity argument `{}`",
-               //     (const void*)this,
-               //     id
-               // );
+               spdlog::warn(
+                    "EntityLoader@{}: Unknown entity argument `{}`",
+                    (const void*)this,
+                    id
+                );
                 continue;
             }
 

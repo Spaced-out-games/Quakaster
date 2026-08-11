@@ -1,11 +1,8 @@
 #include "Sandbox.h"
 #include <gfx/gfx.h>
-#include <fnv1a.h>
 using namespace qk::media;
-using qk::operator""_sh;
 using namespace qk::gfx;
 
-#include "scene/SceneLoader.h"
 
 #include "math/geometric/Mat4.h"
 
@@ -42,11 +39,10 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 
 
 entt::registry reg;
-qk::EntityLoader loader;
 void Sandbox::init(int argc, char** argv) {
 
     init_subsystems();
-    spatial_demo();
+    loader_demo(reg, entt::null);
 
     // Define assets
     const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
