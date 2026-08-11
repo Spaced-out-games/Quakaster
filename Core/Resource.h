@@ -10,7 +10,6 @@
 #include <atomic>
 #include <type_traits>
 #include <unordered_map>
-#include <spdlog/spdlog.h>
 
 
 namespace qk

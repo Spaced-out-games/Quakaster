@@ -4,6 +4,8 @@
 #include <Resource.h>
 #include "rhi_globals.h"
 #include <Result.h>
+#include <spdlog/spdlog.h>
+
 namespace qk::gfx::rhi {
 
 

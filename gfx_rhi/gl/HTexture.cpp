@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 //#include <Resource.h>
 #include "rhi_globals.h"
+#include <spdlog/spdlog.h>
 
 namespace qk::gfx::rhi {
 

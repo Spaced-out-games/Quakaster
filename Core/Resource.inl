@@ -1,3 +1,7 @@
+
+#include <spdlog/spdlog.h>
+
+
 namespace qk {
 
     template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
@@ -126,7 +130,7 @@ namespace qk {
 
                     spdlog::warn("~ResourceRegistry()@{}: Resource `{}` was freed despite existing co-owners", (const void*)this, *pLabel);
                 else
-                    spdlog::warn("~ResourceRegistry()@{}: Resource `{}` was freed despite existing co-owners", (const void*)this, pBase);
+                    spdlog::warn("~ResourceRegistry()@{}: Resource `{}` was freed despite existing co-owners", (const void*)this, (const void*)pBase);
 
 
             }
