@@ -12,6 +12,23 @@ using qk::media::flatten_json;
 using qk::media::array_matches;
 using qk::string_hash;
 
+/*
+	TODO: level loading overhaul:
+		Introduce a ComponentLoader struct, which is just a pfn + key_hash[] + str_view holding component name (in debug)
+		The EntityLoader class takes in a list of ComponentLoaders, compiles a hash map of key hash -> pfn (+str_view in debug).
+		When it comes time to actually load an entity from a hash map, we give the EntityLoader the registry, the entity, and the arguments, and it will:
+			-iterate through each symbol
+			-hash it
+			-check if a component loader needs that symbol and it's not in the used-set
+				-if it does, use it, add it to the used-set
+				-if it doesn't, throw out a warning
+			-profit???
+
+		Also consider better naming convention: Scene is more `correct` than `level`
+
+
+*/
+
 namespace qk {
 
 	void deserialize_entity(entt::registry& registry, entt::entity target, const EntityArgumentMap& args, const EntityComponentLoaderMap& loader) {
