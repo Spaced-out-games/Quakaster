@@ -123,9 +123,11 @@ namespace qk {
             const str* pLabel = pBase->label();
             if (pBase->refcount() > 1) {
                 if (pLabel)
-                    spdlog::warn("~ResourceRegistry(): Resource `{}` was freed despite existing co-owners", *pLabel);
+
+                    spdlog::warn("~ResourceRegistry()@{}: Resource `{}` was freed despite existing co-owners", (const void*)this, *pLabel);
                 else
-                    spdlog::warn("~ResourceRegistry(): Resource @{} was freed despite existing co-owners", (void*)pBase);
+                    spdlog::warn("~ResourceRegistry()@{}: Resource `{}` was freed despite existing co-owners", (const void*)this, pBase);
+
 
             }
 

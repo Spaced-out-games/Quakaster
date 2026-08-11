@@ -29,7 +29,7 @@ set(RHI_SOURCES
     gl/gui_widget_rhi.cpp
     
     gl/HBuffer.cpp
-    gl/HVertexLayout.cpp
+    
     gl/HTexture.cpp
     gl/HDescriptorSet.cpp
     gl/HShader.cpp

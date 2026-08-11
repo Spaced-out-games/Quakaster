@@ -152,6 +152,15 @@ namespace qk::gfx::rhi {
 
     void Texture_impl::upload(const Texture_source& source)
     {
+        spdlog::info("Texture_impl @{} upload: format = {}, width = {}, height = {}, mip = {}",
+            (const void*)this,
+            to_string(source.format),
+            source.width,
+            source.height,
+            source.mip_level
+        );
+
+
         assert(texture != 0);
         assert(source.pData != nullptr);
 
@@ -211,6 +220,16 @@ namespace qk::gfx::rhi {
 
     void Texture_impl::set_sampling_parameters(const Sampler_recipe& recipe) {
         assert(texture != 0);
+
+        spdlog::info("Texture_impl @{} sampler: min filter = {}, mag filter = {}, wrap_s = {}, wrap_r = {}, wrap_t = {}",
+            (const void*)this,
+            to_string(recipe.min_filter),
+            to_string(recipe.mag_filter),
+            to_string(recipe.wrap_s),
+            to_string(recipe.wrap_r),
+            to_string(recipe.wrap_t)
+        );
+
         GLenum target = TextureType_cast(type);
         glBindTexture(target, texture);
 

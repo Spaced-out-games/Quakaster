@@ -10,8 +10,9 @@ namespace qk::gfx::rhi {
 
 
     // construction
-    ShaderProgram_impl::ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out): Resource("CommandBuffer_impl") {
+    ShaderProgram_impl::ShaderProgram_impl(const std::span<const ShaderModule>& recipes): Resource("CommandBuffer_impl") {
 
+        str error;
 
         std::vector<GLuint> shaders;
         shaders.reserve(recipes.size());
@@ -20,17 +21,26 @@ namespace qk::gfx::rhi {
         for (const auto& recipe : recipes) {
             auto result = Shader_compile(recipe);
 
-            if (!result)
-                error_out += result.error();
+            if (!result) {
+                spdlog::warn("ShaderProgram_impl@{} compiler error: {}",
+                    (const void*)this,
+                    result.error()
+                );
+            }
             else
-                shaders.push_back(result.value());
+                shaders.push_back(*result);
 
         }
+
+
 
         auto link_result = Shader_link(shaders);
 
         if (!link_result)
-            error_out += link_result.error();
+            spdlog::warn("ShaderProgram_impl@{} linker error: {}",
+                (const void*)this,
+                link_result.error()
+            );
         else
             hProgram = link_result.value();
 
@@ -178,22 +188,9 @@ namespace qk::gfx::rhi {
     Resource* Resource_cast(const HShaderProgram& hShaderProgram) {
         return static_cast<Resource*>(hShaderProgram);
     }
-    Result<HShaderProgram, str>
-    ShaderProgram_ctor(const std::span<ShaderModule>& modules) {
-        str error = "";
+    HShaderProgram ShaderProgram_ctor(const std::span<ShaderModule>& modules) {
 
-
-        auto* pProgram = new ShaderProgram_impl(
-            modules,
-            error
-        );
-
-        if (!error.empty()) {
-            delete pProgram;
-            return qk::Error<str>{error};
-        }
-
-        return pProgram;
+        return new ShaderProgram_impl(modules);
 
     }
 
@@ -219,14 +216,8 @@ namespace qk::gfx::rhi {
 
 
 
-    bool ShaderProgram_valid(const HShaderProgram& hProgram) {
-        return hProgram != nullptr;
-    }
 
-    bool ShaderProgram_bind(const HShaderProgram& hProgram) {
-        assert(hProgram);
-        return hProgram->bind();
-    }
+
 
     
 

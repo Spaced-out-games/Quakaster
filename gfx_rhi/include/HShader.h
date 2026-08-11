@@ -28,23 +28,11 @@ namespace qk::gfx::rhi {
 
     Resource* Resource_cast(const HShaderProgram& hShaderProgram);
 
-    Result<HShaderProgram, str>
-    ShaderProgram_ctor(const std::span<ShaderModule>& modules);
-
-
-
+    HShaderProgram ShaderProgram_ctor(const std::span<ShaderModule>& modules);
     void ShaderProgram_dtor(const HShaderProgram& hProgram);
-
     void ShaderProgram_free(HShaderProgram& hProgram);
 
-    bool ShaderProgram_bind(const HShaderProgram& hProgram);
 
-    bool ShaderProgram_valid(const HShaderProgram& hProgram);
-
-    bool ShaderProgram_bind_uniform_block(
-        const HShaderProgram& hProgram,
-        const char* id,
-        u8 slot);
 
     using ShaderProgramRegistry = ResourceRegistry<ShaderProgram_impl, ShaderProgram_dtor, ShaderProgram_free>;
 

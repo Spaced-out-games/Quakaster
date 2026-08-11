@@ -1,10 +1,11 @@
 #pragma once
 #include "HCommandBuffer.h" // for PrimitiveTopology
-#include "HVertexLayout.h"
+#include "VertexLayoutDesc.h"
 #include <array>
 #include "HShader.h"
 #include "core.h"
 #include <span>
+
 
 namespace qk::gfx::rhi {
 
@@ -68,7 +69,7 @@ namespace qk::gfx::rhi {
 
 
 
-    // -------- Pipeline creation recipe -------- //
+    // -------- Pipeline create info -------- //
 
 	struct Pipeline_recipe {
 
@@ -88,19 +89,14 @@ namespace qk::gfx::rhi {
 	using HPipeline = Pipeline_impl*;
 
 
-	// Pipeline construction
+	// Pipeline lifetime
 	HPipeline Pipeline_ctor(const Pipeline_recipe& recipe);
-
-	// Pipeline destruction
 	void Pipeline_dtor(const HPipeline& hPipeline);
-
     void Pipeline_free(HPipeline& hPipeline);
-
-    // todo: move to commandbuffer running implementation
-	bool Pipeline_bind(const HPipeline& hPipeline);
-
     Resource* Resource_cast(const HPipeline& hPipeline);
 
+
+    // Registry of pipeline objects
     using PipelineRegistry = ResourceRegistry<Pipeline_impl, Pipeline_dtor, Pipeline_free>;
 
 

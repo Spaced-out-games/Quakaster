@@ -8,6 +8,7 @@ using qk::Handle;
 namespace qk::gfx::rhi {
 
 
+	// Determines the rate by which a vertex attribute is given to the shader
 	enum InputRate : uint8_t {
 		PerVertex,
 		PerInstance,
@@ -15,7 +16,7 @@ namespace qk::gfx::rhi {
 	};
 	
 
-
+	// Defines the structure of how to read an individual interleaved attribute in a vertex buffer
 	struct VertexAttribute {
 		// component
 		EScalarMultiplicity multiplicity = EScalarMultiplicity::Scalar;
@@ -28,6 +29,7 @@ namespace qk::gfx::rhi {
 
 	};
 	
+	// Defines the structure of one vertex buffer
 	struct VertexAttributeBinding {
 		InputRate input_rate;
 		uint32_t stride;
@@ -40,11 +42,10 @@ namespace qk::gfx::rhi {
 
 	
 
-
+	// Vertex buffer layout create info
 	struct VertexLayout_recipe {
 		std::vector<VertexAttributeBinding> bindings;
 	};
-
 
 
 }

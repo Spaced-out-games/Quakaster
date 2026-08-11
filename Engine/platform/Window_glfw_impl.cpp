@@ -100,7 +100,9 @@ namespace qk {
 	void Window::init(Window::Size initial_size, const std::string& title, Window* shared) {
 		auto* win = (GLFWwindow*)m_hWindow;
 
-		spdlog::info("Window initialized at {:#x}", (uintptr_t)this);
+		spdlog::info("Window@{}: initialized", (const void*)this);
+
+
 		m_Title = title;
 
 		GLFWwindow* pWindow = glfwCreateWindow(initial_size.w, initial_size.h, title.c_str(),
@@ -108,7 +110,7 @@ namespace qk {
 			nullptr);// shared ? shared->m_Window : nullptr);
 
 		if (!pWindow) {
-			spdlog::info("Window::init() FAILURE", (uintptr_t)this);
+			spdlog::info("Window@{}: Failed to initialize GLFW window", (const void*)this);
 			return;
 		}
 		m_hWindow = pWindow;
@@ -127,7 +129,8 @@ namespace qk {
 		auto* win = (GLFWwindow*)m_hWindow;
 
 		if (win) {
-			spdlog::info("Window destroyed at {:#x}", (uintptr_t)this);
+			spdlog::info("Window@{}: dtor called", (const void*)this);
+
 			glfwDestroyWindow(win);
 			m_hWindow = nullptr;
 		}

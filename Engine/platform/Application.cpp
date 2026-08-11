@@ -8,11 +8,12 @@
 
 namespace qk {
 	Application::Application() {
-		spdlog::info("Application ctor called at {:#x}", (uintptr_t)this);
+		spdlog::info("Application@{}: ctor called", (const void*)this);
 	}
 
 	Application::~Application() {
-		spdlog::info("Application dtor called at {:#x}", (uintptr_t)this);
+		spdlog::info("Application@{}: dtor called", (const void*)this);
+
 
 	}
 	int Application::status() {
@@ -24,7 +25,8 @@ namespace qk {
 	}
 
 	void Application::init(int argc, char** argv) {
-		spdlog::info("Application initialized at {:#x}", (uintptr_t)this);
+		spdlog::info("Application@{}: initialized", (const void*)this);
+
 	}
 
 	void Application::shutdown() {}

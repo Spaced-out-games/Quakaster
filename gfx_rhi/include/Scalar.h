@@ -3,6 +3,7 @@
 
 namespace qk::gfx::rhi {
 
+    // defines vertex buffer attribute's primitive type
     enum class EScalarType : uint8_t {
 
         unknown,
@@ -23,6 +24,7 @@ namespace qk::gfx::rhi {
 
     };
 
+    // Determines the multiplicity of a vertex attribute
     enum EScalarMultiplicity : uint8_t {
         None,
         Scalar,
@@ -31,15 +33,8 @@ namespace qk::gfx::rhi {
     };
 
 
-    struct ComponentDesc {
-        EScalarMultiplicity multiplicity;
-        bool                normalize;
-        uint32_t            count;
-        EScalarType         type;
-    };
 
-
-
+    // gets the size of a scalar type in bytes
     inline size_t EScalarType_size(EScalarType type)
     {
         switch (type)
@@ -66,6 +61,8 @@ namespace qk::gfx::rhi {
         }
     }
 
+
+    // returns whether or not a scalar is an integral type. 
     inline bool EScalarType_isInteger(EScalarType type)
     {
         switch (type)
@@ -82,6 +79,38 @@ namespace qk::gfx::rhi {
             return false;
         }
     }
+
+
+
+    // EScalarType string conversion for debugging
+    inline str_view to_string(EScalarType type) {
+        switch (type)
+        {
+        case EScalarType::unknown: return "???";
+
+        case EScalarType::i8:  return "i8";
+        case EScalarType::i16: return "i16";
+        case EScalarType::i32: return "i32";
+        case EScalarType::i64: return "i64";
+
+        case EScalarType::u8:  return "u8";
+        case EScalarType::u16: return "u16";
+        case EScalarType::u32: return "u32";
+        case EScalarType::u64: return "u64";
+
+        case EScalarType::f32: return "f32";
+        case EScalarType::f64: return "f64";
+
+        case EScalarType::ptr: return "ptr";
+
+        default:
+            assert(false);
+            break;
+        }
+        return "";
+    }
+
+
 
     // Compile-time mappings from C++ type -> EScalarType
     template <typename T>
@@ -144,7 +173,6 @@ namespace qk::gfx::rhi {
     constexpr EScalarType EScalarType_cast<double>() {
         return EScalarType::f64;
     }
-
 
 
 

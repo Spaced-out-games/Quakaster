@@ -161,7 +161,7 @@ namespace qk::gfx::rhi {
         switch (type)
         {
         case EDrawCmdType::BindPipeline:
-            Pipeline_bind(bindPipelineCmd.hPipeline);
+            bindPipelineCmd.hPipeline->bind();
             hCmdBuf->topology = bindPipelineCmd.hPipeline->topology;
             break;
 

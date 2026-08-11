@@ -37,7 +37,7 @@
 #include "gui/GUILayer.h"
 
 // RHI
-#include "HVertexLayout.h"
+#include <VertexLayoutDesc.h>
 #include "HCommandBuffer.h"
 #include "HPipeline.h"
 #include "HBuffer.h"

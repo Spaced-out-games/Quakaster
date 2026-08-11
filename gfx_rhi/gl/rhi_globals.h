@@ -302,10 +302,7 @@ namespace qk::gfx::rhi {
             Shader_link(const std::span<GLuint>& recipes);
 
 
-        // temporary fix
-        //ShaderProgram_impl(GLuint hProgram) : hProgram(hProgram), Resource("ShaderProgram_impl") {}
-
-        ShaderProgram_impl(const std::span<const ShaderModule>& recipes, str& error_out);
+        ShaderProgram_impl(const std::span<const ShaderModule>& recipes);
 
         void destroy();
 
@@ -319,7 +316,6 @@ namespace qk::gfx::rhi {
         HShaderProgram				program;
         PrimitiveTopology			topology;
         GLuint						vao;
-        HVertexLayout               hLayout;
         std::unordered_map<u8, u32> strides;
         //CullMode cull;
         //DepthState depth;
@@ -334,19 +330,7 @@ namespace qk::gfx::rhi {
 
     };
 
-    struct VertexLayout_impl : qk::Resource
-    {
-        std::vector<VertexAttributeBinding> bindings;
 
-        VertexLayout_impl(const VertexLayout_recipe& recipe);
-
-        void destroy();
-
-        ~VertexLayout_impl() = default; // just free it XD
-
-        bool apply() const;
-
-    };
 
 
 
