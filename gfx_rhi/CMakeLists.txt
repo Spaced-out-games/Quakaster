@@ -37,7 +37,7 @@ set(RHI_SOURCES
     gl/HCommandBuffer.cpp
     gl/DrawCommand.cpp
 
-)
+ "gl/HFrameBuffer.cpp")
 
 # ------------------------------------------------------------------------------
 # Backend selection
