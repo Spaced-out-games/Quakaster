@@ -35,11 +35,11 @@ namespace qk {
 
     };
 
-    using AxisAlignedBoundingBox2D = AABB<Vec2>;
-    using AxisAlignedBoundingBox3D = AABB<Vec3>;
+    using AABB2D = AABB<Vec2>;
+    using AABB3D = AABB<Vec3>;
 
-    using CAxisAlignedBoundingBox2D = AxisAlignedBoundingBox2D;
-    using CAxisAlignedBoundingBox3D = AxisAlignedBoundingBox3D;
+    using CAABB2D = AABB2D;
+    using CAABB3D = AABB3D;
 
 
 }
