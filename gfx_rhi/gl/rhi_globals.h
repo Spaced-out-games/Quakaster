@@ -312,6 +312,12 @@ namespace qk::gfx::rhi {
 
     };
 
+    struct FrameBuffer_impl : qk::Resource {
+        GLuint framebuffer = 0;
+
+        FrameBuffer_impl(const FrameBuffer_recipe& recipe);
+    };
+
     struct Pipeline_impl : qk::Resource {
         HShaderProgram				program;
         PrimitiveTopology			topology;
