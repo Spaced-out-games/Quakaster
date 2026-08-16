@@ -40,4 +40,11 @@ Need to figure out:
 	How 
 
 Need to correct some functions, members, typenames, filenames, and methods being named in ways that are incoherent with the broader design goals
-Need to re-organize file structure
+Need to re-organize file structure.
+
+
+For geometry, we should have a very limited set of primitives (eg, unit square) that CTransform can happily transform as it wishes.
+Also, just make a damn frame builder. Owns a HCommandBuffer, frees that commandbuffer, prepares a new one, frees new one...
+
+The best way of handling this is perhaps to group each matrix by texture, interleaved in one giant InstanceBuffer. We build the
+commandbuffer when the scene changes 
