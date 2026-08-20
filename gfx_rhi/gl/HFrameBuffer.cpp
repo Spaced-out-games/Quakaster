@@ -4,7 +4,7 @@
 
 namespace qk::gfx::rhi {
 
-	FrameBuffer_impl::FrameBuffer_impl(const FrameBuffer_recipe& recipe) {
+	FrameBuffer_impl::FrameBuffer_impl(const FrameBuffer_recipe& recipe): Resource("FrameBuffer_impl") {
 		glGenFramebuffers(1, &framebuffer);
 	}
 

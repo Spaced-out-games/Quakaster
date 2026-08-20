@@ -1,5 +1,6 @@
 #pragma once
 #include <VertexLayoutDesc.h>
+#include <HFrameBuffer.h>
 #include "HDescriptorSet.h"
 #include "HPipeline.h"
 #include <Resource.h>

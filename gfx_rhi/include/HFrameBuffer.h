@@ -14,7 +14,7 @@ namespace qk::gfx::rhi {
 
 	// createinfo
 	struct FrameBuffer_recipe {
-
+		int _;
 	};
 
 
