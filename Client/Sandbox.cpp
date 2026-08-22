@@ -33,14 +33,75 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 
 #define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
 
+//#include <gfx/InstancePool.h>
 
 
+#include "SparseSet.h"
+
+
+
+void SparseSetTest() {
+    SparseSet<i32> map;
+
+    auto first = map.insert(42, 0);
+    auto second = map.insert(69, 1);
+    auto third = map.insert(420, 2);
+
+    // state correctness check
+    assert(first.generation == 0 && first.sparse == 0 && map.valid(first));
+    assert(second.generation == 0 && second.sparse == 1 && map.valid(second));
+    assert(third.generation == 0 && third.sparse == 2 && map.valid(third));
+
+    // swap and pop second
+    map.swap_dense(1, 2);
+
+    assert(map.valid(first));
+    assert(map.valid(second));
+    assert(map.valid(third));
+    assert(map.dense(third.sparse) == 1);
+
+    map.erase(1);
+
+
+    assert(map.valid(first));
+    assert(!map.valid(second));
+    assert(map.valid(third));
+
+    auto* pFirst = map.try_get(first);
+    auto* pSecond = map.try_get(second);
+    auto* pThird = map.try_get(third);
+
+
+
+
+    assert(pFirst && *pFirst == 42);
+    assert(!pSecond);
+
+    assert(pThird  && *pThird == 420);
+    assert(map.dense(third.sparse) == 1);
+
+    assert(map.m_FreeList[0] == 1);
+
+    // insert at dead test
+    second = map.insert(69, 1);
+
+    assert(map.valid(second));
+
+
+
+
+
+
+
+
+    spdlog::info("SparseSetTest PASSED!");
+}
 
 
 
 entt::registry reg;
 void Sandbox::init(int argc, char** argv) {
-
+    SparseSetTest();
     init_subsystems();
     loader_demo(reg, entt::null);
 
