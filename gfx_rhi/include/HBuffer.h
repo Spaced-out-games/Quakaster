@@ -95,8 +95,14 @@ namespace qk::gfx::rhi {
     // upload to a vertex buffer
     template<typename vertex_t>
     inline void VertexBuffer_upload(const HVertexBuffer& hBuf, const std::vector<vertex_t>& vertices)
-    {
+        const HVertexBuffer& hBuf,
         VertexBuffer_upload(hBuf,vertices.data(), vertices.size() * sizeof(vertex_t));
+    {
+        return VertexBuffer_upload(
+            hBuf,
+            vertices.data(),
+            (u32)vertices.size(),
+            sizeof(vertex_t));
     }
 
 
