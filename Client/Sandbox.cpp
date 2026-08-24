@@ -36,60 +36,40 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 //#include <gfx/InstancePool.h>
 
 
-#include "SparseSet.h"
+#include "Handle.h"
+#include <Partition.h>
 
 
 
 void SparseSetTest() {
-    SparseSet<i32> map;
+    HandleTable<i32> map;
 
-    auto first = map.insert(42, 0);
-    auto second = map.insert(69, 1);
-    auto third = map.insert(420, 2);
+    auto first = map.insert(1);
+    auto second = map.insert(2);
+    auto third = map.insert(3);
 
-    // state correctness check
-    assert(first.generation == 0 && first.sparse == 0 && map.valid(first));
-    assert(second.generation == 0 && second.sparse == 1 && map.valid(second));
-    assert(third.generation == 0 && third.sparse == 2 && map.valid(third));
-
-    // swap and pop second
-    map.swap_dense(1, 2);
+    i32* pFirst = map.try_get(first);
+    i32* pSecond = map.try_get(second);
+    i32* pThird = map.try_get(third);
 
     assert(map.valid(first));
     assert(map.valid(second));
     assert(map.valid(third));
-    assert(map.dense(third.sparse) == 1);
 
-    map.erase(1);
+    assert(pFirst && *pFirst == 1);
+    assert(pSecond && *pSecond == 2);
+    assert(pThird && *pThird == 3);
 
+    map.remove(first);
+    assert(!map.valid(first));
+    auto fourth = map.insert(3);
 
-    assert(map.valid(first));
-    assert(!map.valid(second));
-    assert(map.valid(third));
+    assert(map.valid(fourth));
+    assert(first.sparse == fourth.sparse && first.generation == fourth.generation - 1);
 
-    auto* pFirst = map.try_get(first);
-    auto* pSecond = map.try_get(second);
-    auto* pThird = map.try_get(third);
-
-
-
-
-    assert(pFirst && *pFirst == 42);
-    assert(!pSecond);
-
-    assert(pThird  && *pThird == 420);
-    assert(map.dense(third.sparse) == 1);
-
-    assert(map.m_FreeList[0] == 1);
-
-    // insert at dead test
-    second = map.insert(69, 1);
-
-    assert(map.valid(second));
-
-
-
-
+    map.set(fourth, 69);
+    i32* pFourth = map.try_get(fourth);
+    assert(pFourth && *pFourth == 69);
 
 
 
@@ -97,11 +77,38 @@ void SparseSetTest() {
     spdlog::info("SparseSetTest PASSED!");
 }
 
+void PartitionTest() {
+    Partition<i32> p;
+
+    // general case insertion test
+    i32 first = p.insert(1);
+    i32 second = p.insert(2);
+    i32 third = p.insert(3);
+    i32 fourth = p.insert(4);
+
+    i32 back = p.remove(second);
+
+    
+   
+    
+    std::vector<i32> testBuffer;
+    testBuffer.resize(4);
+    p.flush(testBuffer.data());
+
+    assert(testBuffer[0] == 1);
+    assert(testBuffer[1] == 4);
+    assert(testBuffer[2] == 3);
+    assert(testBuffer[3] == -1u);
+    assert(p.size() == 3);
+    
+}
+
 
 
 entt::registry reg;
 void Sandbox::init(int argc, char** argv) {
     SparseSetTest();
+    PartitionTest();
     init_subsystems();
     loader_demo(reg, entt::null);
 
@@ -142,7 +149,7 @@ void Sandbox::init(int argc, char** argv) {
     // Uniform buffer
     hUniformBuffer = UniformBuffer_ctor();
     GBuffers.insert("hUniformBuffer"_sh, hUniformBuffer);
-    UniformBuffer_upload(hUniformBuffer, &tint, 3, sizeof(float));
+    UniformBuffer_upload(hUniformBuffer, &tint, 3 * sizeof(float));
     DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
 
 
