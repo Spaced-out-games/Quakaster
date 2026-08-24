@@ -39,9 +39,7 @@ namespace qk::gfx::rhi {
 
 
     // Make a buffer and return the handle
-    HBuffer Buffer_ctor(
-        BufferType type,
-        BufferUsage usage = StaticDraw);
+    HBuffer Buffer_ctor(BufferType type, BufferUsage usage = StaticDraw);
 
 
     // Destroy the buffer
@@ -51,23 +49,12 @@ namespace qk::gfx::rhi {
     void Buffer_free(HBuffer& hBuf);
 
     // Upload to the buffer
-    bool Buffer_upload(
-        const HBuffer& hBuf,
-        const void* pData,
-        u32 count,
-        u32 elem_size);
+    void Buffer_upload(const HBuffer& hBuf, const void* pData, size_t num_bytes);
 
-    // check handle validity
-    bool Buffer_valid(
-        const HBuffer& hBuf);
 
-    // check buffer initialization status
-    bool Buffer_initialized(
-        const HBuffer& hBuf);
 
-    // get the type of a generic buffer
-    BufferType Buffer_type(
-        const HBuffer& hBuf);
+
+
 
 
 
@@ -100,45 +87,21 @@ namespace qk::gfx::rhi {
 
 
     // upload to a vertex buffer
-    inline bool VertexBuffer_upload(
-        const HVertexBuffer& hBuf,
-        const void* data,
-        u32 count,
-        u32 elem_size)
+    inline void VertexBuffer_upload(const HVertexBuffer& hBuf, const void* data, size_t num_bytes)
     {
-        return Buffer_upload(
-            hBuf,
-            data,
-            count,
-            elem_size);
+        Buffer_upload(hBuf, data, num_bytes);
     }
 
     // upload to a vertex buffer
     template<typename vertex_t>
-    inline bool VertexBuffer_upload(
-        const HVertexBuffer& hBuf,
-        const std::vector<vertex_t>& vertices)
+    inline void VertexBuffer_upload(const HVertexBuffer& hBuf, const std::vector<vertex_t>& vertices)
     {
-        return VertexBuffer_upload(
-            hBuf,
-            vertices.data(),
-            (u32)vertices.size(),
-            sizeof(vertex_t));
+        VertexBuffer_upload(hBuf,vertices.data(), vertices.size() * sizeof(vertex_t));
     }
 
-    // Check vertex buffer validity
-    inline bool VertexBuffer_valid(
-        const HVertexBuffer& hBuf)
-    {
-        return Buffer_valid(hBuf);
-    }
 
-    // check whether vertex buffer is initialized
-    inline bool VertexBuffer_initialized(
-        const HVertexBuffer& hBuf)
-    {
-        return Buffer_initialized(hBuf);
-    }
+
+
 
     // ============================================================
     // Index Buffer API
@@ -167,25 +130,11 @@ namespace qk::gfx::rhi {
 
 
     // upload to the index buffer
-    inline bool IndexBuffer_upload(
-        const HIndexBuffer& hBuf,
-        const void* data,
-        u32 count,
-        u32 elem_size)
-    {
-        return Buffer_upload(
-            hBuf,
-            data,
-            count,
-            elem_size);
+    inline void IndexBuffer_upload(const HIndexBuffer& hBuf, const void* data, size_t num_bytes) {
+        Buffer_upload(hBuf, data, num_bytes);
     }
 
-    // check index buffer validity
-    inline bool IndexBuffer_valid(
-        const HIndexBuffer& hBuf)
-    {
-        return Buffer_valid(hBuf);
-    }
+
 
     // ============================================================
     // Uniform Buffer API
@@ -217,25 +166,10 @@ namespace qk::gfx::rhi {
 
 
     // upload to uniform buffer
-    inline bool UniformBuffer_upload(
-        const HUniformBuffer& hBuf,
-        const void* data,
-        u32 count,
-        u32 elem_size)
-    {
-        return Buffer_upload(
-            hBuf,
-            data,
-            count,
-            elem_size);
+    inline void UniformBuffer_upload(const HUniformBuffer& hBuf, const void* data, size_t num_bytes) {
+        Buffer_upload(hBuf, data, num_bytes);
     }
 
-    // check uniform buffer validity
-    inline bool UniformBuffer_valid(
-        const HUniformBuffer& hBuf)
-    {
-        return Buffer_valid(hBuf);
-    }
 
 
     using BufferRegistry = ResourceRegistry<Buffer_impl, Buffer_dtor, Buffer_free>;

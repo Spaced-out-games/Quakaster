@@ -11,7 +11,7 @@ namespace qk::gfx::rhi {
 
     Buffer_impl::Buffer_impl(BufferType type, BufferUsage usage, u32 size, u32 count, bool ready) :
         initialized(ready), type(type), usage(usage),
-        elem_size(size), elem_count(count), Resource("Buffer_impl")
+        size(size), Resource("Buffer_impl")
         {
             
             glGenBuffers(1, &hBuffer);
@@ -29,22 +29,48 @@ namespace qk::gfx::rhi {
 
 
 
-    bool Buffer_impl::upload(const void* pData, u32 count, u32 elem_size) {
+    void Buffer_impl::upload(const void* pData, size_t num_bytes) {
         assert(hBuffer);
 
-        elem_count = count;
-        elem_size = elem_size;
+        //elem_count = count;
+        size = num_bytes;
         initialized = true;
 
         glBindBuffer(BufferType_cast(type), hBuffer);
-        glBufferData(BufferType_cast(type), count * elem_size, pData, BufferUsage_cast(usage));
+        glBufferData(BufferType_cast(type), num_bytes, pData, BufferUsage_cast(usage));
 
         // unbind it to ensure correctness
         glBindBuffer(BufferType_cast(type), 0);
 
 
-        return true;
     }
+
+    void Buffer_impl::alloc(size_t num_bytes) {
+        assert(hBuffer);
+        size = num_bytes;
+        initialized = false;
+
+        glBindBuffer(BufferType_cast(type), hBuffer);
+        glBufferData(BufferType_cast(type), num_bytes, nullptr, BufferUsage_cast(usage));
+
+        // unbind it to ensure correctness
+        glBindBuffer(BufferType_cast(type), 0);
+
+    }
+
+    void Buffer_impl::update(const void* pSrc, size_t offset, size_t num_bytes) {
+        assert(hBuffer);
+
+        glBindBuffer(BufferType_cast(type), hBuffer);
+
+        glBufferSubData(BufferType_cast(type), offset, num_bytes, pSrc);
+
+        // unbind it to ensure correctness
+        glBindBuffer(BufferType_cast(type), 0);
+
+    }
+
+
 
     bool Buffer_impl::VertexBuffer_bind(u8 slot, u32 offset, u32 stride) {
         assert(type == BufferType::Vertex);
@@ -107,11 +133,11 @@ namespace qk::gfx::rhi {
         hBuf = nullptr;
     }
 
-    bool Buffer_upload(const HBuffer& hBuf, const void* pData, u32 count, u32 elem_size)
+    void Buffer_upload(const HBuffer& hBuf, const void* pData, size_t num_bytes)
     {
         assert(hBuf);
 
-        return hBuf->upload(pData, count, elem_size);
+        hBuf->upload(pData, num_bytes);
     }
 
     bool Buffer_valid(const HBuffer& hBuf)

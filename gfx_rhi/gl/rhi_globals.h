@@ -389,8 +389,9 @@ namespace qk::gfx::rhi {
         GLuint hBuffer = 0;
         BufferType type = BufferType::Unknown;
         BufferUsage usage = StaticDraw;
-        u32 elem_size = 0;
-        u32 elem_count = 0;
+        size_t size = 0;
+        //u32 elem_size = 0;
+        //u32 elem_count = 0;
         bool initialized = false;
 
         void destroy();
@@ -398,8 +399,24 @@ namespace qk::gfx::rhi {
         Buffer_impl(BufferType type, BufferUsage usage, u32 elem_size = 0, u32 elem_count = 0, bool initialized = 0);
 
 
-        // Consider removing elem_size since it's kind of worthless
-        bool upload(const void* pData, u32 count, u32 elem_size);
+        // todo: 
+        /*
+        we should have Buffer_malloc(), Buffer_free(), buffer_upload(), Buffer_update(), T* Buffer_access(FLAGS)...
+        
+        
+        */
+
+        void upload(const void* pData, size_t num_bytes);
+
+        void alloc(size_t num_bytes);
+
+        //void realloc(size_t num_bytes);
+
+        void update(const void* pSrc, size_t offset, size_t num_bytes);
+
+       // void* open(EBufferAccessFlags flags);
+
+        void close();
 
         bool VertexBuffer_bind(u8 slot = 0, u32 offset = 0, u32 stride = 0);
 
