@@ -1,9 +1,8 @@
 #pragma once
 #include "core.h"
-#include "Handle.h"
+#include <vector>
 #include "Scalar.h"
 
-using qk::Handle;
 
 namespace qk::gfx::rhi {
 
