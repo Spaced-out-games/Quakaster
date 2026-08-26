@@ -4,6 +4,8 @@
 #include <bit>
 namespace qk {
 
+	// TODO: Decompose
+
 	enum class EPartitionRequestType: u8 {
 		SWAP,
 		SET
