@@ -67,9 +67,7 @@ namespace qk::gfx::rhi {
 
     void Buffer_close(const HBuffer& hBuf);
 
-    void Buffer_cpy(const HBuffer& src, const HBuffer& dest);
-
-
+    void Buffer_cpy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset);
 
 
 
