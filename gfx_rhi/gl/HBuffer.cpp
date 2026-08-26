@@ -81,7 +81,18 @@ namespace qk::gfx::rhi {
         glUnmapBuffer(BufferType_cast(type));
     }
 
-
+    void copy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset) {
+        glBindBuffer(GL_COPY_READ_BUFFER, src.hBuffer);
+        glBindBuffer(GL_COPY_WRITE_BUFFER, dst.hBuffer);
+        
+        glCopyBufferSubData(
+            GL_COPY_READ_BUFFER,
+            GL_COPY_WRITE_BUFFER,
+            src_offset,
+            dst_offset,
+            size
+        );
+    }
 
     bool Buffer_impl::VertexBuffer_bind(u8 slot, u32 offset, u32 stride) {
         assert(type == BufferType::Vertex);
