@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <vector>
 #include <span>
-
 #include <core.h>
 #include "Resource.h"
 
@@ -67,6 +66,8 @@ namespace qk::gfx::rhi {
     void* Buffer_open(const HBuffer& hBuf, EBufferAccessFlags flags);
 
     void Buffer_close(const HBuffer& hBuf);
+
+    void Buffer_cpy(const HBuffer& src, const HBuffer& dest);
 
 
 
