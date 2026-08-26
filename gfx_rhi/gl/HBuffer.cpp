@@ -15,6 +15,7 @@ namespace qk::gfx::rhi {
         {
             
             glGenBuffers(1, &hBuffer);
+
         }
 
 
@@ -70,6 +71,16 @@ namespace qk::gfx::rhi {
 
     }
 
+    void* Buffer_impl::open(EBufferAccessFlags flags) {
+        glBindBuffer(BufferType_cast(type), hBuffer);
+        return glMapBuffer(BufferType_cast(type), EBufferAccessFlags_cast(flags));
+    }
+
+    void Buffer_impl::close() {
+        glBindBuffer(BufferType_cast(type), hBuffer);
+        glUnmapBuffer(BufferType_cast(type));
+    }
+
 
 
     bool Buffer_impl::VertexBuffer_bind(u8 slot, u32 offset, u32 stride) {
@@ -77,7 +88,6 @@ namespace qk::gfx::rhi {
 
         if (!initialized) return false;
         glBindVertexBuffer(slot, hBuffer, offset, stride);
-        //glBindBuffer(GL_ARRAY_BUFFER, hBuffer);
         return true;
 
     }
@@ -182,5 +192,27 @@ namespace qk::gfx::rhi {
         return hBuf->UniformBuffer_bind(slot);
 
     }
+
+
+    void Buffer_alloc(const HBuffer& hBuf, size_t num_bytes) {
+        assert(hBuf);
+        hBuf->alloc(num_bytes);
+    }
+
+    void Buffer_update(const HBuffer& hBuf, const void* pSrc, size_t offset, size_t num_bytes) {
+        assert(hBuf);
+        hBuf->update(pSrc, offset, num_bytes);
+    }
+
+    void* Buffer_open(const HBuffer& hBuf, EBufferAccessFlags flags) {
+        assert(hBuf);
+        return hBuf->open(flags);
+    }
+
+    void Buffer_close(const HBuffer& hBuf) {
+        assert(hBuf);
+        hBuf->close();
+    }
+
 
 }

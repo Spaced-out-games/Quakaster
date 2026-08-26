@@ -11,6 +11,8 @@
 #include "DrawCommand.h" // temporary, so that I can check for a compiler error
 #include <unordered_map>
 
+#define TEST GL_READ_ONLY || GL_WRITE_ONLY
+
 #include <span> // temporary
 
 namespace qk::gfx::rhi {
@@ -29,6 +31,20 @@ namespace qk::gfx::rhi {
             throw std::runtime_error("unexpected Input Rate!");
         default:
             assert(false);
+            break;
+        }
+    }
+
+    inline GLuint EBufferAccessFlags_cast(EBufferAccessFlags flags) {
+        switch (flags)
+        {
+        case qk::gfx::rhi::EBufferAccessFlags::READ:
+            return GL_READ_ONLY;
+        case qk::gfx::rhi::EBufferAccessFlags::WRITE:
+            return GL_WRITE_ONLY;
+        case qk::gfx::rhi::EBufferAccessFlags::READWRITE:
+            return GL_READ_WRITE;
+        default:
             break;
         }
     }
@@ -414,7 +430,7 @@ namespace qk::gfx::rhi {
 
         void update(const void* pSrc, size_t offset, size_t num_bytes);
 
-       // void* open(EBufferAccessFlags flags);
+        void* open(EBufferAccessFlags flags);
 
         void close();
 

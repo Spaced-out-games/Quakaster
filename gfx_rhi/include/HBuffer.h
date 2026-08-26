@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <span>
 
 #include <core.h>
 #include "Resource.h"
@@ -9,19 +10,25 @@
 namespace qk::gfx::rhi {
 
     // Optimizes buffer consumption
-    enum BufferUsage: u8 {
+    enum BufferUsage : u8 {
         StaticDraw,
         DynamicDraw,
         StreamDraw
     };
 
     // Denotes buffer type
-    enum class BufferType: u8 {
+    enum class BufferType : u8 {
         Unknown,
         Vertex,
         Index,
         Uniform,
         Storage
+    };
+
+    enum class EBufferAccessFlags: u8 {
+        READ,
+        WRITE,
+        READWRITE
     };
 
     struct Buffer_impl;
@@ -51,7 +58,15 @@ namespace qk::gfx::rhi {
     // Upload to the buffer
     void Buffer_upload(const HBuffer& hBuf, const void* pData, size_t num_bytes);
 
+    // NEW:
 
+    void Buffer_alloc(const HBuffer& hBuf, size_t num_bytes);
+
+    void Buffer_update(const HBuffer& hBuf, const void* pSrc, size_t offset, size_t num_bytes);
+
+    void* Buffer_open(const HBuffer& hBuf, EBufferAccessFlags flags);
+
+    void Buffer_close(const HBuffer& hBuf);
 
 
 
@@ -64,9 +79,7 @@ namespace qk::gfx::rhi {
     // make a vertex buffer
     inline HVertexBuffer VertexBuffer_ctor(BufferUsage usage = StaticDraw)
     {
-        return Buffer_ctor(
-            BufferType::Vertex,
-            usage);
+        return Buffer_ctor(BufferType::Vertex,usage);
     }
 
     inline void VertexBuffer_dtor(const HVertexBuffer& hBuf)
@@ -78,13 +91,22 @@ namespace qk::gfx::rhi {
         Buffer_free(hBuf);
     }
 
+    inline void VertexBuffer_alloc(const HVertexBuffer& hBuf, size_t num_bytes) {
+        Buffer_alloc(hBuf, num_bytes);
+    }
 
-    // bind a vertex buffer
-    bool VertexBuffer_bind(
-        const HVertexBuffer& hBuf, u8 slot, u32 offset = 0, u32 stride = 0);
+    inline void VertexBuffer_update(const HVertexBuffer& hBuf, const void* pSrc, size_t offset, size_t num_bytes) {
+        Buffer_update(hBuf, pSrc, offset, num_bytes);
 
-    // destroy a vertex buffer
+    }
 
+    inline void* VertexBuffer_open(const HVertexBuffer& hBuf, EBufferAccessFlags flags) {
+        return Buffer_open(hBuf, flags);
+    }
+
+    inline void VertexBuffer_close(const HVertexBuffer& hBuf) {
+        VertexBuffer_close(hBuf);
+    }
 
     // upload to a vertex buffer
     inline void VertexBuffer_upload(const HVertexBuffer& hBuf, const void* data, size_t num_bytes)
@@ -92,18 +114,11 @@ namespace qk::gfx::rhi {
         Buffer_upload(hBuf, data, num_bytes);
     }
 
-    // upload to a vertex buffer
     template<typename vertex_t>
-    inline void VertexBuffer_upload(const HVertexBuffer& hBuf, const std::vector<vertex_t>& vertices)
-        const HVertexBuffer& hBuf,
-        VertexBuffer_upload(hBuf,vertices.data(), vertices.size() * sizeof(vertex_t));
-    {
-        return VertexBuffer_upload(
-            hBuf,
-            vertices.data(),
-            (u32)vertices.size(),
-            sizeof(vertex_t));
+    inline void VertexBuffer_upload(const HVertexBuffer& hBuf, const std::vector<vertex_t>& vertices) {
+        return VertexBuffer_upload(hBuf, vertices.data(), (u32)vertices.size() * sizeof(vertex_t));
     }
+
 
 
 
@@ -130,15 +145,30 @@ namespace qk::gfx::rhi {
         Buffer_free(hBuf);
     }
 
-    // bind the index buffer
-    bool IndexBuffer_bind(const HIndexBuffer& hBuf);
+    inline void IndexBuffer_alloc(const HIndexBuffer& hBuf, size_t num_bytes) {
+        Buffer_alloc(hBuf, num_bytes);
+    }
 
+    inline void IndexBuffer_update(const HIndexBuffer& hBuf, const void* pSrc, size_t offset, size_t num_bytes) {
+        Buffer_update(hBuf, pSrc, offset, num_bytes);
 
+    }
 
-    // upload to the index buffer
-    inline void IndexBuffer_upload(const HIndexBuffer& hBuf, const void* data, size_t num_bytes) {
+    inline void* IndexBuffer_open(const HIndexBuffer& hBuf, EBufferAccessFlags flags) {
+        return Buffer_open(hBuf, flags);
+    }
+
+    inline void IndexBuffer_close(const HIndexBuffer& hBuf) {
+        IndexBuffer_close(hBuf);
+    }
+
+    // upload to a vertex buffer
+    inline void IndexBuffer_upload(const HIndexBuffer& hBuf, const void* data, size_t num_bytes)
+    {
         Buffer_upload(hBuf, data, num_bytes);
     }
+
+
 
 
 
@@ -164,15 +194,27 @@ namespace qk::gfx::rhi {
         Buffer_free(hBuf);
     }
 
-    // bind uniform buffer
-    bool UniformBuffer_bind(
-        const HUniformBuffer& hBuf,
-        u8 slot);
 
+    inline void UniformBuffer_alloc(const HUniformBuffer& hBuf, size_t num_bytes) {
+        Buffer_alloc(hBuf, num_bytes);
+    }
 
+    inline void UniformBuffer_update(const HUniformBuffer& hBuf, const void* pSrc, size_t offset, size_t num_bytes) {
+        Buffer_update(hBuf, pSrc, offset, num_bytes);
 
-    // upload to uniform buffer
-    inline void UniformBuffer_upload(const HUniformBuffer& hBuf, const void* data, size_t num_bytes) {
+    }
+
+    inline void* UniformBuffer_open(const HUniformBuffer& hBuf, EBufferAccessFlags flags) {
+        return Buffer_open(hBuf, flags);
+    }
+
+    inline void UniformBuffer_close(const HUniformBuffer& hBuf) {
+        UniformBuffer_close(hBuf);
+    }
+
+    // upload to a index buffer
+    inline void UniformBuffer_upload(const HUniformBuffer& hBuf, const void* data, size_t num_bytes)
+    {
         Buffer_upload(hBuf, data, num_bytes);
     }
 

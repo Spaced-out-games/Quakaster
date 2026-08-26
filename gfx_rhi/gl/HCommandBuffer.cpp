@@ -166,16 +166,11 @@ namespace qk::gfx::rhi {
             break;
 
         case EDrawCmdType::BindVertexBuffer:
-            VertexBuffer_bind(
-                bindVertexBufferCmd.hVertexBuffer,
-                bindVertexBufferCmd.slot,
-                bindVertexBufferCmd.offset,
-                bindVertexBufferCmd.stride
-            );
+            bindVertexBufferCmd.hVertexBuffer->VertexBuffer_bind(bindVertexBufferCmd.slot,bindVertexBufferCmd.offset, bindVertexBufferCmd.stride);
             break;
 
         case EDrawCmdType::BindIndexBuffer:
-            IndexBuffer_bind(bindIndexBufferCmd.hIndexBuffer);
+            bindIndexBufferCmd.hIndexBuffer->IndexBuffer_bind();
             break;
 
         case EDrawCmdType::DrawArrays:
