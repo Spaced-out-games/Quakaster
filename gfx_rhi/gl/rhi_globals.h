@@ -11,8 +11,6 @@
 #include "DrawCommand.h" // temporary, so that I can check for a compiler error
 #include <unordered_map>
 
-#define TEST GL_READ_ONLY || GL_WRITE_ONLY
-
 #include <span> // temporary
 
 namespace qk::gfx::rhi {
@@ -406,8 +404,6 @@ namespace qk::gfx::rhi {
         BufferType type = BufferType::Unknown;
         BufferUsage usage = StaticDraw;
         size_t size = 0;
-        //u32 elem_size = 0;
-        //u32 elem_count = 0;
         bool initialized = false;
 
         void destroy();
@@ -434,13 +430,15 @@ namespace qk::gfx::rhi {
 
         void close();
 
+        static void Buffer_cpy(const HBuffer& src, const HBuffer& dest);
+
         bool VertexBuffer_bind(u8 slot = 0, u32 offset = 0, u32 stride = 0);
 
         bool IndexBuffer_bind();
 
         bool UniformBuffer_bind(u8 slot);
         
-
+    
 
     };
 
