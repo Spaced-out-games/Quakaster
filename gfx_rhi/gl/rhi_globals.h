@@ -430,7 +430,8 @@ namespace qk::gfx::rhi {
 
         void close();
 
-        static void copy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset);
+        static void copy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset, size_t num_bytes);
+
 
         bool VertexBuffer_bind(u8 slot = 0, u32 offset = 0, u32 stride = 0);
 

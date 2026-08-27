@@ -81,16 +81,16 @@ namespace qk::gfx::rhi {
         glUnmapBuffer(BufferType_cast(type));
     }
 
-    void copy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset) {
-        glBindBuffer(GL_COPY_READ_BUFFER, src.hBuffer);
-        glBindBuffer(GL_COPY_WRITE_BUFFER, dst.hBuffer);
+    void Buffer_impl::copy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset, size_t num_bytes) {
+        glBindBuffer(GL_COPY_READ_BUFFER, src->hBuffer);
+        glBindBuffer(GL_COPY_WRITE_BUFFER, dest->hBuffer);
         
         glCopyBufferSubData(
             GL_COPY_READ_BUFFER,
             GL_COPY_WRITE_BUFFER,
             src_offset,
-            dst_offset,
-            size
+            dest_offset,
+            num_bytes
         );
     }
 
@@ -161,23 +161,6 @@ namespace qk::gfx::rhi {
         hBuf->upload(pData, num_bytes);
     }
 
-    bool Buffer_valid(const HBuffer& hBuf)
-    {
-        return hBuf != nullptr;
-    }
-
-    bool Buffer_initialized(const HBuffer& hBuf)
-    {
-        assert(hBuf);
-        return hBuf->initialized;
-    }
-
-    BufferType Buffer_type(const HBuffer& hBuf)
-    {
-        if (!hBuf) return BufferType::Unknown;
-
-        return hBuf->type;
-    }
     
 
     bool VertexBuffer_bind(const HVertexBuffer& hBuf, u8 slot, u32 offset, u32 stride)
@@ -224,8 +207,8 @@ namespace qk::gfx::rhi {
         assert(hBuf);
         hBuf->close();
     }
-    void Buffer_cpy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset) {
-        Buffer_impl::copy(src, src_offset, dest, dest_offset);
+    void Buffer_cpy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset, size_t num_bytes) {
+        Buffer_impl::copy(src, src_offset, dest, dest_offset, num_bytes);
     }
 
 }
