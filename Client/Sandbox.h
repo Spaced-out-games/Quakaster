@@ -176,7 +176,7 @@ class Sandbox : public qk::Application {
 	// initializes the renderer and window.
 	inline void render_init() {
 		qk::startup(); // calls glfwInit
-		m_Window.init(qk::Window::Size{ 1920, 1080 }, "Quakaster Demo", nullptr);
+		m_Window.init(qk::Window::Size{ 1920 / 2, 1080 / 2 }, "Quakaster Demo", nullptr);
 		qk::gfx::rhi::init(m_Window);
 
 	}

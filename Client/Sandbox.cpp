@@ -38,69 +38,263 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 
 #include "Handle.h"
 #include <Partition.h>
+#include "gfx/InstancePool.h"
 
 
 
 void SparseSetTest() {
-    HandleTable<i32> map;
-
-    auto first = map.insert(1);
-    auto second = map.insert(2);
-    auto third = map.insert(3);
-
-    i32* pFirst = map.try_get(first);
-    i32* pSecond = map.try_get(second);
-    i32* pThird = map.try_get(third);
-
-    assert(map.valid(first));
-    assert(map.valid(second));
-    assert(map.valid(third));
-
-    assert(pFirst && *pFirst == 1);
-    assert(pSecond && *pSecond == 2);
-    assert(pThird && *pThird == 3);
-
-    map.remove(first);
-    assert(!map.valid(first));
-    auto fourth = map.insert(3);
-
-    assert(map.valid(fourth));
-    assert(first.sparse == fourth.sparse && first.generation == fourth.generation - 1);
-
-    map.set(fourth, 69);
-    i32* pFourth = map.try_get(fourth);
-    assert(pFourth && *pFourth == 69);
-
-
-
-
-    spdlog::info("SparseSetTest PASSED!");
 }
 
 void PartitionTest() {
-    Partition<i32> p;
+    InstancePool pool;
+    assert(pool.m_Storage == nullptr);
 
-    // general case insertion test
-    i32 first = p.insert(1);
-    i32 second = p.insert(2);
-    i32 third = p.insert(3);
-    i32 fourth = p.insert(4);
+    // Add another partition.
+    pool.add_partition();
 
-    i32 back = p.remove(second);
+    std::vector<int> buf;
 
-    
-   
-    
-    std::vector<i32> testBuffer;
-    testBuffer.resize(4);
-    p.flush(testBuffer.data());
+    // ------------------------------------------------------------
+    // Partition 0
+    // ------------------------------------------------------------
 
-    assert(testBuffer[0] == 1);
-    assert(testBuffer[1] == 4);
-    assert(testBuffer[2] == 3);
-    assert(testBuffer[3] == -1u);
-    assert(p.size() == 3);
-    
+    auto a = pool.insert(420, 0);
+    auto b = pool.insert(69, 0);
+    auto c = pool.insert(2004, 0);
+
+    pool.flush(buf);
+
+    assert(buf.size() == 5);
+    assert(buf[0] == 420);
+    assert(buf[1] == 69);
+    assert(buf[2] == 2004);
+
+    // Update
+    pool.set(a, 99);
+    pool.flush(buf);
+
+    assert(buf[0] == 99);
+    assert(buf[1] == 69);
+    assert(buf[2] == 2004);
+
+    // ------------------------------------------------------------
+    // Delete beginning
+    // ------------------------------------------------------------
+
+    pool.remove(a);
+
+    assert(!pool.valid(a));
+    assert(pool.valid(b));
+    assert(pool.valid(c));
+
+    pool.flush(buf);
+
+    // C moved into A's old slot.
+    assert(buf[0] == 2004);
+    assert(buf[1] == 69);
+    assert(buf[2] == -1); // poisoned dead slot
+
+    // ------------------------------------------------------------
+    // Re-use insertion
+    // ------------------------------------------------------------
+
+    auto d = pool.insert(1234, 0);
+
+    assert(d.sparse == a.sparse);
+    assert(pool.valid(d));
+
+    pool.flush(buf);
+
+    assert(buf[0] == 2004);
+    assert(buf[1] == 69);
+    assert(buf[2] == 1234);
+
+    // ------------------------------------------------------------
+    // Delete end
+    // ------------------------------------------------------------
+
+    pool.remove(d);
+
+    assert(!pool.valid(d));
+    assert(pool.valid(b));
+    assert(pool.valid(c));
+
+    pool.flush(buf);
+
+    // No swap required, so the old value remains.
+    assert(buf[0] == 2004);
+    assert(buf[1] == 69);
+    assert(buf[2] == 1234);
+
+    // ------------------------------------------------------------
+    // Delete beginning again
+    // ------------------------------------------------------------
+
+    assert(pool.m_HandleTable.try_get(c)->local_sparse == 0);
+
+    pool.remove(c);
+
+    assert(!pool.valid(c));
+    assert(pool.valid(b));
+
+    pool.flush(buf);
+
+    // B moves into C's old slot.
+    assert(buf[0] == 69);
+    assert(buf[1] == -1);   // poisoned dead slot
+    assert(buf[2] == 1234); // previously dead storage
+
+    // ------------------------------------------------------------
+    // Partition 1
+    // ------------------------------------------------------------
+
+    auto e = pool.insert(111, 1);
+    auto f = pool.insert(222, 1);
+    auto g = pool.insert(333, 1);
+
+    pool.flush(buf);
+
+    // P0 capacity = 4 -> [0, 4)
+    // P1 capacity = 4 -> [4, 8)
+    //
+    // P0:
+    // [69, -1, 1234, <unused>]
+    //
+    // P1:
+    // [111, 222, 333, <unused>]
+
+    assert(buf.size() == 8);
+
+    assert(buf[0] == 69);
+    assert(buf[1] == -1);
+    assert(buf[2] == 1234);
+
+    assert(buf[4] == 111);
+    assert(buf[5] == 222);
+    assert(buf[6] == 333);
+
+    assert(pool.valid(b));
+    assert(pool.valid(e));
+    assert(pool.valid(f));
+    assert(pool.valid(g));
+
+    // ------------------------------------------------------------
+    // Delete beginning of partition 1
+    // ------------------------------------------------------------
+
+    pool.remove(e);
+
+    assert(!pool.valid(e));
+    assert(pool.valid(f));
+    assert(pool.valid(g));
+
+    pool.flush(buf);
+
+    // G moves into E's old slot.
+    //
+    // P1:
+    // [333, 222, -1, <unused>]
+
+    assert(buf[0] == 69);
+
+    assert(buf[4] == 333);
+    assert(buf[5] == 222);
+    assert(buf[6] == -1);
+
+    // P1's global offset remains 4.
+    assert(buf[4] == 333);
+
+    // ------------------------------------------------------------
+    // Delete end of partition 1
+    // ------------------------------------------------------------
+
+    pool.remove(g);
+
+    assert(!pool.valid(g));
+    assert(pool.valid(f));
+
+    pool.flush(buf);
+
+    // No swap required.
+    //
+    // P1:
+    // [333, 222, -1, <unused>]
+
+    assert(buf[0] == 69);
+
+    assert(buf[4] == 333); // is 222
+    assert(buf[5] == 222); // is -1
+    assert(buf[6] == -1); // is -1
+
+    // ------------------------------------------------------------
+    // Delete final element of partition 1
+    // ------------------------------------------------------------
+
+    pool.remove(f);
+
+    assert(!pool.valid(f));
+    assert(pool.valid(b));
+
+    pool.flush(buf);
+
+    // P1 is empty.
+    //
+    // Its old storage remains untouched:
+    // [333, 222, -1, <unused>]
+
+    assert(buf[0] == 69);
+
+    assert(buf[4] == 333);
+    assert(buf[5] == 222);
+    assert(buf[6] == -1);
+
+    // ------------------------------------------------------------
+    // Insert into emptied partition
+    // ------------------------------------------------------------
+
+    auto h = pool.insert(777, 1);
+
+    assert(pool.valid(h));
+
+    pool.flush(buf);
+
+    // New element occupies P1's first logical slot.
+    assert(buf[0] == 69);
+    assert(buf[4] == 777);
+
+    // Old dead storage remains.
+    assert(buf[5] == 222);
+    assert(buf[6] == -1);
+
+    // ------------------------------------------------------------
+    // Handle reuse
+    // ------------------------------------------------------------
+
+    pool.remove(h);
+
+    assert(!pool.valid(h));
+
+    auto i = pool.insert(888, 1);
+
+    assert(i.sparse == h.sparse);
+    assert(i.generation != h.generation);
+    assert(pool.valid(i));
+    assert(!pool.valid(h));
+
+    pool.flush(buf);
+
+    assert(buf[0] == 69);
+    assert(buf[4] == 888);
+
+    // ------------------------------------------------------------
+    // Final co-occupancy / stale-storage checks
+    // ------------------------------------------------------------
+
+    assert(buf[1] == -1);
+    assert(buf[2] == 1234);
+
+    assert(buf[5] == 222);
+    assert(buf[6] == -1);
 }
 
 

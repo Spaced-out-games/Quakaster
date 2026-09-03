@@ -29,10 +29,20 @@ namespace qk {
 			bool valid(Handle handle) const;
 
 			void remove(Handle handle);
+			void remove(u32 sparse);
 
 			const T* try_get(Handle handle) const;
 
+
+			// LOW LEVEL: does not validate generations.
+			const T* try_get_sparse(u32 sparse) const;
+
+
+
 			T* try_get(Handle handle);
+
+			// LOW LEVEL: does not validate generations.
+			T* try_get_sparse(u32 sparse);
 
 			// Swaps payloads for two live sparse indices.
 			// LOW LEVEL: does not validate generations.

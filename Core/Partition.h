@@ -54,6 +54,10 @@ namespace qk {
 			Partition();
 
 			u32 size() const;
+			u32 capacity() const;
+
+			u32 new_size() const;
+			u32 new_capacity() const;
 
 			void reserve(u32 size);
 
@@ -63,10 +67,12 @@ namespace qk {
 
 
 			// Inserts the payload and returns the index it was inserted into
-			u32 insert(const T& payload);
+			u32 queue_insert(const T& payload);
 
 			// Removes the element via swap and pop semantics. Returns back() index before it's performed. Returns NULL_OFFSET on failure
 			u32 remove(u32 offset);
+
+
 
 			u32 pop_back();
 

@@ -35,7 +35,10 @@ namespace qk {
 
 		const auto& entry = m_Entries[handle.sparse];
 
-		return entry.alive && (handle.generation == entry.generation);
+		bool same_generation = (handle.generation == entry.generation);
+
+		bool valid =  entry.alive && same_generation;
+		return valid;
 
 	}
 
@@ -51,6 +54,28 @@ namespace qk {
 
 		m_Free.push_back(handle.sparse);
 	}
+
+	template <class T>
+	void HandleTable<T>::remove(u32 sparse) {
+		// valid index first of all...
+		if (sparse >= m_Entries.size())
+			return;
+
+		// get the entry
+		Entry& entry = m_Entries[sparse];
+
+		// don't double-delete.
+		if (!entry.alive)
+			return;
+
+		entry.alive = false;
+		entry.payload = {};
+
+		m_Free.push_back(sparse);
+	}
+
+
+
 	template <class T>
 	const T* HandleTable<T>::try_get(Handle handle) const {
 		if (handle.sparse >= m_Entries.size())
@@ -66,6 +91,27 @@ namespace qk {
 	}
 
 	template <class T>
+	const T* HandleTable<T>::try_get_sparse(u32 sparse) const {
+		if (sparse >= m_Entries.size())
+			return nullptr;
+
+		auto& entry = m_Entries[sparse];
+
+		if (entry.alive)
+			return &entry.payload;
+
+		return nullptr;
+
+	}
+
+
+
+
+
+
+
+
+	template <class T>
 	T* HandleTable<T>::try_get(Handle handle) {
 		if (handle.sparse >= m_Entries.size())
 			return nullptr;
@@ -78,6 +124,22 @@ namespace qk {
 		return nullptr;
 
 	}
+
+	template <class T>
+	T* HandleTable<T>::try_get_sparse(u32 sparse) {
+		if (sparse >= m_Entries.size())
+			return nullptr;
+
+		auto& entry = m_Entries[sparse];
+
+		if (entry.alive)
+			return &entry.payload;
+
+		return nullptr;
+
+	}
+
+
 
 	// Swaps payloads for two live sparse indices.
 	// LOW LEVEL: does not validate generations.

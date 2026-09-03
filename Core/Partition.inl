@@ -21,6 +21,22 @@ namespace qk {
 		return m_Size;
 	}
 
+	template <class T>
+	u32 Partition<T>::capacity() const {
+		return m_Capacity;
+	}
+
+	template <class T>
+	u32 Partition<T>::new_size() const {
+		return m_NextSize;
+	}
+	
+	
+	template <class T>
+	u32 Partition<T>::new_capacity() const {
+		return m_NextCapacity;
+	}
+
 
 	template <class T>
 	void Partition<T>::queue_swap(u32 offset_a, u32 offset_b) {
@@ -57,7 +73,7 @@ namespace qk {
 
 	
 	template <class T>
-	u32 Partition<T>::insert(const T& payload) {
+	u32 Partition<T>::queue_insert(const T& payload) {
 		if (m_NextSize == m_NextCapacity) {
 			m_NextCapacity = m_NextCapacity
 				? m_NextCapacity << 1
