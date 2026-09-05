@@ -120,6 +120,9 @@ namespace qk::gfx {
 				partition.queue_swap(target_index, back_index);
 			}
 
+			// Not strictly necessary..moreso for poisoning to mark invariants clearly. Remove in release!!! Cheeky!
+			partition.queue_swap(back_index, back_index);
+
 			// Shrink logical partition.
 			partition.pop_back();
 
@@ -130,9 +133,6 @@ namespace qk::gfx {
 
 
 		void flush() {
-			// Do we need to resize?
-
-
 			size_t old_capacity = 0;
 			size_t new_capacity = 0;
 
@@ -141,74 +141,77 @@ namespace qk::gfx {
 				new_capacity += partition.new_capacity();
 			}
 
-			// if they differ, we need to reallocate
 			if (old_capacity != new_capacity) {
+				// Temporary buffer owns a separate RHI resource.
+				rhi::HVertexBuffer old_storage = rhi::VertexBuffer_ctor(rhi::StaticDraw);
+				rhi::VertexBuffer_alloc(
+					old_storage,
+					old_capacity * sizeof(instance_t)
+				);
 
+				// Preserve old contents.
+				rhi::VertexBuffer_cpy(
+					m_Storage,
+					0,
+					old_storage,
+					0,
+					old_capacity * sizeof(instance_t)
+				);
 
-				// make a new temporary
-				rhi::HVertexBuffer hTempBuffer = rhi::VertexBuffer_ctor();
-				// Allocate
-				rhi::VertexBuffer_alloc(hTempBuffer, old_capacity);
-				// copy the whole old buffer over
-				rhi::Buffer_cpy(m_Storage, 0, hTempBuffer, 0, sizeof(instance_t) * old_capacity);
+				// m_Storage itself remains the same handle.
+				rhi::VertexBuffer_alloc(
+					m_Storage,
+					new_capacity * sizeof(instance_t)
+				);
 
-				// realloc enough for the new capacity
-				rhi::VertexBuffer_alloc(m_Storage, sizeof(instance_t) * new_capacity);
+				instance_t* pStorage = static_cast<instance_t*>(
+					rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE)
+					);
 
-				// get the pointers
-				instance_t* pOldBase = (instance_t*)rhi::VertexBuffer_open(hTempBuffer, rhi::EBufferAccessFlags::READ);
+				size_t offset = 0;
 
-				instance_t* pNewBase = (instance_t*)rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE);
-
-
-				// copy over each partition, accounting for the new offsets
-
-				size_t old_offset = 0;
-				size_t new_offset = 0;
-
-				// scan through the partitions and copy them over
 				for (auto& partition : m_Partitions) {
-					// copy the partition over
-					rhi::Buffer_cpy(hTempBuffer, sizeof(instance_t) * old_offset, m_Storage, sizeof(instance_t) * new_offset, partition.capacity());
+					const size_t old_partition_capacity = partition.capacity();
+					const size_t new_partition_capacity = partition.new_capacity();
 
-					partition.flush(pNewBase + new_offset);
-					old_offset += partition.capacity();
-					new_offset += partition.new_capacity();
+					// Restore the old physical partition contents into its
+					// new physical location.
+					if (old_partition_capacity != 0) {
+						rhi::VertexBuffer_cpy(
+							old_storage,
+							/* old byte offset */ 0,
+							m_Storage,
+							/* new byte offset */ offset * sizeof(instance_t),
+							old_partition_capacity * sizeof(instance_t)
+						);
+					}
 
-					// might as well do it while we are here
+					partition.flush(pStorage + offset);
+
+					offset += new_partition_capacity;
 				}
 
-				// close them
-				VertexBuffer_close(hTempBuffer);
-				VertexBuffer_close(m_Storage);
+				rhi::VertexBuffer_close(m_Storage);
+				rhi::VertexBuffer_free(old_storage);
 
-
-				// free the temp buffer
-				VertexBuffer_dtor(hTempBuffer);
 				return;
 			}
 
-			// No resize necessary: just iterate the partitions and apply queue operations
+			instance_t* pStorage = static_cast<instance_t*>(
+				rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE)
+				);
 
-			size_t old_offset = 0;
-			size_t new_offset = 0;
-			instance_t* pBase = (instance_t*)rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE);
+			size_t offset = 0;
 
-			// scan through the partitions and copy them over
 			for (auto& partition : m_Partitions) {
-				// copy the partition over
-				partition.flush(pBase + new_offset);
-
-				old_offset += partition.capacity();
-				new_offset += partition.new_capacity();
-
+				partition.flush(pStorage + offset);
+				offset += partition.new_capacity();
 			}
 
-			VertexBuffer_close(m_Storage);
-
-
-
+			rhi::VertexBuffer_close(m_Storage);
 		}
+
+
 		// test override
 		void flush(std::vector<instance_t>& storage) {
 			size_t old_capacity = 0;

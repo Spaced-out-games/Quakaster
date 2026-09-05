@@ -58,7 +58,8 @@ namespace qk {
 
 	template <class T>
 	void Partition<T>::queue_set(const T& payload, u32 offset) {
-		assert(offset < m_NextSize);
+		// FYI: This isn't strictly < nextsize because it's fine to set out of logical bounds
+		assert(offset <= m_NextSize);
 
 		m_Queue.push_back({
 			.set = {

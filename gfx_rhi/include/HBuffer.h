@@ -118,7 +118,15 @@ namespace qk::gfx::rhi {
         return VertexBuffer_upload(hBuf, vertices.data(), (u32)vertices.size() * sizeof(vertex_t));
     }
 
-
+    inline void VertexBuffer_cpy(
+        const HVertexBuffer& src,
+        size_t src_offset,
+        const HVertexBuffer& dest,
+        size_t dest_offset,
+        size_t num_bytes)
+    {
+        Buffer_cpy(src, src_offset, dest, dest_offset, num_bytes);
+    }
 
 
 
@@ -167,7 +175,15 @@ namespace qk::gfx::rhi {
         Buffer_upload(hBuf, data, num_bytes);
     }
 
-
+    inline void IndexBuffer_cpy(
+        const HIndexBuffer& src,
+        size_t src_offset,
+        const HIndexBuffer& dest,
+        size_t dest_offset,
+        size_t num_bytes)
+    {
+        Buffer_cpy(src, src_offset, dest, dest_offset, num_bytes);
+    }
 
 
 
@@ -217,7 +233,15 @@ namespace qk::gfx::rhi {
         Buffer_upload(hBuf, data, num_bytes);
     }
 
-
+    inline void UniformBuffer_cpy(
+        const HUniformBuffer& src,
+        size_t src_offset,
+        const HUniformBuffer& dest,
+        size_t dest_offset,
+        size_t num_bytes)
+    {
+        Buffer_cpy(src, src_offset, dest, dest_offset, num_bytes);
+    }
 
     using BufferRegistry = ResourceRegistry<Buffer_impl, Buffer_dtor, Buffer_free>;
 

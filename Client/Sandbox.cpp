@@ -46,11 +46,16 @@ void SparseSetTest() {
 }
 
 void PartitionTest() {
+    spdlog::info("=== InstancePool / PartitionTest ===");
+
     InstancePool pool;
     assert(pool.m_Storage == nullptr);
 
+    spdlog::info("Initial pool created");
+
     // Add another partition.
     pool.add_partition();
+    spdlog::info("Added partition 1");
 
     std::vector<int> buf;
 
@@ -58,11 +63,25 @@ void PartitionTest() {
     // Partition 0
     // ------------------------------------------------------------
 
+    spdlog::info("[P0] Inserting 420, 69, 2004");
+
     auto a = pool.insert(420, 0);
     auto b = pool.insert(69, 0);
     auto c = pool.insert(2004, 0);
 
+    spdlog::info(
+        "[P0] Handles: a=({}, {}), b=({}, {}), c=({}, {})",
+        a.sparse, a.generation,
+        b.sparse, b.generation,
+        c.sparse, c.generation
+    );
+
     pool.flush(buf);
+
+    spdlog::info(
+        "[P0] After insertion: [{}, {}, {}]",
+        buf[0], buf[1], buf[2]
+    );
 
     assert(buf.size() == 5);
     assert(buf[0] == 420);
@@ -70,8 +89,15 @@ void PartitionTest() {
     assert(buf[2] == 2004);
 
     // Update
+    spdlog::info("[P0] Updating a -> 99");
+
     pool.set(a, 99);
     pool.flush(buf);
+
+    spdlog::info(
+        "[P0] After update: [{}, {}, {}]",
+        buf[0], buf[1], buf[2]
+    );
 
     assert(buf[0] == 99);
     assert(buf[1] == 69);
@@ -81,6 +107,8 @@ void PartitionTest() {
     // Delete beginning
     // ------------------------------------------------------------
 
+    spdlog::info("[P0] Removing beginning element a");
+
     pool.remove(a);
 
     assert(!pool.valid(a));
@@ -89,21 +117,39 @@ void PartitionTest() {
 
     pool.flush(buf);
 
+    spdlog::info(
+        "[P0] After removing a: [{}, {}, {}]",
+        buf[0], buf[1], buf[2]
+    );
+
     // C moved into A's old slot.
     assert(buf[0] == 2004);
     assert(buf[1] == 69);
-    assert(buf[2] == -1); // poisoned dead slot
+    assert(buf[2] == -1);
 
     // ------------------------------------------------------------
     // Re-use insertion
     // ------------------------------------------------------------
 
+    spdlog::info("[P0] Reusing removed handle slot with 1234");
+
     auto d = pool.insert(1234, 0);
+
+    spdlog::info(
+        "[P0] d=({}, {}), old a=({}, {})",
+        d.sparse, d.generation,
+        a.sparse, a.generation
+    );
 
     assert(d.sparse == a.sparse);
     assert(pool.valid(d));
 
     pool.flush(buf);
+
+    spdlog::info(
+        "[P0] After reuse: [{}, {}, {}]",
+        buf[0], buf[1], buf[2]
+    );
 
     assert(buf[0] == 2004);
     assert(buf[1] == 69);
@@ -113,6 +159,8 @@ void PartitionTest() {
     // Delete end
     // ------------------------------------------------------------
 
+    spdlog::info("[P0] Removing end element d");
+
     pool.remove(d);
 
     assert(!pool.valid(d));
@@ -121,14 +169,20 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    // No swap required, so the old value remains.
+    spdlog::info(
+        "[P0] After removing d: [{}, {}, {}]",
+        buf[0], buf[1], buf[2]
+    );
+
     assert(buf[0] == 2004);
     assert(buf[1] == 69);
-    assert(buf[2] == 1234);
+    assert(buf[2] == -1);
 
     // ------------------------------------------------------------
     // Delete beginning again
     // ------------------------------------------------------------
+
+    spdlog::info("[P0] Removing beginning element c");
 
     assert(pool.m_HandleTable.try_get(c)->local_sparse == 0);
 
@@ -139,14 +193,20 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    // B moves into C's old slot.
+    spdlog::info(
+        "[P0] After removing c: [{}, {}, {}]",
+        buf[0], buf[1], buf[2]
+    );
+
     assert(buf[0] == 69);
-    assert(buf[1] == -1);   // poisoned dead slot
-    assert(buf[2] == 1234); // previously dead storage
+    assert(buf[1] == -1);
+    assert(buf[2] == -1);
 
     // ------------------------------------------------------------
     // Partition 1
     // ------------------------------------------------------------
+
+    spdlog::info("[P1] Inserting 111, 222, 333");
 
     auto e = pool.insert(111, 1);
     auto f = pool.insert(222, 1);
@@ -154,20 +214,16 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    // P0 capacity = 4 -> [0, 4)
-    // P1 capacity = 4 -> [4, 8)
-    //
-    // P0:
-    // [69, -1, 1234, <unused>]
-    //
-    // P1:
-    // [111, 222, 333, <unused>]
+    spdlog::info(
+        "[P1] After insertion: [{}, {}, {}]",
+        buf[4], buf[5], buf[6]
+    );
 
     assert(buf.size() == 8);
 
     assert(buf[0] == 69);
     assert(buf[1] == -1);
-    assert(buf[2] == 1234);
+    assert(buf[2] == -1);
 
     assert(buf[4] == 111);
     assert(buf[5] == 222);
@@ -182,6 +238,8 @@ void PartitionTest() {
     // Delete beginning of partition 1
     // ------------------------------------------------------------
 
+    spdlog::info("[P1] Removing beginning element e");
+
     pool.remove(e);
 
     assert(!pool.valid(e));
@@ -190,23 +248,20 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    // G moves into E's old slot.
-    //
-    // P1:
-    // [333, 222, -1, <unused>]
-
-    assert(buf[0] == 69);
+    spdlog::info(
+        "[P1] After removing e: [{}, {}, {}]",
+        buf[4], buf[5], buf[6]
+    );
 
     assert(buf[4] == 333);
     assert(buf[5] == 222);
     assert(buf[6] == -1);
 
-    // P1's global offset remains 4.
-    assert(buf[4] == 333);
-
     // ------------------------------------------------------------
     // Delete end of partition 1
     // ------------------------------------------------------------
+
+    spdlog::info("[P1] Removing g");
 
     pool.remove(g);
 
@@ -215,20 +270,20 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    // No swap required.
-    //
-    // P1:
-    // [333, 222, -1, <unused>]
+    spdlog::info(
+        "[P1] After removing g: [{}, {}, {}]",
+        buf[4], buf[5], buf[6]
+    );
 
-    assert(buf[0] == 69);
-
-    assert(buf[4] == 333); // is 222
-    assert(buf[5] == 222); // is -1
-    assert(buf[6] == -1); // is -1
+    assert(buf[4] == 222);
+    assert(buf[5] == -1);
+    assert(buf[6] == -1);
 
     // ------------------------------------------------------------
-    // Delete final element of partition 1
+    // Delete final element
     // ------------------------------------------------------------
+
+    spdlog::info("[P1] Removing final element f");
 
     pool.remove(f);
 
@@ -237,20 +292,21 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    // P1 is empty.
-    //
-    // Its old storage remains untouched:
-    // [333, 222, -1, <unused>]
+    spdlog::info(
+        "[P1] After emptying partition: [{}, {}, {}]",
+        buf[4], buf[5], buf[6]
+    );
 
     assert(buf[0] == 69);
-
-    assert(buf[4] == 333);
-    assert(buf[5] == 222);
+    assert(buf[4] == -1);
+    assert(buf[5] == -1);
     assert(buf[6] == -1);
 
     // ------------------------------------------------------------
     // Insert into emptied partition
     // ------------------------------------------------------------
+
+    spdlog::info("[P1] Inserting 777 into empty partition");
 
     auto h = pool.insert(777, 1);
 
@@ -258,23 +314,32 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    // New element occupies P1's first logical slot.
-    assert(buf[0] == 69);
-    assert(buf[4] == 777);
+    spdlog::info(
+        "[P1] After reuse of empty partition: [{}, {}, {}]",
+        buf[4], buf[5], buf[6]
+    );
 
-    // Old dead storage remains.
-    assert(buf[5] == 222);
+    assert(buf[4] == 777);
+    assert(buf[5] == -1);
     assert(buf[6] == -1);
 
     // ------------------------------------------------------------
     // Handle reuse
     // ------------------------------------------------------------
 
+    spdlog::info("[P1] Removing h and testing generation reuse");
+
     pool.remove(h);
 
     assert(!pool.valid(h));
 
     auto i = pool.insert(888, 1);
+
+    spdlog::info(
+        "[P1] Old handle h=({}, {}), new handle i=({}, {})",
+        h.sparse, h.generation,
+        i.sparse, i.generation
+    );
 
     assert(i.sparse == h.sparse);
     assert(i.generation != h.generation);
@@ -283,18 +348,26 @@ void PartitionTest() {
 
     pool.flush(buf);
 
-    assert(buf[0] == 69);
+    spdlog::info(
+        "[P1] After generation reuse: [{}, {}, {}]",
+        buf[4], buf[5], buf[6]
+    );
+
     assert(buf[4] == 888);
 
     // ------------------------------------------------------------
     // Final co-occupancy / stale-storage checks
     // ------------------------------------------------------------
 
-    assert(buf[1] == -1);
-    assert(buf[2] == 1234);
+    spdlog::info("[FINAL] Checking stale storage invariants");
 
-    assert(buf[5] == 222);
+    assert(buf[1] == -1);
+    assert(buf[2] == -1);
+
+    assert(buf[5] == -1);
     assert(buf[6] == -1);
+
+    spdlog::info("=== PartitionTest PASSED ===");
 }
 
 
