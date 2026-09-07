@@ -27,20 +27,32 @@ namespace qk {
 
 
 	}
+	template <class T>
+	size_t HandleTable<T>::sparse_size() const {
+		return m_Entries.size();
+	}
+
 
 	template <class T>
 	bool HandleTable<T>::valid(Handle handle) const {
 		if (handle.sparse >= m_Entries.size())
 			return false;
 
-		const auto& entry = m_Entries[handle.sparse];
 
-		bool same_generation = (handle.generation == entry.generation);
-
-		bool valid =  entry.alive && same_generation;
-		return valid;
+		return m_Entries[handle.sparse].alive &&
+			(handle.generation == m_Entries[handle.sparse].generation);
 
 	}
+
+	template <class T>
+	bool HandleTable<T>::valid(u32 sparse) const {
+		if (sparse >= m_Entries.size())
+			return false;
+
+		return  m_Entries[sparse].alive;
+
+	}
+
 
 	template <class T>
 	void HandleTable<T>::remove(Handle handle) {
@@ -173,6 +185,50 @@ namespace qk {
 
 		*pPayload = value;
 
+	}
+
+	// iterator methods
+
+	template <class T>
+	HandleTable<T>::iterator& HandleTable<T>::iterator::operator++() {
+		assert(pTable);
+		do {
+			++current_sparse;
+		} while (current_sparse < pTable->sparse_size() && !pTable->valid(current_sparse));
+
+		return *this;
+	}
+
+
+	template <class T>
+	u32 HandleTable<T>::iterator::operator*() {
+		assert(pTable);
+		return current_sparse;
+	}
+
+	template <class T>
+	bool HandleTable<T>::iterator::operator==(const iterator& other) const {
+		return pTable == other.pTable &&
+			current_sparse == other.current_sparse;
+	}
+
+	template <class T>
+	bool HandleTable<T>::iterator::operator!=(const iterator& other) const {
+		return !(*this == other);
+	}
+
+	template <class T>
+	HandleTable<T>::iterator HandleTable<T>::begin() {
+		size_t i = 0;
+		while (i < sparse_size() && !valid(i))
+			++i;
+
+		return { this, i };
+	}
+
+	template <class T>
+	HandleTable<T>::iterator HandleTable<T>::end() {
+		return { this, sparse_size() };
 	}
 
 
