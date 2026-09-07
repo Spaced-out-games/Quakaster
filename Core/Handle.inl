@@ -190,11 +190,11 @@ namespace qk {
 	// iterator methods
 
 	template <class T>
-	HandleTable<T>::iterator& HandleTable<T>::iterator::operator++() {
+	typename HandleTable<T>::iterator& HandleTable<T>::iterator::operator++() {
 		assert(pTable);
 		do {
 			++current_sparse;
-		} while (current_sparse < pTable->sparse_size() && !pTable->valid(current_sparse));
+		} while (current_sparse < pTable->sparse_size());// && !pTable->valid(current_sparse));
 
 		return *this;
 	}

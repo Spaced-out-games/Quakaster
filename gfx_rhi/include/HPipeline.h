@@ -88,6 +88,10 @@ namespace qk::gfx::rhi {
 	// Pipeline handle
 	using HPipeline = Pipeline_impl*;
 
+    struct PipelineBinding {
+        HPipeline hPipeline = nullptr;
+    };
+
 
 	// Pipeline lifetime
 	HPipeline Pipeline_ctor(const Pipeline_recipe& recipe);

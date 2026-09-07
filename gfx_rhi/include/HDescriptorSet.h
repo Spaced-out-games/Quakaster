@@ -25,6 +25,11 @@ namespace qk::gfx::rhi {
 
 	using HDescriptorSet = DescriptorSet_impl*;
 
+    struct DescriptorSetBinding {
+        HDescriptorSet hDescriptorSet;
+        u8 slot = 0;
+    };
+
     HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe);
 
     void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet);
@@ -38,6 +43,8 @@ namespace qk::gfx::rhi {
     Resource* Resource_cast(const HDescriptorSet& hDescriptorSet);
 
     using DescriptorSetRegistry = ResourceRegistry<DescriptorSet_impl, DescriptorSet_dtor, DescriptorSet_free>;
+
+
 
 
 }

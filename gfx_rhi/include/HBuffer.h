@@ -128,6 +128,13 @@ namespace qk::gfx::rhi {
         Buffer_cpy(src, src_offset, dest, dest_offset, num_bytes);
     }
 
+    struct VertexBufferBinding {
+        HVertexBuffer hVertexBuffer = nullptr;
+        u32 offset = 0;
+        u32 strude = 0;
+        u8 slot = 0;
+    };
+
 
 
 
@@ -185,6 +192,12 @@ namespace qk::gfx::rhi {
         Buffer_cpy(src, src_offset, dest, dest_offset, num_bytes);
     }
 
+    struct IndexBufferBinding {
+        HIndexBuffer hIndexBuffer = nullptr;
+        u32 offset = 0;
+        u32 strude = 0;
+        u8 slot = 0;
+    };
 
 
     // ============================================================
