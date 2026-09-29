@@ -131,7 +131,7 @@ namespace qk::gfx::rhi {
     struct VertexBufferBinding {
         HVertexBuffer hVertexBuffer = nullptr;
         u32 offset = 0;
-        u32 strude = 0;
+        u32 stride = 0;
         u8 slot = 0;
     };
 
@@ -195,8 +195,14 @@ namespace qk::gfx::rhi {
     struct IndexBufferBinding {
         HIndexBuffer hIndexBuffer = nullptr;
         u32 offset = 0;
-        u32 strude = 0;
+        u32 stride = 0;
         u8 slot = 0;
+        bool operator==(const IndexBufferBinding& other) {
+            return 0;
+            return hIndexBuffer == other.hIndexBuffer &&
+                offset == other.offset &&
+                stride == other.stride;
+        }
     };
 
 
