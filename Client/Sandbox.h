@@ -143,7 +143,7 @@ class Sandbox : public qk::Application {
 	qk::LayerStack m_Layers;
 
 	std::unordered_map<str, Pipeline_recipe> pipelines;
-	std::unordered_map<str, DescriptorSet_recipe> sets;
+	std::unordered_map<str, DescriptorSetLayout> sets;
 
 	HCommandBuffer hCmdBuf = nullptr; 
 	HDescriptorSet hGlobals = nullptr;

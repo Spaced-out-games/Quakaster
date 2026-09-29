@@ -470,7 +470,7 @@ namespace qk::gfx::rhi {
 
         
 
-        DescriptorSet_impl(const DescriptorSet_recipe& recipe);
+        DescriptorSet_impl(const DescriptorSetLayout& recipe);
 
 
         void destroy();

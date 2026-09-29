@@ -80,7 +80,7 @@ namespace qk::gfx {
 		}
 	}
 
-	inline void registry_upload(rhi::DescriptorSetRegistry& registry, const std::unordered_map<str, rhi::DescriptorSet_recipe>& sets) {
+	inline void registry_upload(rhi::DescriptorSetRegistry& registry, const std::unordered_map<str, rhi::DescriptorSetLayout>& sets) {
 		rhi::HDescriptorSet hDescriptorSet = nullptr;
 		for (const auto& [name, recipe] : sets) {
 			hDescriptorSet = rhi::DescriptorSet_ctor(recipe);

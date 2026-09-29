@@ -6,11 +6,11 @@ namespace qk::gfx::rhi {
 
 
 
-	DescriptorSet_impl::DescriptorSet_impl(const DescriptorSet_recipe& recipe) : Resource("DescriptorSet_impl") {
+	DescriptorSet_impl::DescriptorSet_impl(const DescriptorSetLayout& recipe) : Resource("DescriptorSet_impl") {
 		using enum EDescriptorType;
 
 
-		for (const DescriptorBinding& binding : recipe) {
+		for (const DescriptorDeclaration& binding : recipe) {
 			switch (binding.type)
 			{
 			case Texture:
@@ -111,7 +111,7 @@ namespace qk::gfx::rhi {
 	}
 
 	// this is just an empty layout
-	HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe) {
+	HDescriptorSet DescriptorSet_ctor(const DescriptorSetLayout& recipe) {
 
 		return new DescriptorSet_impl(recipe);
 		

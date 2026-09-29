@@ -5,7 +5,7 @@ using qk::gfx::rhi::InputRate;
 using qk::gfx::rhi::ShaderType;
 using qk::gfx::rhi::PrimitiveTopology;
 using qk::gfx::rhi::EDescriptorType;
-using qk::gfx::rhi::DescriptorBinding;
+using qk::gfx::rhi::DescriptorDeclaration;
 namespace qk::media {
 
 
@@ -198,7 +198,7 @@ namespace qk::media {
 
 	}
 
-	bool DescriptorBindingFromJSON(const json& j, DescriptorBinding& out) {
+	bool DescriptorDeclarationFromJSON(const json& j, DescriptorDeclaration& out) {
 		if (!j.is_object()) return false;
 
 		// for now, it's dead simple - just push the type
@@ -212,11 +212,11 @@ namespace qk::media {
 
 	}
 
-	bool DescriptorSetFromJSON(const json& j, DescriptorSet_recipe& out) {
+	bool DescriptorSetFromJSON(const json& j, DescriptorSetLayout& out) {
 		if (!j.is_array()) return false;
-		DescriptorBinding binding;
+		DescriptorDeclaration binding;
 		for (const auto& item : j) {
-			bool status = DescriptorBindingFromJSON(item, binding);
+			bool status = DescriptorDeclarationFromJSON(item, binding);
 			if (status)
 				out.push_back(binding);
 			else
@@ -247,7 +247,7 @@ namespace qk::media {
 
 	bool loadDescriptorSetsFromJSON(
 		const json& j,
-		std::unordered_map<str, DescriptorSet_recipe>& out)
+		std::unordered_map<str, DescriptorSetLayout>& out)
 	{
 		if (!j.is_object())
 			return false;
@@ -264,7 +264,7 @@ namespace qk::media {
 		{
 			assert(!out.contains(name));
 
-			DescriptorSet_recipe recipe;
+			DescriptorSetLayout recipe;
 
 			if (!DescriptorSetFromJSON(info, recipe))
 				return false;

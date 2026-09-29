@@ -9,7 +9,7 @@
 
 namespace qk::media {
 
-	using qk::gfx::rhi::DescriptorSet_recipe;
+	using qk::gfx::rhi::DescriptorSetLayout;
 	using qk::gfx::rhi::VertexAttributeBinding;
 	using qk::gfx::rhi::VertexLayout_recipe;
 	using qk::gfx::rhi::VertexAttribute;
@@ -33,6 +33,6 @@ namespace qk::media {
 
 	bool loadPipelinesFromJSON(const json& j, std::unordered_map<str, Pipeline_recipe>& pipelines);
 
-	bool loadDescriptorSetsFromJSON(const json& j, std::unordered_map<str, DescriptorSet_recipe>& out);
+	bool loadDescriptorSetsFromJSON(const json& j, std::unordered_map<str, DescriptorSetLayout>& out);
 
 }
