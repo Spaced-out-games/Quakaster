@@ -5,7 +5,7 @@
 
 namespace qk::gfx::rhi {
 
-
+    // Descriptor type
     enum class EDescriptorType {
         Unknown,
         Texture,
@@ -13,24 +13,21 @@ namespace qk::gfx::rhi {
         //StorageBuffer
     };
 
-    struct DescriptorBinding {
+    // Used to forward-declare descriptor set structure.
+    struct DescriptorDeclaration {
         EDescriptorType type;
         // bindings are auto-generated sequentially
     };
 
 
 
-    using DescriptorSet_recipe = std::vector<DescriptorBinding>;
+    using DescriptorSetLayout = std::vector<DescriptorDeclaration>;
 	struct DescriptorSet_impl;
 
 	using HDescriptorSet = DescriptorSet_impl*;
 
-    struct DescriptorSetBinding {
-        HDescriptorSet hDescriptorSet;
-        u8 slot = 0;
-    };
 
-    HDescriptorSet DescriptorSet_ctor(const DescriptorSet_recipe& recipe);
+    HDescriptorSet DescriptorSet_ctor(const DescriptorSetLayout& recipe);
 
     void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet);
 
@@ -45,6 +42,61 @@ namespace qk::gfx::rhi {
     using DescriptorSetRegistry = ResourceRegistry<DescriptorSet_impl, DescriptorSet_dtor, DescriptorSet_free>;
 
 
+    // Helper structures for batching.
+
+
+
+    struct DescriptorDefinition {
+        #ifdef _DEBUG
+            EDescriptorType type;
+        #endif
+        union {
+            // generic pointer to whatever the fuck
+            void* pDescriptor;
+            HTexture hTexture;
+            HUniformBuffer hUniformBuffer;
+        };
+
+        DescriptorDefinition(EDescriptorType type, void* hDescriptor) {
+
+            switch (type)
+            {
+            case qk::gfx::rhi::EDescriptorType::Unknown:
+                assert(false);
+                break;
+            case qk::gfx::rhi::EDescriptorType::Texture:
+                hTexture = (HTexture)hDescriptor;
+                break;
+            case qk::gfx::rhi::EDescriptorType::UniformBuffer:
+                hUniformBuffer = (HUniformBuffer)hDescriptor;
+                break;
+            default:
+                assert(false);
+                break;
+            }
+
+
+        }
+
+        bool operator==(const DescriptorDefinition& other) const {
+            
+            #ifdef _DEBUG
+                return type == other.type && pDescriptor == other.pDescriptor;
+            #else
+                    return pDescriptor == other.pDescriptor;
+            #endif // _DEBUG
+
+        }
+
+
+    };
+
+    // Fully defines a descriptor set with target resource handles
+    struct DescriptorSetDefinition {
+        HDescriptorSet hDescriptorSet;
+        std::vector<DescriptorDefinition> resources;
+
+    };
 
 
 }
