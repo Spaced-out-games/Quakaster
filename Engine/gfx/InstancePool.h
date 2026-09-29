@@ -8,13 +8,16 @@
 namespace qk::gfx {
 
 	struct InstancePoolHandleMetadata {
+		// local sparse index w.r.t the partition
 		u32 local_sparse = 0;
 		u16 partition = 0;
 
 	};
 
+	struct InstancePoolBase {};
+
 	template <class instance_t>
-	struct InstancePool {
+	struct InstancePool: InstancePoolBase {
 
 		using Table_t = qk::HandleTable<InstancePoolHandleMetadata>;
 		using Partition_t = qk::Partition<instance_t>;
@@ -42,7 +45,7 @@ namespace qk::gfx {
 		void remove(Handle_t hTarget);
 
 
-
+		// flushes the command queue
 		void flush();
 
 
