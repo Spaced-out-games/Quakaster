@@ -4,6 +4,7 @@
 #include "InstancePool.h"
 #include <HPipeline.h>
 #include <HBuffer.h>
+#include <typeindex>
 
 
 using qk::gfx::rhi::HPipeline;
@@ -13,7 +14,64 @@ using qk::gfx::rhi::PipelineBinding;
 using qk::gfx::rhi::EDescriptorType;
 
 namespace qk::gfx {
-	
+
+	// convenience aliases
+
+	// Defines a pipeline
+	using PipelineDefinition = rhi::PipelineBinding;
+
+	// Defines a vertex buffer group
+	using VertexBufferGroupDefinition = std::vector<rhi::VertexBufferBinding>;
+
+	// defines an index buffer
+	using IndexBufferDefinition = rhi::IndexBufferBinding;
+
+	// defines a group of descriptor sets
+	using DescriptorSetGroupDefinition = std::vector<rhi::DescriptorSetDefinition>;
+
+	// defines a set of instance pool groups. Maps a type
+	//using InstancePoolGroup = std::unordered_map<std::type_index, std::unique_ptr<InstancePoolBase>>;
+
+
+	struct InstancePoolGroup {
+		std::unordered_map<std::type_index, std::unique_ptr<InstancePoolBase>> m_Storages;
+
+
+
+		template <class instance_t>
+		bool hasInstancePool() {
+			return m_Storages.contains(typeid(instance_t));
+		}
+
+		template <class instance_t>
+		bool addInstancePool(HVertexBuffer hInstanceBuffer) {
+			#ifdef _DEBUG
+			assert(!hasInstancePool<instance_t>());
+			#else
+			if (hasInstancePool<instance_t>()) return false;
+			#endif
+			std::unique_ptr<InstancePoolBase> pool = std::make_unique<InstancePool<instance_t>>(hInstanceBuffer);
+
+			m_Storages.at(typeid(instance_t)) = std::move(pool);
+
+			return true;
+
+		}
+
+		template <class instance_t>
+		InstancePool<instance_t>* getInstancePool() {
+
+			auto it = m_Storages.find(typeid(instance_t));
+
+			if (it == m_Storages.end()) return nullptr;
+
+			return it->second.get();
+
+		}
+
+	};
+
+
 
 
 
@@ -39,23 +97,41 @@ namespace qk::gfx {
 
 		u64 key() const;
 
-		explicit operator u64() const;
+		operator u64() const;
 
 		bool operator> (MeshConfigurationID other);
 
 		bool operator==(const MeshConfigurationID& other) const;
 
+
+
+
 	};
+
+}
+
+template <>
+struct std::hash<qk::gfx::MeshConfigurationID> {
+	size_t operator()(const qk::gfx::MeshConfigurationID& id) const noexcept {
+		return (u64)id;
+	}
+};
+
+namespace qk::gfx {
+
+
 	
 	
 	// Read-only view into mesh details. Ergonomic helper
 	struct Mesh_view {
-		rhi::PipelineBinding pipeline;
-		std::span<rhi::VertexBufferBinding> vertexBufferBindings;
-		rhi::IndexBufferBinding indexBufferBinding;
-		std::span<rhi::DescriptorSetDefinition> DescriptorSetDefinitions;
-		std::span<HVertexBuffer> InstancePools;
-		MeshConfigurationID id;
+
+		//todo: delete move and copy constructors to force, to some degree, that they stay in scope
+
+		const PipelineDefinition* const pipeline_definition = nullptr;
+		const VertexBufferGroupDefinition* const vertexbuffer_group_definition = nullptr;
+		const IndexBufferDefinition* const indexbuffer_definition = nullptr;
+		const DescriptorSetGroupDefinition* const descriptorset_group_definition = nullptr;
+		const MeshConfigurationID id = { 0,0,0,0 };
 
 		Mesh_view() {
 
@@ -63,77 +139,77 @@ namespace qk::gfx {
 		}
 
 		Mesh_view(
-			rhi::PipelineBinding pipeline,
-			std::span<rhi::VertexBufferBinding> vertexBufferBindings,
-			rhi::IndexBufferBinding indexBufferBinding,
-			std::span<rhi::DescriptorSetDefinition> DescriptorSetDefinitions,
-			std::span<HVertexBuffer> InstancePools,
-			MeshConfigurationID id
+			const PipelineDefinition* const pipeline_def,
+			const VertexBufferGroupDefinition* const vertexbuffergroup_def,
+			const IndexBufferDefinition* const indexbuffer_def,
+			const DescriptorSetGroupDefinition* const descriptorsetgroup_def,
+			const MeshConfigurationID mesh_id
 		);
 
 		explicit operator bool() const {
-			if (pipeline.hPipeline == nullptr &&
-				vertexBufferBindings.empty() &&
-				indexBufferBinding.hIndexBuffer == nullptr &&
-				DescriptorSetDefinitions.empty()
-			) return false;
-
-			return true;
+			return pipeline_definition && vertexbuffer_group_definition && indexbuffer_definition && descriptorset_group_definition;
 		}
 
 	};
 	
 
-	// Stores the state necessary for compiling a frame
-	// TODO: 
-	// remove the dependency on instance_t, opting for a vector of instancebuffers.
-	// Dependency reversal: InstancePool's constructor can take an instancebuffer at creation time and then use that!
-	// This lets us do type erasure, however it would complicate the submission process since we don't know the instance_t ahead-of-time.
-	// We could store a hash map of typeid -> HVertexBuffer to do validation. This means only one instance_t[] per mesh which is probably
-	// fine
+	// Stores the state necessary for compiling a frame.
+	// todo: Type erasure. Basically, we redesign m_Instances to be of signature:
+	// std::unordered_map<MeshConfiguration, std::unordered_map<std::type_index, std::unique_ptr<InstancePoolBase>>>
+	// If 
+	// TODO: insert() needs to be variadic, while update() and remove() really don't need to be.
+	// we can runtime assert that the Ts... match the T -> InstancePoolBase*'s lineup
+	// TODO: just use entt::registry lmao
+
 
 	struct MeshCompilationState {
 		// public during development
 
-			
-		std::unordered_map<PipelineDefinitionID, rhi::PipelineBinding> m_PipelineDefinitions;
+
+
+		std::unordered_map<PipelineDefinitionID, PipelineDefinition> m_PipelineDefinitions;
 		PipelineDefinitionID m_NextPipelineDefinitionID = 0;
 
-		std::unordered_map<VertexBufferDefinitionGroupID, std::vector<rhi::VertexBufferBinding>> m_VertexBufferDefinitions;
+		std::unordered_map<VertexBufferDefinitionGroupID, VertexBufferGroupDefinition> m_VertexBufferDefinitions;
 		VertexBufferDefinitionGroupID m_NextVertexBufferDefinitionGroupID = 0;
 
-		std::unordered_map<IndexBufferDefinitionID, rhi::IndexBufferBinding> m_IndexBufferDefinitions;
+		std::unordered_map<IndexBufferDefinitionID, IndexBufferDefinition> m_IndexBufferDefinitions;
 		IndexBufferDefinitionID m_NextIndexBufferDefinitionID = 0;
 
-		std::unordered_map< DescriptorSetDefinitionGroupID, rhi::DescriptorSetDefinition> m_DescriptorSetDefinitions; // FYI: MeshConfigurationID's current definition only supports *one* descriptor set, which needs handled eventually.
+		std::unordered_map< DescriptorSetDefinitionGroupID, DescriptorSetGroupDefinition> m_DescriptorSetGroupDefinitions;
 		DescriptorSetDefinitionGroupID m_NextDescriptorSetDefinitionGroupID = 0;
 
-		std::unordered_map<MeshConfigurationID, rhi::VertexBufferBinding> m_Instances;
 		
-		// sorted indexbuffer into m_Instances lets us iterate over them in an orderly fashion when generating the
-		// commandbuffer.
-		std::vector<u32> m_InstanceProxies;
+		std::unordered_map<MeshConfigurationID, InstancePoolGroup> m_InstancePoolGroups;
+		
+		
+
 
 	public:
 
 		// Define a pipeline
-		PipelineDefinitionID define_pipeline(rhi::PipelineBinding pipeline);
+		PipelineDefinitionID define_pipeline(const PipelineDefinition& pipeline_definition);
 
 		// define a vertexbuffer
-		VertexBufferDefinitionGroupID define_vertexbuffer_group(std::span<const rhi::VertexBufferBinding> vertexbuffer_group);
+		VertexBufferDefinitionGroupID define_vertexbuffer_group(const VertexBufferGroupDefinition& vertexbuffer_group);
 
 		// define an index buffer
-		IndexBufferDefinitionID define_indexbuffer_group(rhi::IndexBufferBinding indexbuffer);
+		IndexBufferDefinitionID define_indexbuffer_group(IndexBufferDefinition indexbuffer);
 
-		DescriptorSetDefinitionGroupID define_descriptor_group(const rhi::DescriptorSetDefinition descriptor_group);
+		// define a descriptor set grouping
+		DescriptorSetDefinitionGroupID define_descriptorset_group(const DescriptorSetGroupDefinition& descriptorset_group);
 
 		Mesh_view get(MeshConfigurationID id) const;
 
 		bool valid(MeshConfigurationID id) const;
 
-		template <class instance_t>
-		void submit(MeshConfigurationID id, const instance_t& initial_value) {
+		template <class Ts>
+		InstancePoolHandle_t add_instance(MeshConfigurationID mesh_id, Ts& instance_data) {
+			// invalid mesh configuration
+			if (!valid(mesh_id)) return {};
 
+			// placeholder
+			return {};
 		}
 
 
@@ -150,6 +226,7 @@ namespace qk::gfx {
 
 
 }
+
 
 
 #include "Mesh.inl"

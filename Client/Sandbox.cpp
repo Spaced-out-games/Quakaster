@@ -41,7 +41,17 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 #include "gfx/InstancePool.h"
 
 
+void instancepool_test() {
+    HVertexBuffer hBuf = VertexBuffer_ctor();
+    InstancePool<int> instances(hBuf);
+    InstancePoolTable_t table;
 
+    auto handle = instances.insert(table, 32, 0);
+
+
+    instances.remove(table, handle);
+
+}
 
 
 
@@ -49,6 +59,8 @@ entt::registry reg;
 void Sandbox::init(int argc, char** argv) {
     init_subsystems();
     loader_demo(reg, entt::null);
+
+    instancepool_test();
 
     // Define assets
     const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);

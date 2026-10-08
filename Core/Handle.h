@@ -42,6 +42,8 @@ namespace qk {
 
 			T* try_get(Handle handle);
 
+
+
 			// LOW LEVEL: does not validate generations, but is gauranteed to be safe if it doesn't return nullptr
 			T* try_get_sparse(u32 sparse);
 

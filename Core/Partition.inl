@@ -123,6 +123,25 @@ namespace qk {
 		m_Queue.clear();
 	}
 
+	/*
+	template <class T>
+	void Partition<T>::remove(u32 offset) {
+		if (offset >= m_NextSize || m_NextSize == 0)
+			return;
+
+		u32 back = m_NextSize - 1;
+
+		if (back != offset) {
+			queue_swap(offset, back);
+		}
+
+		auto popped = pop_back();
+		assert(back == popped - 1);
+
+
+		return;
+	}*/
+	
 	template <class T>
 	u32 Partition<T>::remove(u32 offset) {
 		if (offset >= m_NextSize || m_NextSize == 0)
@@ -140,9 +159,7 @@ namespace qk {
 
 		return back;
 	}
-
-
-
+	
 
 
 }
