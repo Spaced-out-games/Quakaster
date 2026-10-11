@@ -52,39 +52,60 @@ void Sandbox::init(int argc, char** argv) {
     const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
     loadPipelinesFromJSON(pipeline_json, pipelines);
     loadDescriptorSetsFromJSON(pipeline_json, sets);
-    registry_upload(DescriptorSets, sets);
-    registry_upload(Pipelines, pipelines);
+    
+    // load descriptor sets into renderer
+    for (const auto& [name, recipe] : sets) {
+        HDescriptorSet hDescriptorSet = rhi::DescriptorSet_ctor(recipe);
+        r.define_resource(qk::string_hash{ name }, hDescriptorSet);
+    }
 
-
-    // retreive the handles
-    hPipeline = Pipelines.peek("PBRPipeline"_sh);
-    hGlobals = DescriptorSets.peek("hGlobals"_sh);
-    hMaterial = DescriptorSets.peek("hMaterial"_sh);
+    for (const auto& [name, recipe] : pipelines) {
+        HPipeline hPipeline = rhi::Pipeline_ctor(recipe);
+        r.define_resource(qk::string_hash{ name }, hPipeline);
+    }
+    
 
 
     // build the vertex buffer
     hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
-    GBuffers.insert("VertexBuffer"_sh, hVertexBuffer);
+    r.define_resource("VertexBuffer"_sh, hVertexBuffer);
     VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
     // build the instancebuffer
     hInstanceBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
-    GBuffers.insert("InstanceBuffer"_sh, hInstanceBuffer);
+    r.define_resource("InstanceBuffer"_sh, hInstanceBuffer);
     VertexBuffer_upload(hInstanceBuffer, g_Instances);
+    
+
+
+    // retreive the handles
+
+    hPipeline = r.get_resource<HPipeline>("PBRPipeline"_sh);
+    hGlobals = r.get_resource<HDescriptorSet>("hGlobals"_sh);
+    hMaterial = r.get_resource<HDescriptorSet>("hMaterial"_sh);
 
 
 
-    hTex = load_or_reload(Textures, TEST_IMAGE_PATH);
+
+
+
+
+
+    hTex = r.load_or_reload_texture(TEST_IMAGE_PATH);
     
 
 
     // Texture
 
-    DescriptorSet_setResource(hGlobals, 0, Textures.peek(qk::string_hash{ TEST_IMAGE_PATH }));
+
+    DescriptorSet_setResource(hGlobals, 0, r.get_resource<HTexture>(qk::string_hash{ TEST_IMAGE_PATH }));
+
+
 
     // Uniform buffer
     hUniformBuffer = UniformBuffer_ctor();
-    GBuffers.insert("hUniformBuffer"_sh, hUniformBuffer);
+
+    r.define_resource("hUniformBuffer"_sh, hUniformBuffer);
     UniformBuffer_upload(hUniformBuffer, &tint, 3 * sizeof(float));
     DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
 
@@ -101,7 +122,8 @@ void Sandbox::init(int argc, char** argv) {
         .drawArraysInstanced(0, 4, 3);
 
     hCmdBuf = CommandBuffer_ctor(cmdBuf);
-    CommandBuffers.insert(0, hCmdBuf);
+    r.define_resource(0, hCmdBuf);
+//    CommandBuffers.insert(0, hCmdBuf);
 
     
 
@@ -132,7 +154,7 @@ void Sandbox::run() {
 
 void Sandbox::shutdown() {
 
-	destroy_all_resources();
+	r.destroy_all_resources();
 
 }
 

@@ -13,64 +13,34 @@ using namespace qk::gfx::rhi;
 
 namespace qk::gfx {
 
-	static inline rhi::BufferRegistry		 GBuffers;
+	//static inline rhi::BufferRegistry		 GBuffers;
 
-	static inline rhi::CommandBufferRegistry CommandBuffers;
+	//static inline rhi::CommandBufferRegistry CommandBuffers;
 
-	static inline rhi::DescriptorSetRegistry DescriptorSets;
+	//static inline rhi::DescriptorSetRegistry DescriptorSets;
 
-	static inline rhi::PipelineRegistry		 Pipelines;
+	//static inline rhi::PipelineRegistry		 Pipelines;
 
-	static inline rhi::TextureRegistry		 Textures;
+	//static inline rhi::TextureRegistry		 Textures;
 
-	static inline rhi::ShaderProgramRegistry ShaderPrograms;
+	//static inline rhi::ShaderProgramRegistry ShaderPrograms;
 
-	inline void destroy_all_resources() {
+	/*inline void destroy_all_resources() {
 		CommandBuffers.destroy_everything();
 		DescriptorSets.destroy_everything();
 		Pipelines.destroy_everything();
 		Textures.destroy_everything();
 		ShaderPrograms.destroy_everything();
 		GBuffers.destroy_everything();
-	}
+	}*/
 
 	// note to self: these were not adequately moved to a decent living home. They might not be the best place for these
 
-	inline rhi::HTexture Texture_fromImage(const media::Image& img) {
-		HTexture hTex = rhi::Texture_ctor({
-			.type = TextureType::TEX_2D,
-			.format = TextureFormat::RGB_8,
-			.width = img.width(),
-			.height = img.height(),
-			.depth = 0,
-			.mip_levels = 0,
-			.array_layers = 0,
-			.usage = TextureUsage::Sampled
-
-		});
-
-		if (!hTex) return nullptr;
-
-		rhi::Texture_upload(hTex, {
-			.pData = img.data(),
-			.format = rhi::TextureFormat::RGBA_8,
-			.mip_level = 0,
-			.array_layer = 0,
-			.width = img.width(),
-			.height = img.height(),
-			.depth = 0
-		});
-
-		rhi::Texture_setSamplingParameters(hTex, {
-			.min_filter = rhi::TextureFilter::Nearest,
-			.mag_filter = rhi::TextureFilter::Nearest
-		});
 
 
 
-		return hTex;
 
-	}
+	HTexture Texture_fromImage(const media::Image& img);
 
 	inline void registry_upload(rhi::PipelineRegistry& registry, const std::unordered_map<str, rhi::Pipeline_recipe>& pipelines) {
 		rhi::HPipeline hPipeline = nullptr;

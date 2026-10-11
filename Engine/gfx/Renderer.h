@@ -12,6 +12,8 @@ using qk::gfx::rhi::HBuffer;
 using qk::gfx::rhi::HDescriptorSet;
 using qk::gfx::rhi::HPipeline;
 using qk::gfx::rhi::HTexture;
+using qk::gfx::rhi::HCommandBuffer;
+using qk::gfx::rhi::HShaderProgram;
 
 namespace qk::gfx {
 
@@ -77,12 +79,50 @@ namespace qk::gfx {
 
 			void define_resource(u64 id, HDescriptorSet hDescriptorSet);
 
-
 			void define_resource(u64 id, HTexture hTexture);
+
+			void define_resource(u64 id, HCommandBuffer hCmdBuf);
 
 			// maybe make a builder object pattern?
 
 			MeshDefinitionBuilder new_definition();
+
+			template <class T>
+			T get_resource(u64 id);
+
+			template <>
+			HDescriptorSet get_resource<HDescriptorSet>(u64 id) {
+				return m_DescriptorSets.peek(id);
+			}
+
+			template <>
+			HCommandBuffer get_resource<HCommandBuffer>(u64 id) {
+				return m_CommandBuffers.peek(id);
+			}
+
+			template <>
+			HBuffer get_resource<HBuffer>(u64 id) {
+				return m_GBuffers.peek(id);
+			}
+
+			template <>
+			HPipeline get_resource<HPipeline>(u64 id) {
+				return m_Pipelines.peek(id);
+			}
+
+			
+			template <>
+			HTexture get_resource<HTexture>(u64 id) {
+				return m_Textures.peek(id);
+			}
+
+			template <>
+			HShaderProgram get_resource<HShaderProgram>(u64 id) {
+				return m_ShaderPrograms.peek(id);
+			}
+
+			HTexture load_or_reload_texture(const str& path);
+
 
 	};
 	// Acts as a `view` to a mesh definition.
