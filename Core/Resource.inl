@@ -117,6 +117,13 @@ namespace qk {
         }
     }
 
+
+    template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
+    bool ResourceRegistry<Resource_t, Resource_dtor, Resource_free>::has(Resource_key_t key) const {
+        return m_Resources.contains(key);
+    }
+
+
     template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
     void ResourceRegistry<Resource_t, Resource_dtor, Resource_free>::destroy_everything() {
         Resource* pResourceBase;

@@ -59,10 +59,10 @@ set(ENGINE_SOURCES
     
     
 
-          "utility/ByteStream.cpp"   "net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp" "media/LoadPipeline.cpp" "components/CSignalListener.cpp" "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "scene/ComponentLoader.cpp" "scene/EntityLoader.cpp" "scene/SceneLoader.cpp"   "gfx/InstancePool.cpp" "gfx/Mesh.cpp")
+          "utility/ByteStream.cpp"   "net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp" "media/LoadPipeline.cpp" "components/CSignalListener.cpp" "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "scene/ComponentLoader.cpp" "scene/EntityLoader.cpp" "scene/SceneLoader.cpp"   "gfx/InstancePool.cpp"  "gfx/Renderer.cpp")
 
 message("[ENGINE] Building target `Engine`...")
-add_library(${PROJECT_NAME} ${ENGINE_SOURCES} "gfx/Mesh.h")
+add_library(${PROJECT_NAME} ${ENGINE_SOURCES} )
 
 # engine include lists go here
 target_link_libraries(${PROJECT_NAME}

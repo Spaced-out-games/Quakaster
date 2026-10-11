@@ -102,6 +102,7 @@ namespace qk
 
             void collect_pending();
 
+            bool has(Resource_key_t key) const;
 
             void destroy_everything();
 

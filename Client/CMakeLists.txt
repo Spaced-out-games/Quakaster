@@ -9,7 +9,7 @@ set(CLIENT_SOURCES
 	#"ClientApp.cpp"
 )
 message("[CLIENT] Building target `Client`...")
-add_executable(${PROJECT_NAME} ${CLIENT_SOURCES})
+add_executable(${PROJECT_NAME} ${CLIENT_SOURCES} )
 target_link_libraries(${PROJECT_NAME} PRIVATE qk_core)
 target_link_libraries(${PROJECT_NAME} PRIVATE Engine)
 

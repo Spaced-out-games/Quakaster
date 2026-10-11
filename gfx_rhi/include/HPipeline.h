@@ -90,9 +90,6 @@ namespace qk::gfx::rhi {
 
     struct PipelineBinding {
         HPipeline hPipeline = nullptr;
-        bool operator==(const PipelineBinding& other) {
-            return hPipeline == other.hPipeline;
-        }
     };
 
 

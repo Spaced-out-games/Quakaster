@@ -50,6 +50,8 @@
 #include "scene/SceneLoader.h"
 #include "fnv1a.h"
 
+#include "gfx/Renderer.h"
+
 
 using namespace qk::gfx::rhi;
 struct Vertex {
@@ -153,6 +155,8 @@ class Sandbox : public qk::Application {
 	HUniformBuffer hUniformBuffer = nullptr;
 	HVertexBuffer hVertexBuffer = nullptr;
 	HVertexBuffer hInstanceBuffer = nullptr;
+
+	gfx::Renderer r;
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
 	inline void add_symlinks() {

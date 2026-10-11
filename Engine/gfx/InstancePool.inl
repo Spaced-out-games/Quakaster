@@ -1,9 +1,7 @@
-
-
-
+#include <cassert>
+#include <vector>
 
 namespace qk::gfx {
-
 
 	template <class instance_t>
 	void InstancePool<instance_t>::add_partition() {
@@ -11,182 +9,124 @@ namespace qk::gfx {
 		m_ReverseHandleLookup.emplace_back();
 	}
 
-
 	template <class instance_t>
 	bool InstancePool<instance_t>::valid(const InstancePoolTable_t& handle_table, InstancePoolHandle_t handle) const {
 		return handle_table.valid(handle);
 	}
 
 	template <class instance_t>
-	InstancePool<instance_t>::InstancePool(qk::gfx::rhi::HVertexBuffer hInstanceBuffer): m_Storage(hInstanceBuffer) {
+	InstancePool<instance_t>::InstancePool(qk::gfx::rhi::HVertexBuffer hInstanceBuffer)
+		: m_Storage(hInstanceBuffer) {
 		assert(hInstanceBuffer);
 		add_partition();
 	}
 
+	// ---- private helpers --------------------------------------------------
+
+	// Appends to the partition's logical state and records where the handle lives.
 	template <class instance_t>
-	void InstancePool<instance_t>::insert(const InstancePoolTable_t& handle_table, const instance_t& target_payload, u16 target_partition, InstancePoolHandle_t handle) {
-		assert(target_partition < m_Partitions.size());
+	void InstancePool<instance_t>::attach(u16 partition_index, u32 handle_sparse, const instance_t& payload) {
+		auto& partition = m_Partitions.at(partition_index);
+		const u32 local = partition.queue_insert(payload);
 
+		auto& reverse = m_ReverseHandleLookup[partition_index];
+		if (local >= reverse.size())
+			reverse.resize(local + 1);
+		reverse[local] = handle_sparse;
 
-		// get the partition
-		auto& partition = m_Partitions.at(target_partition);
-
-		// get the metadata for the new handle
-		InstancePoolHandleMetadata* pMeta = (InstancePoolHandleMetadata*)handle_table.try_get(handle);
-
-		// this shouldn't ever be false but just in case I wrote it wrong...
-		assert(pMeta);
-
-		// allocate a slot in the partition
-		u32 sparse_index = partition.queue_insert(target_payload);
-
-
-		// update the metadata of the newly created node
-		pMeta->local_sparse = sparse_index;
-		pMeta->partition = target_partition;
-
-		// let the reverse lookup map know wassup.
-		auto& reverse = m_ReverseHandleLookup[target_partition];
-
-		if (sparse_index == reverse.size())
-			reverse.emplace_back();
-
-		reverse[sparse_index] = handle.sparse;
-
-		return;
-
+		if (handle_sparse >= m_Locations.size())
+			m_Locations.resize(handle_sparse + 1);
+		m_Locations[handle_sparse] = { local, partition_index };
 	}
 
-
+	// Swap-pops `local` out of the partition's logical state and queues the physical swap.
+	// Does not touch the departing handle's Location; callers either kill the handle
+	// or immediately overwrite it via attach().
 	template <class instance_t>
-	InstancePoolHandle_t InstancePool<instance_t>::insert(InstancePoolTable_t& handle_table, const instance_t& target_payload, u16 target_partition) {
-		assert(target_partition < m_Partitions.size());
+	void InstancePool<instance_t>::detach(u16 partition_index, u32 local) {
+		auto& partition = m_Partitions.at(partition_index);
+		auto& reverse = m_ReverseHandleLookup[partition_index];
 
-		// create a new handle
-		InstancePoolHandle_t handle = handle_table.insert(InstancePoolHandleMetadata{});
+		assert(partition.new_size() > 0);
+		const u32 back = partition.new_size() - 1;
+		assert(local <= back);
 
-		insert(handle_table, target_payload, target_partition, handle);
-		
+		if (local != back) {
+			// The back element moves into the hole.
+			const u32 moved_handle_sparse = reverse[back];
 
-		return handle;
+			m_Locations[moved_handle_sparse].local_sparse = local;
+			reverse[local] = moved_handle_sparse;
 
-	}
-
-
-
-
-
-
-
-	
-
-	template <class instance_t>
-	void InstancePool<instance_t>::remove(InstancePoolTable_t& handle_table, InstancePoolHandle_t hTarget) {
-		
-
-
-		// get the details we need for deletion
-
-		const InstancePoolHandleMetadata* pTargetMetadata = handle_table.try_get(hTarget);
-
-		if (!pTargetMetadata)
-			return;
-
-		const u16 target_partition = pTargetMetadata->partition;
-		const u32 target_index_sparse = pTargetMetadata->local_sparse;
-
-		// get the partition of the target
-		InstancePoolPartition_t& partition = m_Partitions.at(target_partition);
-		auto& reverse = m_ReverseHandleLookup[target_partition];
-
-
-		const u32 back_index = partition.new_size() - 1;
-		const u32 back_handle_sparse = reverse[back_index];
-
-		const u32 target_handle_sparse = hTarget.sparse;
-
-
-		// all const up to this point in practice
-
-
-		// swap - pop if not at end
-		if (target_index_sparse != back_index) {
-			// Handle occupying the physical back slot.
-
-			// Swap the metadata associated with the two physical objects.
-			handle_table.swap( // this mutates
-				target_handle_sparse,
-				back_handle_sparse
-			);
-
-
-			// The back object moved into target_index_sparse.
-			auto* pMovedMetadata = handle_table.try_get_sparse(back_handle_sparse); // this mutates
-
-			pMovedMetadata->local_sparse = target_index_sparse;
-
-			// Reverse lookup follows the moved object.
-			reverse[target_index_sparse] = back_handle_sparse;
-
-			// Queue physical swap.
-			partition.queue_swap(target_index_sparse, back_index);
+			partition.queue_swap(local, back);
 		}
 
-		// Not strictly necessary..moreso for poisoning to mark invariants clearly. Remove in release!!! Cheeky!
-		// partition.queue_swap(back_index, back_index);
-
-		// Shrink logical partition.	
 		partition.pop_back();
-
-		// Invalidate target's handle slot.
-		handle_table.remove(target_handle_sparse);
 	}
 
-	template <class instance_t>
-	void InstancePool<instance_t>::set(const InstancePoolTable_t& handle_table, InstancePoolHandle_t handle, const instance_t& value) {
-		auto* pMetadata = handle_table.try_get(handle);
+	// ---- public API -------------------------------------------------------
 
-		if (!pMetadata)
+	template <class instance_t>
+	void InstancePool<instance_t>::insert(const InstancePoolTable_t& handle_table,
+		const instance_t& payload,
+		u16 target_partition,
+		InstancePoolHandle_t handle) {
+		assert(target_partition < m_Partitions.size());
+		assert(handle_table.valid(handle));
+
+		if (target_partition >= m_Partitions.size() || !handle_table.valid(handle))
 			return;
 
-		InstancePoolPartition_t& partition = m_Partitions.at(pMetadata->partition);
-
-		partition.queue_set(
-			value,
-			pMetadata->local_sparse
-		);
+		attach(target_partition, handle.sparse, payload);
 	}
 
+	// NOTE: the caller must call handle_table.remove(handle) AFTER this returns.
 	template <class instance_t>
-	void InstancePool<instance_t>::move(const InstancePoolTable_t& handle_table, InstancePoolHandle_t handle, const instance_t& initial_value, u16 partition) {
-		
-		assert(partition < m_Partitions.size());
-
-		if (partition >= m_Partitions.size())
+	void InstancePool<instance_t>::remove(const InstancePoolTable_t& handle_table, InstancePoolHandle_t handle) {
+		if (!handle_table.valid(handle))
 			return;
 
-		auto* pMetaData = handle_table.try_get(handle);
-
-		if (!pMetaData) return;
-
-		Partition& old_partition = m_Partitions.at(pMetaData->partition);
-
-		Partition& new_partition = m_Partitions.at(partition);
-
-		// delete from old
-		old_partition.remove(pMetaData->local_sparse);
-
-		// add to new partition
-		pMetaData->local_sparse = new_partition.queue_insert(initial_value);
-		pMetaData->partition = partition;
-
-
+		assert(handle.sparse < m_Locations.size());
+		const Location loc = m_Locations[handle.sparse];
+		detach(loc.partition, loc.local_sparse);
 	}
 
+	template <class instance_t>
+	void InstancePool<instance_t>::set(const InstancePoolTable_t& handle_table,
+		InstancePoolHandle_t handle,
+		const instance_t& value) {
+		if (!handle_table.valid(handle))
+			return;
 
+		assert(handle.sparse < m_Locations.size());
+		const Location loc = m_Locations[handle.sparse];
+		m_Partitions.at(loc.partition).queue_set(value, loc.local_sparse);
+	}
 
 	template <class instance_t>
-	void InstancePool<instance_t>::flush(InstancePoolTable_t& handle_table) {
+	void InstancePool<instance_t>::move(const InstancePoolTable_t& handle_table,
+		InstancePoolHandle_t handle,
+		const instance_t& initial_value,
+		u16 new_partition) {
+		assert(new_partition < m_Partitions.size());
+		if (new_partition >= m_Partitions.size() || !handle_table.valid(handle))
+			return;
+
+		assert(handle.sparse < m_Locations.size());
+		const Location loc = m_Locations[handle.sparse];
+
+		// Same partition: just a write.
+		if (loc.partition == new_partition) {
+			m_Partitions.at(new_partition).queue_set(initial_value, loc.local_sparse);
+			return;
+		}
+
+		detach(loc.partition, loc.local_sparse);
+		attach(new_partition, handle.sparse, initial_value); // overwrites m_Locations[handle.sparse]
+	}
+
+	template <class instance_t>
+	void InstancePool<instance_t>::flush() {
 		size_t old_capacity = 0;
 		size_t new_capacity = 0;
 
@@ -196,67 +136,52 @@ namespace qk::gfx {
 		}
 
 		if (old_capacity != new_capacity) {
-			// Temporary buffer owns a separate RHI resource.
-			rhi::HVertexBuffer old_storage = rhi::VertexBuffer_ctor(rhi::StaticDraw);
-			rhi::VertexBuffer_alloc(
-				old_storage,
-				old_capacity * sizeof(instance_t)
-			);
+			// Snapshot the old contents into a temporary buffer.
+			rhi::HVertexBuffer old_storage = nullptr;
+			if (old_capacity != 0) {
+				old_storage = rhi::VertexBuffer_ctor(rhi::StaticDraw);
+				rhi::VertexBuffer_alloc(old_storage, old_capacity * sizeof(instance_t));
+				rhi::VertexBuffer_cpy(m_Storage, 0, old_storage, 0, old_capacity * sizeof(instance_t));
+			}
 
-			// Preserve old contents.
-			rhi::VertexBuffer_cpy(
-				m_Storage,
-				0,
-				old_storage,
-				0,
-				old_capacity * sizeof(instance_t)
-			);
+			// m_Storage keeps the same handle but gets new backing memory.
+			rhi::VertexBuffer_alloc(m_Storage, new_capacity * sizeof(instance_t));
 
-			// m_Storage itself remains the same handle.
-			rhi::VertexBuffer_alloc(
-				m_Storage,
-				new_capacity * sizeof(instance_t)
-			);
+			// Restore each partition into its new physical location.
+			// Do all device-side copies BEFORE mapping the buffer.
+			size_t old_offset = 0;
+			size_t new_offset = 0;
 
-			instance_t* pStorage = static_cast<instance_t*>(
-				rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE)
-				);
+			for (const auto& partition : m_Partitions) {
+				const size_t old_cap = partition.capacity();
+				const size_t new_cap = partition.new_capacity();
 
-			size_t offset = 0;
-
-			for (auto& partition : m_Partitions) {
-				const size_t old_partition_capacity = partition.capacity();
-				const size_t new_partition_capacity = partition.new_capacity();
-
-				// Restore the old physical partition contents into its
-				// new physical location.
-				if (old_partition_capacity != 0) {
+				if (old_cap != 0) {
 					rhi::VertexBuffer_cpy(
 						old_storage,
-						/* old byte offset */ 0,
+						old_offset * sizeof(instance_t),
 						m_Storage,
-						/* new byte offset */ offset * sizeof(instance_t),
-						old_partition_capacity * sizeof(instance_t)
+						new_offset * sizeof(instance_t),
+						old_cap * sizeof(instance_t)
 					);
 				}
 
-				partition.flush(pStorage + offset);
-
-				offset += new_partition_capacity;
+				old_offset += old_cap;
+				new_offset += new_cap;
 			}
 
-			rhi::VertexBuffer_close(m_Storage);
-			rhi::VertexBuffer_free(old_storage);
-
-			return;
+			if (old_storage) {
+				rhi::Resource_cast(old_storage)->flag_for_deletion();
+				rhi::VertexBuffer_free(old_storage);
+			}
 		}
 
+		// Apply the queued ops through a single mapping.
 		instance_t* pStorage = static_cast<instance_t*>(
 			rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE)
 			);
 
 		size_t offset = 0;
-
 		for (auto& partition : m_Partitions) {
 			partition.flush(pStorage + offset);
 			offset += partition.new_capacity();
@@ -264,63 +189,5 @@ namespace qk::gfx {
 
 		rhi::VertexBuffer_close(m_Storage);
 	}
-
-	/* DEPRECATED
-	template <class instance_t>
-	void InstancePool<instance_t>::flush_test(InstancePoolTable_t& handle_table, std::vector<instance_t>& storage) {
-		size_t old_capacity = 0;
-		size_t new_capacity = 0;
-
-		for (const auto& partition : m_Partitions) {
-			old_capacity += partition.capacity();
-			new_capacity += partition.new_capacity();
-		}
-
-		// Capacity changed: preserve the old backing storage while rebuilding.
-		if (old_capacity != new_capacity) {
-			std::vector<instance_t> old_storage = storage;
-
-			storage.resize(new_capacity);
-
-			size_t old_offset = 0;
-			size_t new_offset = 0;
-
-			for (auto& partition : m_Partitions) {
-				const size_t old_partition_capacity = partition.capacity();
-				const size_t new_partition_capacity = partition.new_capacity();
-
-				std::copy(
-					old_storage.begin() + old_offset,
-					old_storage.begin() + old_offset + old_partition_capacity,
-					storage.begin() + new_offset
-				);
-
-				partition.flush(storage.data() + new_offset);
-
-				old_offset += old_partition_capacity;
-				new_offset += new_partition_capacity;
-			}
-
-			return;
-		}
-
-		// No resize: apply queued operations directly.
-		size_t offset = 0;
-
-		for (auto& partition : m_Partitions) {
-			partition.flush(storage.data() + offset);
-			offset += partition.new_capacity();
-		}
-	}
-	*/
-
-
-
-
-
-
-
-
-
 
 }

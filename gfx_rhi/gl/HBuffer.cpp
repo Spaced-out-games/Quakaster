@@ -148,7 +148,8 @@ namespace qk::gfx::rhi {
 
     void Buffer_free(HBuffer& hBuf) {
         assert(hBuf);
-        assert(hBuf->refcount() == 0 && hBuf->flagged());
+        if(!hBuf->refcount() == 0 || !hBuf->flagged())
+            assert(false);
 
         delete hBuf;
         hBuf = nullptr;

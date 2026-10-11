@@ -104,7 +104,7 @@ namespace qk::gfx::rhi {
     }
 
     inline void VertexBuffer_close(const HVertexBuffer& hBuf) {
-        VertexBuffer_close(hBuf);
+        Buffer_close(hBuf);
     }
 
     // upload to a vertex buffer
@@ -197,12 +197,6 @@ namespace qk::gfx::rhi {
         u32 offset = 0;
         u32 stride = 0;
         u8 slot = 0;
-        bool operator==(const IndexBufferBinding& other) {
-            return 0;
-            return hIndexBuffer == other.hIndexBuffer &&
-                offset == other.offset &&
-                stride == other.stride;
-        }
     };
 
 

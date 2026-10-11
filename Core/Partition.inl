@@ -108,7 +108,7 @@ namespace qk {
 					pBase[query.swap.offset_b]
 				);
 				// DEBUG: set pBase[query.swap.offset_b] to -1u in order to invalidate
-				pBase[query.swap.offset_b] = -1u;
+				//pBase[query.swap.offset_b] = -1u;
 				break;
 
 			case EPartitionRequestType::SET:
