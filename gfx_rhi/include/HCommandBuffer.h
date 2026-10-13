@@ -36,6 +36,7 @@ namespace qk::gfx::rhi {
 
             CommandBuffer_recipe& bindVertexBuffer(const HVertexBuffer&, u8 slot, u32 offset = 0, u32 stride = 0);
 
+            // TODO: needs slice-binding
             CommandBuffer_recipe& bindIndexBuffer(const HIndexBuffer& hIndexBuffer);
 
 

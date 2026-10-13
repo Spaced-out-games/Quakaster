@@ -110,6 +110,7 @@ namespace qk::gfx::rhi {
         if (!initialized) return false;
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, hBuffer);
+        
 
         return true;
     }

@@ -3,6 +3,7 @@
 // #include <HPipeline.h>
 
 #include <core.h>
+#include <vector>
 
 // NOTICE: These are meant to be draw command descriptions! 
 
@@ -87,5 +88,13 @@ namespace qk::gfx::rhi {
         DrawCmd(DrawArraysInstancedCmd drawArraysInstancedCmd);
 
     };
+
+    struct DescriptorSetBinding {
+        HDescriptorSet hDescriptorSet = nullptr;
+        u8 slot = 0;
+    };
+
+    using DescriptorSetBindings = std::vector<DescriptorSetBinding>;
+
 
 }

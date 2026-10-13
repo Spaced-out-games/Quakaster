@@ -4,7 +4,8 @@
 #include "InstancePool.h"
 #include <HPipeline.h>
 #include <HBuffer.h>
-
+#include <utility>
+#include <functional>
 
 
 
@@ -14,6 +15,7 @@ using qk::gfx::rhi::HPipeline;
 using qk::gfx::rhi::HTexture;
 using qk::gfx::rhi::HCommandBuffer;
 using qk::gfx::rhi::HShaderProgram;
+using qk::gfx::rhi::CommandBuffer_recipe;
 
 namespace qk::gfx {
 
@@ -34,8 +36,18 @@ namespace qk::gfx {
 	// defines a group of descriptor sets
 	using DescriptorSetGroupDefinition = std::vector<rhi::DescriptorSetDefinition>;
 
-	struct Definition {
 
+	struct DrawParams {
+		// Vertex Buffer state. size == 0 = incomplete draw call.
+		u32 VertexBufferoffset = 0;
+		u32 VertexBufferSize = 0;
+
+		// Index Buffer State size == 0 = no indexing
+		u32 IndexBufferoffset = 0;
+		u32 IndexBufferSize = 0;
+
+		// InstanceBuffer state. 0 = no instancing
+		u32 numInstances = 0;
 	};
 
 
@@ -49,26 +61,54 @@ namespace qk::gfx {
 	enum class MeshDescriptorSetResourceID: u64 {};
 
 
-	
+	template <class ...Ts>
 	struct MeshDefinitionBuilder;
 
+	template <class ...Ts>
+	struct Renderer {
+		public:
+			// Flushes all InstancePools for one mesh
+			//using MeshFlush_pfn_t = void (*)(const entt::basic_registry<MeshDefinitionID>&, MeshDefinitionID);
+			
+			// Compiles a mesh
+			//using MeshCompile_pfn_t = void(*)(const entt::basic_registry<MeshDefinitionID>&, MeshDefinitionID, CommandBuffer_recipe&);
 
-	class Renderer {
-		protected:
-			friend class MeshDefinitionBuilder;
+			// deletes a mesh instance
+			//using MeshInstanceDeleter_pfn_t = void(*)(entt::basic_registry<MeshDefinitionID>&, InstancePoolTable_t&, InstancePoolHandle_t);
+
+			//template <class Ts...>
+			//using MeshInstanceBuilder_pfn_t = std::function<InstancePoolHandle_t(entt::basic_registry<MeshDefinitionID>&, InstancePoolTable_t&, Ts&&)>;
+
+
+
+		protected: // might change this to private, check the friend status when this compiles as-is
+			friend class MeshDefinitionBuilder<Ts>;
 
 			// mesh definitions
 			entt::basic_registry<MeshDefinitionID>		m_MeshDefinitions;
 
 			// resource registries
-
 			rhi::BufferRegistry							m_GBuffers;
 			rhi::CommandBufferRegistry					m_CommandBuffers;
 			rhi::DescriptorSetRegistry					m_DescriptorSets;
 			rhi::PipelineRegistry						m_Pipelines;
 			rhi::TextureRegistry						m_Textures;
 			rhi::ShaderProgramRegistry					m_ShaderPrograms;
+
+			//MeshFlush_pfn_t							m_pFlusher = nullptr;
+			//MeshCompile_pfn_t						m_pMeshCompiler = nullptr;
+			//MeshInstanceDeleter_pfn_t						m_pMeshInstanceDeleter = nullptr;
 		public:
+
+
+			void flush_mesh(MeshDefinitionID definition);
+
+			void flush_all();
+
+
+
+
+
 			// todo: add LOD tables into the mix!!! Needed for index buffers
 
 			void destroy_all_resources();
@@ -85,7 +125,7 @@ namespace qk::gfx {
 
 			// maybe make a builder object pattern?
 
-			MeshDefinitionBuilder new_definition();
+			MeshDefinitionBuilder<Ts...> new_definition();
 
 			template <class T>
 			T get_resource(u64 id);
@@ -123,15 +163,65 @@ namespace qk::gfx {
 
 			HTexture load_or_reload_texture(const str& path);
 
+			// unoptimized naive slop for now
+			CommandBuffer_recipe compile() const {
+				CommandBuffer_recipe result;
+				
+				m_MeshDefinitions.each([this](MeshDefinitionID definition) {
+					
+					// bind the pipeline
+					if (const auto* pPipelineDef = m_MeshDefinitions.try_get<PipelineDefinition>(definition)) {
+						result.bindPipeline(pPipelineDef->hPipeline);
+					} else return; // early exit
+
+					// then the vertex buffers
+					if (const auto* pVertexBufferGroup = m_MeshDefinitions.try_get<VertexBufferGroupDefinition>(definition)) {
+						for (const auto& vertexBuffer : *pVertexBufferGroup) {
+							result.bindVertexBuffer(vertexBuffer.hVertexBuffer, vertexBuffer.slot, vertexBuffer.offset, vertexBuffer.stride);
+						}
+					}
+
+					// then the index buffers
+					if (const auto* pIndexBufferDefinition = m_MeshDefinitions.try_get<IndexBufferDefinition>(definition)) {
+						for (const auto& indexBuffer : *pIndexBufferDefinition) {
+							result.bindIndexBuffer(indexBuffer.hIndexBuffer);
+						}
+					}
+
+					// then the descriptor sets
+					if (const auto* pDescriptorSetDefinition = m_MeshDefinitions.try_get<DescriptorSetGroupDefinition>(definition)) {
+						for (const auto& descriptorSet : *pDescriptorSetDefinition) {
+							result.bindDescriptorSet(descriptorSet.hDescriptorSet);
+						}
+					}
+
+					// Just use the DrawParams for the draw call
+					const auto& drawParams = m_MeshDefinitions.get<DrawParams>(definition);
+
+					if (drawParams.numInstances == 0)
+						result.drawArrays(drawParams.offset, drawParams.numVertices);
+					else
+						result.drawArraysInstanced(drawParams.offset, drawParams.numVertices, drawParams.numInstances);
+
+
+
+				});
+
+				return result;
+
+			}
+
+
 
 	};
 	// Acts as a `view` to a mesh definition.
+	template <class ...Ts>
 	class MeshDefinitionBuilder {
-		friend class Renderer;
+		friend class Renderer<Ts>;
 
 		MeshDefinitionID m_ID;
-		Renderer& m_Renderer;
-		MeshDefinitionBuilder(MeshDefinitionID, Renderer&);
+		Renderer<Ts...>& m_Renderer;
+		MeshDefinitionBuilder(MeshDefinitionID, Renderer<Ts...>&);
 		public:
 
 			// sets the pipeline for this mesh
@@ -146,6 +236,28 @@ namespace qk::gfx {
 			MeshDefinitionBuilder& pushIndexBuffer(u64 buffer_id, u32 default_offset, u32 default_stride, u8 slot);
 
 
+			MeshDefinitionBuilder& pushDescriptorSet(u64 id, u8 slot);
+
+			template <class instance_t>
+			bool hasInstancePool() {
+				return m_Renderer.m_MeshDefinitions.all_of<InstancePool<instance_t>>(m_ID);
+			}
+
+
+			template <class instance_t>
+			MeshDefinitionBuilder& pushInstancePool(InstancePool<instance_t>&& pool) {
+				if (hasInstancePool<instance_t>()) {
+					assert(false && "mesh definition already has a pool for this instance type");
+					return *this;
+				}
+
+				m_Renderer.m_MeshDefinitions.emplace<InstancePool<instance_t>>(m_ID, std::move(pool));
+				return *this;
+			}
+
+
+
+
 
 	};
 
@@ -157,4 +269,4 @@ namespace qk::gfx {
 
 
 
-//#include "Mesh.inl"
+#include "Renderer.inl"

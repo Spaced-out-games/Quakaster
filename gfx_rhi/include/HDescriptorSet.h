@@ -91,11 +91,9 @@ namespace qk::gfx::rhi {
 
     };
 
-    // Fully defines a descriptor set with target resource handles
+    // A fully defined DescriptorSet
     struct DescriptorSetDefinition {
         HDescriptorSet hDescriptorSet;
-        std::vector<DescriptorDefinition> resources;
-
     };
 
 
