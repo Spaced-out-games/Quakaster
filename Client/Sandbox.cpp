@@ -39,7 +39,22 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 #include <Partition.h>
 #include "gfx/InstancePool.h"
 
+template <typename ...Ts>
+void renderer_test(Renderer<Ts...>& r, u64 pipeline_id) {
+    // create a new mesh definition
 
+    InstancePool<Vertex> vertices(hVertexBuffer);
+    InstancePool<Mat4>   instances(hInstances);
+
+    auto mesh_def = r.new_definition()
+        .pushPipeline(pipeline_id)
+        .pushVertexBuffer("VertexBuffer"_sh, 0, sizeof(Vertex), 0)
+        .pushVertexBuffer("InstanceBuffer"_sh, 0, sizeof(Mat4), 1)
+        .pushDescriptorSet(hGlobals, 0)
+        .pushDescriptorSet(hMaterial, 1)
+        .pushInstancePool(std::move(vertices))
+        .pushInstancePool(std::move(instances))
+}
 
 
 entt::registry reg;

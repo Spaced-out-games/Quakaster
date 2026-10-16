@@ -12,18 +12,13 @@ namespace qk::gfx {
     using InstancePoolTable_t = qk::HandleTable<InstancePoolHandleMetadata>;
     using InstancePoolHandle_t = InstancePoolTable_t::Handle;
 
-    struct InstancePoolBase {
-        virtual ~InstancePoolBase() = 0;
-        virtual void remove(const InstancePoolTable_t& handle_table, InstancePoolHandle_t hTarget) = 0;  // const&
-    };
-    inline InstancePoolBase::~InstancePoolBase() = default;
 
     template <class instance_t>
     using InstancePoolPartition_t = qk::Partition<instance_t>;
 
 
     template <class instance_t>
-    struct InstancePool : InstancePoolBase {
+    struct InstancePool {
 
     private:
         struct Location { u32 local_sparse = 0; u16 partition = 0; };
@@ -41,7 +36,7 @@ namespace qk::gfx {
         bool valid(const InstancePoolTable_t&, InstancePoolHandle_t) const;
         InstancePool(qk::gfx::rhi::HVertexBuffer);
 
-        void insert(const InstancePoolTable_t&, const instance_t&, u16 partition, InstancePoolHandle_t);
+        void insert(const InstancePoolTable_t&, const instance_t&, u16, InstancePoolHandle_t);
         void remove(const InstancePoolTable_t&, InstancePoolHandle_t) override;
         void set(const InstancePoolTable_t&, InstancePoolHandle_t, const instance_t&);
         void move(const InstancePoolTable_t&, InstancePoolHandle_t, const instance_t& initial_value, u16 partition);

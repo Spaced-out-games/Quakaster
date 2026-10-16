@@ -67,3 +67,41 @@ typedef void* (*SymbolLoader)(const char* name);
 
 // Generic Window resource handle
 using HWindow = void*;
+
+
+template<typename... Ts>
+struct type_list {};
+
+template<typename T, typename List>
+struct contains_T;
+
+template<typename T, typename... Ts>
+struct contains_T<T, type_list<Ts...>>
+    : std::disjunction<std::is_same<T, Ts>...> {};
+
+template<typename T, typename List>
+inline constexpr bool contains_T_v = contains_T<T, List>::value;
+
+
+// Every type in the first list exists in the second list.
+template<typename Required, typename Available>
+struct all_of_Ts;
+
+template<typename... Ts, typename... Us>
+struct all_of_Ts<type_list<Ts...>, type_list<Us...>>
+    : std::conjunction<contains_T<Ts, type_list<Us...>>...> {};
+
+template<typename Required, typename Available>
+inline constexpr bool all_of_Ts_v = all_of_Ts<Required, Available>::value;
+
+
+// At least one type in the first list exists in the second list.
+template<typename Required, typename Available>
+struct any_of_Ts;
+
+template<typename... Ts, typename... Us>
+struct any_of_Ts<type_list<Ts...>, type_list<Us...>>
+    : std::disjunction<contains_T<Ts, type_list<Us...>>...> {};
+
+template<typename Required, typename Available>
+inline constexpr bool any_of_Ts_v = any_of_Ts<Required, Available>::value;

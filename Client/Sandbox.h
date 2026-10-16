@@ -156,7 +156,7 @@ class Sandbox : public qk::Application {
 	HVertexBuffer hVertexBuffer = nullptr;
 	HVertexBuffer hInstanceBuffer = nullptr;
 
-	gfx::Renderer<> r;
+	gfx::Renderer<glm::vec3, glm::mat4> r;
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
 	inline void add_symlinks() {

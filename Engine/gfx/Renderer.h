@@ -39,7 +39,7 @@ namespace qk::gfx {
 
 	struct DrawParams {
 		// Vertex Buffer state. size == 0 = incomplete draw call.
-		u32 VertexBufferoffset = 0;
+		u32 VertexBufferOffset = 0;
 		u32 VertexBufferSize = 0;
 
 		// Index Buffer State size == 0 = no indexing
@@ -61,28 +61,25 @@ namespace qk::gfx {
 	enum class MeshDescriptorSetResourceID: u64 {};
 
 
-	template <class ...Ts>
+	template <class ...SupportedTs>
 	struct MeshDefinitionBuilder;
 
-	template <class ...Ts>
+	struct MeshInstance {
+		MeshDefinitionID mesh_ID;
+		InstancePoolHandle_t instance;
+	};
+
+	template <class ...SupportedTs>
 	struct Renderer {
 		public:
-			// Flushes all InstancePools for one mesh
-			//using MeshFlush_pfn_t = void (*)(const entt::basic_registry<MeshDefinitionID>&, MeshDefinitionID);
+
 			
-			// Compiles a mesh
-			//using MeshCompile_pfn_t = void(*)(const entt::basic_registry<MeshDefinitionID>&, MeshDefinitionID, CommandBuffer_recipe&);
 
-			// deletes a mesh instance
-			//using MeshInstanceDeleter_pfn_t = void(*)(entt::basic_registry<MeshDefinitionID>&, InstancePoolTable_t&, InstancePoolHandle_t);
-
-			//template <class Ts...>
-			//using MeshInstanceBuilder_pfn_t = std::function<InstancePoolHandle_t(entt::basic_registry<MeshDefinitionID>&, InstancePoolTable_t&, Ts&&)>;
 
 
 
 		protected: // might change this to private, check the friend status when this compiles as-is
-			friend class MeshDefinitionBuilder<Ts>;
+			friend class MeshDefinitionBuilder<SupportedTs>;
 
 			// mesh definitions
 			entt::basic_registry<MeshDefinitionID>		m_MeshDefinitions;
@@ -125,7 +122,7 @@ namespace qk::gfx {
 
 			// maybe make a builder object pattern?
 
-			MeshDefinitionBuilder<Ts...> new_definition();
+			MeshDefinitionBuilder<SupportedTs...> new_definition();
 
 			template <class T>
 			T get_resource(u64 id);
@@ -164,64 +161,27 @@ namespace qk::gfx {
 			HTexture load_or_reload_texture(const str& path);
 
 			// unoptimized naive slop for now
-			CommandBuffer_recipe compile() const {
-				CommandBuffer_recipe result;
-				
-				m_MeshDefinitions.each([this](MeshDefinitionID definition) {
-					
-					// bind the pipeline
-					if (const auto* pPipelineDef = m_MeshDefinitions.try_get<PipelineDefinition>(definition)) {
-						result.bindPipeline(pPipelineDef->hPipeline);
-					} else return; // early exit
+			CommandBuffer_recipe compile() const;
+			
+			template <class ...Args>
+			MeshInstance insert(MeshDefinitionID mesh_id, u8 partition, Args&&... args);
 
-					// then the vertex buffers
-					if (const auto* pVertexBufferGroup = m_MeshDefinitions.try_get<VertexBufferGroupDefinition>(definition)) {
-						for (const auto& vertexBuffer : *pVertexBufferGroup) {
-							result.bindVertexBuffer(vertexBuffer.hVertexBuffer, vertexBuffer.slot, vertexBuffer.offset, vertexBuffer.stride);
-						}
-					}
+			template <class... Args>
+			void update(MeshInstance instance, Args&&... args);
 
-					// then the index buffers
-					if (const auto* pIndexBufferDefinition = m_MeshDefinitions.try_get<IndexBufferDefinition>(definition)) {
-						for (const auto& indexBuffer : *pIndexBufferDefinition) {
-							result.bindIndexBuffer(indexBuffer.hIndexBuffer);
-						}
-					}
+			void remove(MeshInstance instance);
 
-					// then the descriptor sets
-					if (const auto* pDescriptorSetDefinition = m_MeshDefinitions.try_get<DescriptorSetGroupDefinition>(definition)) {
-						for (const auto& descriptorSet : *pDescriptorSetDefinition) {
-							result.bindDescriptorSet(descriptorSet.hDescriptorSet);
-						}
-					}
-
-					// Just use the DrawParams for the draw call
-					const auto& drawParams = m_MeshDefinitions.get<DrawParams>(definition);
-
-					if (drawParams.numInstances == 0)
-						result.drawArrays(drawParams.offset, drawParams.numVertices);
-					else
-						result.drawArraysInstanced(drawParams.offset, drawParams.numVertices, drawParams.numInstances);
-
-
-
-				});
-
-				return result;
-
-			}
-
-
+			// TODO: add move operation
 
 	};
 	// Acts as a `view` to a mesh definition.
-	template <class ...Ts>
+	template <class ...SupportedTs>
 	class MeshDefinitionBuilder {
-		friend class Renderer<Ts>;
+		friend class Renderer<SupportedTs>;
 
 		MeshDefinitionID m_ID;
-		Renderer<Ts...>& m_Renderer;
-		MeshDefinitionBuilder(MeshDefinitionID, Renderer<Ts...>&);
+		Renderer<SupportedTs...>& m_Renderer;
+		MeshDefinitionBuilder(MeshDefinitionID, Renderer<SupportedTs...>&);
 		public:
 
 			// sets the pipeline for this mesh
@@ -242,10 +202,17 @@ namespace qk::gfx {
 			bool hasInstancePool();
 
 
+
 			template <class instance_t>
 			MeshDefinitionBuilder& pushInstancePool(InstancePool<instance_t>&& pool);
 
+			// these probably should be inline free functions referenced by the builder tbh
+			MeshDefinitionBuilder& setVertexBufferRange(u32 offset, u32 size);
+			MeshDefinitionBuilder& setIndexBufferRange(u32 offset, u32 size);
+			MeshDefinitionBuilder& setInstanceCount(u32 count);
 
+
+			
 
 
 
