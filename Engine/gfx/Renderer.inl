@@ -11,9 +11,9 @@ namespace qk::gfx {
 	template <class... Ts>
 	void Renderer<Ts...>::flush_mesh(MeshDefinitionID definition) {
 		([&] {
-			if (auto* pPool =
-			m_MeshDefinitions.template try_get<InstancePool<Ts>>(definition))
+			if (auto* pPool = m_MeshDefinitions.template try_get<InstancePool<Ts>>(definition)) {
 				pPool->flush();
+			}
 		}(), ...);
 	}
 
@@ -169,6 +169,24 @@ namespace qk::gfx {
 	}
 
 
+	template <class... Ts>
+	template <class instance_t>
+	bool MeshDefinitionBuilder<Ts...>::hasInstancePool() {
+		return m_Renderer.m_MeshDefinitions
+			.all_of<InstancePool<instance_t>>(m_ID);
+	}
+
+	template <class... Ts>
+	template <class instance_t>
+	MeshDefinitionBuilder<Ts...>& MeshDefinitionBuilder<Ts...>::pushInstancePool(InstancePool<instance_t>&& pool) {
+		if (hasInstancePool<instance_t>()) {
+			assert(false && "mesh definition already has a pool for this instance type");
+			return *this;
+		}
+
+		m_Renderer.m_MeshDefinitions.emplace<InstancePool<instance_t>>(m_ID, std::move(pool));
+		return *this;
+	}
 
 
 

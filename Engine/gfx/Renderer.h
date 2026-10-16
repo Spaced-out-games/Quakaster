@@ -239,21 +239,11 @@ namespace qk::gfx {
 			MeshDefinitionBuilder& pushDescriptorSet(u64 id, u8 slot);
 
 			template <class instance_t>
-			bool hasInstancePool() {
-				return m_Renderer.m_MeshDefinitions.all_of<InstancePool<instance_t>>(m_ID);
-			}
+			bool hasInstancePool();
 
 
 			template <class instance_t>
-			MeshDefinitionBuilder& pushInstancePool(InstancePool<instance_t>&& pool) {
-				if (hasInstancePool<instance_t>()) {
-					assert(false && "mesh definition already has a pool for this instance type");
-					return *this;
-				}
-
-				m_Renderer.m_MeshDefinitions.emplace<InstancePool<instance_t>>(m_ID, std::move(pool));
-				return *this;
-			}
+			MeshDefinitionBuilder& pushInstancePool(InstancePool<instance_t>&& pool);
 
 
 
