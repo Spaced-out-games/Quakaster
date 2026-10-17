@@ -5,9 +5,9 @@
 #include "Renderer.h"
 #include "fnv1a.h"
 #include <stdexcept>
+#include <core.h>
 
 namespace qk::gfx {
-
 
 	template <class... SupportedTs>
 	void Renderer<SupportedTs...>::flush_mesh(MeshDefinitionID definition) {
@@ -25,13 +25,6 @@ namespace qk::gfx {
 			flush_mesh(definition);
 		});
 	}
-
-
-
-
-	
-
-
 
 	template <class ...SupportedTs>
 	void Renderer<SupportedTs...>::destroy_all_resources() {
@@ -68,8 +61,6 @@ namespace qk::gfx {
 		m_CommandBuffers.insert(id, hCmdBuf);
 	}
 
-
-
 	template <class ...SupportedTs>
 	HTexture Renderer<SupportedTs...>::load_or_reload_texture(const str& path) {
 		const auto id = qk::string_hash{ path };
@@ -87,9 +78,6 @@ namespace qk::gfx {
 		return hTex;
 	}
 
-
-
-
 	template <class ...SupportedTs>
 	MeshDefinitionBuilder<SupportedTs...> Renderer<SupportedTs...>::new_definition() {
 
@@ -103,54 +91,56 @@ namespace qk::gfx {
 		return MeshDefinitionBuilder(id, *this);
 	}
 
-	template <class ...SupportedTs>
+
+
+	template <class... SupportedTs>
 	CommandBuffer_recipe Renderer<SupportedTs...>::compile() const {
 		CommandBuffer_recipe result;
 
-		m_MeshDefinitions.each([this](MeshDefinitionID definition) {
+		for (MeshDefinitionID definition :
+		m_MeshDefinitions.view<PipelineDefinition>()) {
 
-			// bind the pipeline
-			if (const auto* pPipelineDef = m_MeshDefinitions.try_get<PipelineDefinition>(definition)) {
-				result.bindPipeline(pPipelineDef->hPipeline);
-			}
-			else return; // early exit
+			const auto* pPipelineDef =
+				m_MeshDefinitions.try_get<PipelineDefinition>(definition);
 
-		// then the vertex buffers
-		if (const auto* pVertexBufferGroup = m_MeshDefinitions.try_get<VertexBufferGroupDefinition>(definition)) {
-			for (const auto& vertexBuffer : *pVertexBufferGroup) {
-				result.bindVertexBuffer(vertexBuffer.hVertexBuffer, vertexBuffer.slot, vertexBuffer.offset, vertexBuffer.stride);
+			result.bindPipeline(pPipelineDef->hPipeline);
+
+			// then the vertex buffers
+			if (const auto* pVertexBufferGroup = m_MeshDefinitions.try_get<VertexBufferGroupDefinition>(definition)) {
+				for (const auto& vertexBuffer : *pVertexBufferGroup) {
+					result.bindVertexBuffer(vertexBuffer.hVertexBuffer, vertexBuffer.slot, vertexBuffer.offset, vertexBuffer.stride);
+				}
 			}
+
+			// then the index buffer
+			const auto* pIndexBufferDefinition = m_MeshDefinitions.try_get<IndexBufferDefinition>(definition);
+			if (pIndexBufferDefinition)
+				result.bindIndexBuffer(pIndexBufferDefinition->hIndexBuffer);
+
+
+
+			// then the descriptor sets
+			if (const auto* pDescriptorSetDefinition = m_MeshDefinitions.try_get<DescriptorSetGroupDefinition>(definition)) {
+				for (const auto& descriptorSet : *pDescriptorSetDefinition) {
+					result.bindDescriptorSet(descriptorSet.hDescriptorSet);
+				}
+			}
+
+			// Just use the DrawParams for the draw call
+			const auto& drawParams = m_MeshDefinitions.get<DrawParams>(definition);
+
+			if (drawParams.numInstances == 0)
+				result.drawArrays(drawParams.VertexBufferOffset, drawParams.VertexBufferSize);
+			else
+				result.drawArraysInstanced(drawParams.VertexBufferOffset, drawParams.VertexBufferSize, drawParams.numInstances);
 		}
-
-		// then the index buffers
-		if (const auto* pIndexBufferDefinition = m_MeshDefinitions.try_get<IndexBufferDefinition>(definition)) {
-			for (const auto& indexBuffer : *pIndexBufferDefinition) {
-				result.bindIndexBuffer(indexBuffer.hIndexBuffer);
-			}
-		}
-
-		// then the descriptor sets
-		if (const auto* pDescriptorSetDefinition = m_MeshDefinitions.try_get<DescriptorSetGroupDefinition>(definition)) {
-			for (const auto& descriptorSet : *pDescriptorSetDefinition) {
-				result.bindDescriptorSet(descriptorSet.hDescriptorSet);
-			}
-		}
-
-		// Just use the DrawParams for the draw call
-		const auto& drawParams = m_MeshDefinitions.get<DrawParams>(definition);
-
-		if (drawParams.numInstances == 0)
-			result.drawArrays(drawParams.offset, drawParams.numVertices);
-		else
-			result.drawArraysInstanced(drawParams.offset, drawParams.numVertices, drawParams.numInstances);
-
-
-
-		});
 
 		return result;
-
 	}
+
+
+
+	
 
 	template <class... SupportedTs>
 	template <class... Args>
@@ -274,45 +264,6 @@ namespace qk::gfx {
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	template <class ...SupportedTs>
 	MeshDefinitionBuilder<SupportedTs...>::MeshDefinitionBuilder(MeshDefinitionID id, Renderer<SupportedTs...>& renderer) :
 		m_ID(id), m_Renderer(renderer) {}
@@ -336,12 +287,9 @@ namespace qk::gfx {
 			return *this;
 		}
 
-		if (!m_Renderer.m_MeshDefinitions.all_of<VertexBufferGroupDefinition>(m_ID)) {
-			m_Renderer.m_MeshDefinitions.emplace<VertexBufferGroupDefinition>(m_ID, VertexBufferBinding{ hVertexBuffer, offset, stride, slot });
-		}
-		else {
-			m_Renderer.m_MeshDefinitions.get<VertexBufferGroupDefinition>(m_ID).emplace_back(hVertexBuffer, offset, stride, slot);
-		}
+		auto& groups = m_Renderer.m_MeshDefinitions.get_or_emplace<VertexBufferGroupDefinition>(m_ID);
+
+		groups.emplace_back(hVertexBuffer, offset, stride, slot);
 
 		return *this;
 	}
@@ -369,12 +317,10 @@ namespace qk::gfx {
 			return *this;
 		}
 
-		if (!m_Renderer.m_MeshDefinitions.all_of<DescriptorSetBindings>(m_ID)) {
-			m_Renderer.m_MeshDefinitions.emplace<DescriptorSetBindings>(m_ID, DescriptorSetBindings{ { hDescriptorSet, slot } });
-		}
-		else {
-			m_Renderer.m_MeshDefinitions.get<DescriptorSetBindings>(m_ID).emplace_back(hDescriptorSet, slot);
-		}
+		// NOTICE TO SELF: Descriptor sets weren't compiling because they are using different storages. These need re-written lol
+		DescriptorSetGroupDefinition& bindings = m_Renderer.m_MeshDefinitions.get_or_emplace<DescriptorSetGroupDefinition>(m_ID);
+
+		bindings.emplace_back(hDescriptorSet, slot);
 
 		return *this;
 	}
@@ -389,16 +335,17 @@ namespace qk::gfx {
 
 	template <class... SupportedTs>
 	template <class instance_t>
-	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::pushInstancePool(InstancePool<instance_t>&& pool) {
-		static_assert(is_type_in_list_v<std::decay_t<instance_t>, SupportedTs...>,
+	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::pushInstancePool(HVertexBuffer hInstanceBuffer) {
+		using true_t = std::decay_t<instance_t>;
+		static_assert(is_type_in_list_v<true_t, type_list<SupportedTs...>>,
 			"PoolType is not in the allowed set of types");
 		
-		if (hasInstancePool<instance_t>()) {
+		if (hasInstancePool<true_t>()) {
 			assert(false && "mesh definition already has a pool for this instance type");
 			return *this;
 		}
 
-		m_Renderer.m_MeshDefinitions.emplace<InstancePool<std::decay_t<instance_t>>>(m_ID, std::move(pool));
+		m_Renderer.m_MeshDefinitions.emplace<InstancePool<true_t>>(m_ID, hInstanceBuffer);
 		return *this;
 	}
 
@@ -427,14 +374,5 @@ namespace qk::gfx {
 		params.numInstances = count;
 		return *this;
 	}
-
-
-
-
-
-
-
-
-
 
 }

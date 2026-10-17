@@ -3,16 +3,15 @@
 using namespace qk::media;
 using namespace qk::gfx;
 
+#include <spdlog/spdlog.h>
 
-#include "math/geometric/Mat4.h"
-
-
-
+#include <DrawCommand.h> // temp
 
 
 
 
-std::vector<Vertex> g_Vertices = {
+
+std::vector<glm::vec3> g_Vertices = {
 	{-1.0f,  1.0f, 0.0f}, // top-left
 	{-1.0f, -1.0f, 0.0f}, // bottom-left
 	{ 1.0f,  1.0f, 0.0f}, // top-right
@@ -20,10 +19,10 @@ std::vector<Vertex> g_Vertices = {
 };
 
 
-std::vector<Mat4> g_Instances = {
-    Mat4(1.0),
-    Mat4(1.0).translate({0.2,0.0,0.0}),
-    Mat4(1.0).translate({0.2,0.2,0.0})
+std::vector<glm::mat4> g_Instances = {
+    glm::mat4(1.0),
+    glm::translate(glm::mat4(1.0), {0.2,0.0,0.0}),
+    glm::translate(glm::mat4(1.0), {0.2,0.2,0.0})
 };
 
 glm::vec3 tint = { 0.5, 0.25, 0.0 };
@@ -35,25 +34,33 @@ glm::vec3 tint = { 0.5, 0.25, 0.0 };
 //#include <gfx/InstancePool.h>
 
 
-#include "Handle.h"
-#include <Partition.h>
-#include "gfx/InstancePool.h"
+
 
 template <typename ...Ts>
-void renderer_test(Renderer<Ts...>& r, u64 pipeline_id) {
+MeshDefinitionID renderer_test(Renderer<Ts...>& r,
+    u64 pipeline_id,
+    u64 VertexBuffer_id,
+    u64 InstanceBuffer_id,
+    u64 GlobalsDescriptorSetID,
+    u64 MaterialDescriptorSetID,
+    HVertexBuffer hInstanceBuffer) {
     // create a new mesh definition
 
-    InstancePool<Vertex> vertices(hVertexBuffer);
-    InstancePool<Mat4>   instances(hInstances);
 
-    auto mesh_def = r.new_definition()
-        .pushPipeline(pipeline_id)
-        .pushVertexBuffer("VertexBuffer"_sh, 0, sizeof(Vertex), 0)
-        .pushVertexBuffer("InstanceBuffer"_sh, 0, sizeof(Mat4), 1)
-        .pushDescriptorSet(hGlobals, 0)
-        .pushDescriptorSet(hMaterial, 1)
-        .pushInstancePool(std::move(vertices))
-        .pushInstancePool(std::move(instances))
+
+    MeshDefinitionID mesh_def = r.new_definition()
+         .pushPipeline(pipeline_id)
+         .pushVertexBuffer(VertexBuffer_id, 0, sizeof(glm::vec3), 0)
+         .pushVertexBuffer(InstanceBuffer_id, 0, sizeof(glm::mat4), 1)
+         .pushDescriptorSet(GlobalsDescriptorSetID, 0)
+         .pushDescriptorSet(MaterialDescriptorSetID, 1)
+         .pushInstancePool<glm::mat4>(hInstanceBuffer)
+         .setVertexBufferRange(0, 4)
+         .setInstanceCount(3).m_ID;
+
+
+    return mesh_def;
+
 }
 
 
@@ -124,21 +131,38 @@ void Sandbox::init(int argc, char** argv) {
     UniformBuffer_upload(hUniformBuffer, &tint, 3 * sizeof(float));
     DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
 
+    MeshDefinitionID mesh_id = renderer_test(r,
+        "PBRPipeline"_sh,
+        "VertexBuffer"_sh,
+        "InstanceBuffer"_sh,
+        "hGlobals"_sh,
+        "hMaterial"_sh,
+        hInstanceBuffer
+    );
 
+    auto recipe = r.compile();
+
+    spdlog::info("recipe.size(): {}", recipe.size());
+
+    for (const auto& cmd : recipe.commands()) {
+        std::cout << cmd << '\n';
+    }
+
+
+    
 
     // Command buffer
-    CommandBuffer_recipe cmdBuf;
-    cmdBuf
-        .bindPipeline(hPipeline)
-        .bindDescriptorSet(hGlobals, 0)
-        .bindDescriptorSet(hMaterial, 1)
-        .bindVertexBuffer(hInstanceBuffer, 1, 0, sizeof(Mat4))
-        .bindVertexBuffer(hVertexBuffer, 0, 0, sizeof(Vertex))
-        .drawArraysInstanced(0, 4, 3);
+    //CommandBuffer_recipe cmdBuf;
+    //cmdBuf
+    //    .bindPipeline(hPipeline)
+    //    .bindDescriptorSet(hGlobals, 0)
+    //    .bindDescriptorSet(hMaterial, 1)
+    //    .bindVertexBuffer(hInstanceBuffer, 1, 0, sizeof(Mat4))
+    //    .bindVertexBuffer(hVertexBuffer, 0, 0, sizeof(Vertex))
+    //    .drawArraysInstanced(0, 4, 3);
 
-    hCmdBuf = CommandBuffer_ctor(cmdBuf);
+    hCmdBuf = CommandBuffer_ctor(recipe);
     r.define_resource(0, hCmdBuf);
-//    CommandBuffers.insert(0, hCmdBuf);
 
     
 

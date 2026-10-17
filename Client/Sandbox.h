@@ -51,15 +51,17 @@
 #include "fnv1a.h"
 
 #include "gfx/Renderer.h"
+#include "math/geometric/Vec3.h"
 
+#include "math/geometric/Mat4.h"
+#include "Handle.h"
+#include <Partition.h>
+#include "gfx/InstancePool.h"
 
 using namespace qk::gfx::rhi;
-struct Vertex {
-	float x, y, z;
-};
+
 using qk::operator""_sh;
 
-#include "math/geometric/Vec3.h"
 using namespace qk;
 qk::EntityLoader loader;
 

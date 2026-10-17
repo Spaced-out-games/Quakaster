@@ -80,7 +80,7 @@ struct contains_T<T, type_list<Ts...>>
     : std::disjunction<std::is_same<T, Ts>...> {};
 
 template<typename T, typename List>
-inline constexpr bool contains_T_v = contains_T<T, List>::value;
+inline constexpr bool is_type_in_list_v = contains_T<T, List>::value;
 
 
 // Every type in the first list exists in the second list.

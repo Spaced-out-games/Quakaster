@@ -37,7 +37,7 @@ namespace qk::gfx {
         InstancePool(qk::gfx::rhi::HVertexBuffer);
 
         void insert(const InstancePoolTable_t&, const instance_t&, u16, InstancePoolHandle_t);
-        void remove(const InstancePoolTable_t&, InstancePoolHandle_t) override;
+        void remove(const InstancePoolTable_t&, InstancePoolHandle_t);
         void set(const InstancePoolTable_t&, InstancePoolHandle_t, const instance_t&);
         void move(const InstancePoolTable_t&, InstancePoolHandle_t, const instance_t& initial_value, u16 partition);
 

@@ -4,6 +4,7 @@
 
 #include <core.h>
 #include <vector>
+#include <ostream>
 
 // NOTICE: These are meant to be draw command descriptions! 
 
@@ -88,6 +89,63 @@ namespace qk::gfx::rhi {
         DrawCmd(DrawArraysInstancedCmd drawArraysInstancedCmd);
 
     };
+
+
+    // debug
+    inline std::ostream& operator<<(std::ostream& os, const DrawCmd& cmd)
+    {
+        switch (cmd.type) {
+        case EDrawCmdType::BindPipeline:
+            return os << "BindPipeline { "
+                << "pipeline=" << cmd.bindPipelineCmd.hPipeline
+                << " }";
+
+        case EDrawCmdType::BindVertexBuffer: {
+            const auto& c = cmd.bindVertexBufferCmd;
+            return os << "BindVertexBuffer { "
+                << "buffer=" << c.hVertexBuffer
+                << ", offset=" << c.offset
+                << ", stride=" << c.stride
+                << ", slot=" << static_cast<unsigned>(c.slot)
+                << " }";
+        }
+
+        case EDrawCmdType::BindIndexBuffer:
+            return os << "BindIndexBuffer { "
+                << "buffer=" << cmd.bindIndexBufferCmd.hIndexBuffer
+                << " }";
+
+        case EDrawCmdType::BindDescriptorSet: {
+            const auto& c = cmd.bindDescriptorSetCmd;
+            return os << "BindDescriptorSet { "
+                << "set=" << c.set
+                << ", slot=" << static_cast<unsigned>(c.slot)
+                << " }";
+        }
+
+        case EDrawCmdType::DrawArrays: {
+            const auto& c = cmd.drawArraysCmd;
+            return os << "DrawArrays { "
+                << "offset=" << c.offset
+                << ", count=" << c.count
+                << " }";
+        }
+
+        case EDrawCmdType::DrawArraysInstanced: {
+            const auto& c = cmd.drawArraysInstancedCmd;
+            return os << "DrawArraysInstanced { "
+                << "offset=" << c.offset
+                << ", numVertices=" << c.numVertices
+                << ", numInstances=" << c.numInstances
+                << " }";
+        }
+        }
+
+        return os << "DrawCmd { unknown command type="
+            << static_cast<int>(cmd.type) << " }";
+    }
+
+
 
     struct DescriptorSetBinding {
         HDescriptorSet hDescriptorSet = nullptr;

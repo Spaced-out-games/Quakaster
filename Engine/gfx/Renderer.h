@@ -10,6 +10,7 @@
 
 
 using qk::gfx::rhi::HBuffer;
+using qk::gfx::rhi::HVertexBuffer;
 using qk::gfx::rhi::HDescriptorSet;
 using qk::gfx::rhi::HPipeline;
 using qk::gfx::rhi::HTexture;
@@ -73,9 +74,6 @@ namespace qk::gfx {
 	struct Renderer {
 		public:
 
-			
-
-
 
 
 		protected: // might change this to private, check the friend status when this compiles as-is
@@ -92,9 +90,6 @@ namespace qk::gfx {
 			rhi::TextureRegistry						m_Textures;
 			rhi::ShaderProgramRegistry					m_ShaderPrograms;
 
-			//MeshFlush_pfn_t							m_pFlusher = nullptr;
-			//MeshCompile_pfn_t						m_pMeshCompiler = nullptr;
-			//MeshInstanceDeleter_pfn_t						m_pMeshInstanceDeleter = nullptr;
 		public:
 
 
@@ -177,12 +172,12 @@ namespace qk::gfx {
 	// Acts as a `view` to a mesh definition.
 	template <class ...SupportedTs>
 	class MeshDefinitionBuilder {
-		friend class Renderer<SupportedTs>;
+		friend class Renderer<SupportedTs...>;
 
-		MeshDefinitionID m_ID;
 		Renderer<SupportedTs...>& m_Renderer;
 		MeshDefinitionBuilder(MeshDefinitionID, Renderer<SupportedTs...>&);
 		public:
+			MeshDefinitionID m_ID; // temporary
 
 			// sets the pipeline for this mesh
 			MeshDefinitionBuilder& pushPipeline(u64 pipeline_id);
@@ -204,7 +199,7 @@ namespace qk::gfx {
 
 
 			template <class instance_t>
-			MeshDefinitionBuilder& pushInstancePool(InstancePool<instance_t>&& pool);
+			MeshDefinitionBuilder& pushInstancePool(HVertexBuffer hInstanceBuffer);
 
 			// these probably should be inline free functions referenced by the builder tbh
 			MeshDefinitionBuilder& setVertexBufferRange(u32 offset, u32 size);
