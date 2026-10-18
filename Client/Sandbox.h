@@ -150,8 +150,8 @@ class Sandbox : public qk::Application {
 	std::unordered_map<str, DescriptorSetLayout> sets;
 
 	HCommandBuffer hCmdBuf = nullptr; 
-	HDescriptorSet hGlobals = nullptr;
-	HDescriptorSet hMaterial = nullptr;
+	HDescriptorSet hAlbedo = nullptr;
+	HDescriptorSet hTint = nullptr;
 	HPipeline hPipeline = nullptr;
 	HTexture hTex = nullptr;
 	HUniformBuffer hUniformBuffer = nullptr;
