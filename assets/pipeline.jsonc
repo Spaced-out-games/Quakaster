@@ -73,13 +73,13 @@
 	},
 
 	"descriptor_sets": {
-		"hGlobals": [
+		"albedo": [
 			{
 				"type": "texture"
 			}
 		],
 
-		"hMaterial": [
+		"tint": [
 			{
 				"type": "uniform_buffer"
 			}

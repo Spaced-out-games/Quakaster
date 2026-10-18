@@ -90,6 +90,10 @@ void Sandbox::init(int argc, char** argv) {
         r.define_resource(qk::string_hash{ name }, hPipeline);
     }
 
+    hPipeline = r.get_resource<HPipeline>("PBRPipeline"_sh);
+    hAlbedo = r.get_resource<HDescriptorSet>("albedo"_sh);
+    hTint = r.get_resource<HDescriptorSet>("tint"_sh);
+
 
     // -------------------------------------------- BUFFER BUILD -------------------------------------------- //
 
@@ -103,18 +107,17 @@ void Sandbox::init(int argc, char** argv) {
 
 
 
-    // retreive the handles
-    hPipeline = r.get_resource<HPipeline>("PBRPipeline"_sh);
-    hGlobals = r.get_resource<HDescriptorSet>("hGlobals"_sh);
-    hMaterial = r.get_resource<HDescriptorSet>("hMaterial"_sh);
+    
+    // -------------------------------------------- TEXTURE LOAD -------------------------------------------- //
+
     hTex = r.load_or_reload_texture(TEST_IMAGE_PATH);
+    DescriptorSet_setResource(hAlbedo, 0, r.get_resource<HTexture>(qk::string_hash{ TEST_IMAGE_PATH }));
 
 
 
-    // Texture
+    
 
 
-    DescriptorSet_setResource(hGlobals, 0, r.get_resource<HTexture>(qk::string_hash{ TEST_IMAGE_PATH }));
 
 
 
@@ -123,14 +126,14 @@ void Sandbox::init(int argc, char** argv) {
 
     r.define_resource("hUniformBuffer"_sh, hUniformBuffer);
     UniformBuffer_upload(hUniformBuffer, &tint, 3 * sizeof(float));
-    DescriptorSet_setResource(hMaterial, 0, hUniformBuffer);
+    DescriptorSet_setResource(hTint, 0, hUniformBuffer);
 
     MeshDefinitionID mesh_id = renderer_test(r,
         "PBRPipeline"_sh,
         "VertexBuffer"_sh,
         "InstanceBuffer"_sh,
-        "hGlobals"_sh,
-        "hMaterial"_sh,
+        "albedo"_sh,
+        "tint"_sh,
         hInstanceBuffer
     );
 
@@ -169,8 +172,8 @@ void Sandbox::init(int argc, char** argv) {
     //CommandBuffer_recipe cmdBuf;
     //cmdBuf
     //    .bindPipeline(hPipeline)
-    //    .bindDescriptorSet(hGlobals, 0)
-    //    .bindDescriptorSet(hMaterial, 1)
+    //    .bindDescriptorSet(albedo, 0)
+    //    .bindDescriptorSet(hTint, 1)
     //    .bindVertexBuffer(hInstanceBuffer, 1, 0, sizeof(Mat4))
     //    .bindVertexBuffer(hVertexBuffer, 0, 0, sizeof(Vertex))
     //    .drawArraysInstanced(0, 4, 3);
