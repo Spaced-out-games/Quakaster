@@ -142,6 +142,7 @@ void loader_demo(entt::registry& registry, entt::entity target) {
 
 
 class Sandbox : public qk::Application {
+	// application
 	qk::Window m_Window;
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
@@ -149,16 +150,30 @@ class Sandbox : public qk::Application {
 	std::unordered_map<str, Pipeline_recipe> pipelines;
 	std::unordered_map<str, DescriptorSetLayout> sets;
 
-	HCommandBuffer hCmdBuf = nullptr; 
-	HDescriptorSet hAlbedo = nullptr;
-	HDescriptorSet hTint = nullptr;
+	// renderer
+	gfx::Renderer<glm::vec3, glm::mat4> r;
+
+
+	// pipeline
 	HPipeline hPipeline = nullptr;
-	HTexture hTex = nullptr;
-	HUniformBuffer hUniformBuffer = nullptr;
+
+	// gbuffers
 	HVertexBuffer hVertexBuffer = nullptr;
 	HVertexBuffer hInstanceBuffer = nullptr;
 
-	gfx::Renderer<glm::vec3, glm::mat4> r;
+	// descriptor sets
+	HDescriptorSet hTextureSet = nullptr;
+	HDescriptorSet hTintSet = nullptr;
+
+	// descriptors
+	HTexture hTextureResource = nullptr;
+	HUniformBuffer hTint = nullptr;
+
+	// commandbuffers
+	HCommandBuffer hCmdBuf = nullptr;
+
+
+
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
 	inline void add_symlinks() {
