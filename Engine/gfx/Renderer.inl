@@ -484,9 +484,7 @@ namespace qk::gfx {
 
 		// first, add all the partitions to every instancepool
 
-		size_t size = m_Renderer.m_MeshDefinitions.get<CMeshPartitionStateCache>(m_ID).size();
-
-		if (size > 0) size--;
+		size_t size = m_NumLODs;
 
 		(
 			[&] {

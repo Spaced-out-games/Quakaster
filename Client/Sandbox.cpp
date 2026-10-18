@@ -1,16 +1,26 @@
+// -------------------------------------------------- includes -------------------------------------------------- //
 #include "Sandbox.h"
 #include <gfx/gfx.h>
+#include <spdlog/spdlog.h>
+#include <DrawCommand.h> // temp
+//#include <glm/ext/matrix_transform.hpp>
+//#include <gfx/InstancePool.h>
+
+
+
+// -------------------------------------------------- defines -------------------------------------------------- //
+#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
+#define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
+
+// aliases
 using namespace qk::media;
 using namespace qk::gfx;
 
-#include <spdlog/spdlog.h>
-
-#include <DrawCommand.h> // temp
 
 
-#include <glm/ext/matrix_transform.hpp>
 
 
+// -------------------------------------------------- globals -------------------------------------------------- //
 
 std::vector<glm::vec3> g_Vertices = {
 	{-1.0f,  1.0f, 0.0f}, // top-left
@@ -28,14 +38,12 @@ std::vector<glm::mat4> g_Instances = {
 
 glm::vec3 tint = { 0.5, 0.25, 0.0 };
 
-#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
-
-#define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
-
-//#include <gfx/InstancePool.h>
+entt::registry reg;
 
 
 
+
+// -------------------------------------------------- helpers -------------------------------------------------- //
 
 template <typename ...Ts>
 MeshDefinitionID renderer_test(Renderer<Ts...>& r,
@@ -65,7 +73,6 @@ MeshDefinitionID renderer_test(Renderer<Ts...>& r,
 }
 
 
-entt::registry reg;
 void Sandbox::init(int argc, char** argv) {
 
     printf("// ---------------------------------- INITIALIZATION ---------------------------------- //\n");
@@ -152,8 +159,13 @@ void Sandbox::init(int argc, char** argv) {
         spdlog::info("Partition({}, {})", entry.offset, entry.size);
     }
 
-    // preview
+    // preview for debugging
     const auto* pInstancePool = r.instancepool<glm::mat4>(mesh_id);
+
+    assert(pInstancePool->num_partitions() == 1);
+
+    const auto& pPartition = pInstancePool->get_partition(0);
+
     //auto handle = r.insert(mesh_id, 0, glm::mat4(1.0));
     //r.update(handle, (glm::mat4)glm::mat4_cast(q));
 

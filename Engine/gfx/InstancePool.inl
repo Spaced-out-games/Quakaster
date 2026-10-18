@@ -18,7 +18,7 @@ namespace qk::gfx {
 	InstancePool<instance_t>::InstancePool(qk::gfx::rhi::HVertexBuffer hInstanceBuffer)
 		: m_Storage(hInstanceBuffer) {
 		assert(hInstanceBuffer);
-		add_partition();
+		//add_partition();
 	}
 
 	// ---- private helpers --------------------------------------------------
