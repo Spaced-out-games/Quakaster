@@ -126,6 +126,18 @@ namespace qk::gfx {
 	}
 
 	template <class instance_t>
+	size_t InstancePool<instance_t>::num_partitions() const {
+		return m_Partitions.size();
+	}
+
+	template <class instance_t>
+	const InstancePoolPartition_t<instance_t>& InstancePool<instance_t>::get_partition(size_t index) const {
+		return m_Partitions.at(index);
+	}
+
+
+
+	template <class instance_t>
 	void InstancePool<instance_t>::flush() {
 		size_t old_capacity = 0;
 		size_t new_capacity = 0;
@@ -177,9 +189,7 @@ namespace qk::gfx {
 		}
 
 		// Apply the queued ops through a single mapping.
-		instance_t* pStorage = static_cast<instance_t*>(
-			rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE)
-			);
+		instance_t* pStorage = static_cast<instance_t*>(rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE));
 
 		size_t offset = 0;
 		for (auto& partition : m_Partitions) {

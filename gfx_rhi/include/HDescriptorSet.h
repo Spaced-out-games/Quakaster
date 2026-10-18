@@ -94,7 +94,7 @@ namespace qk::gfx::rhi {
     // A fully defined DescriptorSet
     struct DescriptorSetDefinition {
         HDescriptorSet hDescriptorSet = nullptr;
-        u8 slot = 0;
+        u8 slot = -1;
     };
 
 

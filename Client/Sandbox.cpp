@@ -8,6 +8,7 @@ using namespace qk::gfx;
 #include <DrawCommand.h> // temp
 
 
+#include <glm/ext/matrix_transform.hpp>
 
 
 
@@ -21,8 +22,8 @@ std::vector<glm::vec3> g_Vertices = {
 
 std::vector<glm::mat4> g_Instances = {
     glm::mat4(1.0),
-    glm::translate(glm::mat4(1.0), {0.2,0.0,0.0}),
-    glm::translate(glm::mat4(1.0), {0.2,0.2,0.0})
+    //glm::translate(glm::mat4(1.0), {0.2,0.0,0.0}),
+    //glm::translate(glm::mat4(1.0), {0.2,0.2,0.0})
 };
 
 glm::vec3 tint = { 0.5, 0.25, 0.0 };
@@ -48,7 +49,7 @@ MeshDefinitionID renderer_test(Renderer<Ts...>& r,
 
 
 
-    MeshDefinitionID mesh_def = r.new_definition()
+     return r.new_definition()
          .pushPipeline(pipeline_id)
          .pushVertexBuffer(VertexBuffer_id, 0, sizeof(glm::vec3), 0)
          .pushVertexBuffer(InstanceBuffer_id, 0, sizeof(glm::mat4), 1)
@@ -56,25 +57,28 @@ MeshDefinitionID renderer_test(Renderer<Ts...>& r,
          .pushDescriptorSet(MaterialDescriptorSetID, 1)
          .pushInstancePool<glm::mat4>(hInstanceBuffer)
          .setVertexBufferRange(0, 4)
-         .setInstanceCount(3).m_ID;
+         .setLODCount(1)
+         .finalize();
 
 
-    return mesh_def;
 
 }
 
 
 entt::registry reg;
 void Sandbox::init(int argc, char** argv) {
+
+    // -------------------------------------------- INITIALIZATION -------------------------------------------- //
     init_subsystems();
     loader_demo(reg, entt::null);
 
 
-    // Define assets
+    // -------------------------------------------- RESOURCE LOADING -------------------------------------------- //
+
     const auto pipeline_json = loadJSON(TEST_PIPELINE_PATH);
     loadPipelinesFromJSON(pipeline_json, pipelines);
     loadDescriptorSetsFromJSON(pipeline_json, sets);
-    
+
     // load descriptor sets into renderer
     for (const auto& [name, recipe] : sets) {
         HDescriptorSet hDescriptorSet = rhi::DescriptorSet_ctor(recipe);
@@ -85,36 +89,26 @@ void Sandbox::init(int argc, char** argv) {
         HPipeline hPipeline = rhi::Pipeline_ctor(recipe);
         r.define_resource(qk::string_hash{ name }, hPipeline);
     }
-    
 
 
-    // build the vertex buffer
+    // -------------------------------------------- BUFFER BUILD -------------------------------------------- //
+
     hVertexBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
     r.define_resource("VertexBuffer"_sh, hVertexBuffer);
     VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
-    // build the instancebuffer
     hInstanceBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
     r.define_resource("InstanceBuffer"_sh, hInstanceBuffer);
     VertexBuffer_upload(hInstanceBuffer, g_Instances);
-    
+
 
 
     // retreive the handles
-
     hPipeline = r.get_resource<HPipeline>("PBRPipeline"_sh);
     hGlobals = r.get_resource<HDescriptorSet>("hGlobals"_sh);
     hMaterial = r.get_resource<HDescriptorSet>("hMaterial"_sh);
-
-
-
-
-
-
-
-
     hTex = r.load_or_reload_texture(TEST_IMAGE_PATH);
-    
+
 
 
     // Texture
@@ -140,6 +134,29 @@ void Sandbox::init(int argc, char** argv) {
         hInstanceBuffer
     );
 
+    spdlog::info("BEFORE------------------------------------------");
+
+    for (const auto& entry : r.LODData(mesh_id)) {
+        spdlog::info("Partition({}, {})", entry.offset, entry.size);
+    }
+
+
+
+    //auto handle = r.insert(mesh_id, 0, glm::mat4(1.0));
+    //r.update(handle, (glm::mat4)glm::mat4_cast(q));
+
+    const auto& instance_pool = r.instancepool<glm::mat4>(mesh_id);
+
+    //r.flush_all();
+
+    spdlog::info("AFTER-------------------------------------------");
+    //r.syncPartitionCache(mesh_id);
+    for (const auto& entry : r.LODData(mesh_id)) {
+        spdlog::info("Partition({}, {})", entry.offset, entry.size);
+    }
+
+    const auto& partition = *r.instancepool<glm::mat4>(mesh_id);
+
     auto recipe = r.compile();
 
     spdlog::info("recipe.size(): {}", recipe.size());
@@ -147,9 +164,6 @@ void Sandbox::init(int argc, char** argv) {
     for (const auto& cmd : recipe.commands()) {
         std::cout << cmd << '\n';
     }
-
-
-    
 
     // Command buffer
     //CommandBuffer_recipe cmdBuf;

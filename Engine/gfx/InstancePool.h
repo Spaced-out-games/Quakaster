@@ -43,7 +43,9 @@ namespace qk::gfx {
 
         void flush();   // table param dropped, it was never used
 
+        size_t num_partitions() const;
 
+        const InstancePoolPartition_t<instance_t>& get_partition(size_t index) const;
 
 
 

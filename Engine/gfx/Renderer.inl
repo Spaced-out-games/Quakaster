@@ -21,9 +21,9 @@ namespace qk::gfx {
 	template <class... SupportedTs>
 	void Renderer<SupportedTs...>::flush_all()
 	{
-		m_MeshDefinitions.each([this](auto definition) {
-			flush_mesh(definition);
-		});
+		for (MeshDefinitionID entity : m_MeshDefinitions.storage<MeshDefinitionID>()) {
+			flush_mesh(entity);
+		}
 	}
 
 	template <class ...SupportedTs>
@@ -84,9 +84,13 @@ namespace qk::gfx {
 		MeshDefinitionID id = m_MeshDefinitions.create();
 
 
-		// create the basic entries
+		// create the basic entries that are gauranteed to exist
 		m_MeshDefinitions.emplace<DrawParams>(id);
 		m_MeshDefinitions.emplace<InstancePoolTable_t>(id);
+		m_MeshDefinitions.emplace<CMeshPartitionStateCache>(id);
+		
+
+		m_MeshDefinitions.emplace<EMeshClass>(id, EMeshClass::Static);
 
 		return MeshDefinitionBuilder(id, *this);
 	}
@@ -97,8 +101,14 @@ namespace qk::gfx {
 	CommandBuffer_recipe Renderer<SupportedTs...>::compile() const {
 		CommandBuffer_recipe result;
 
-		for (MeshDefinitionID definition :
-		m_MeshDefinitions.view<PipelineDefinition>()) {
+		// NOTE: This needs updated to handle LODs, ideally from back-to-front order so far LODs are generally drawn first
+		// NOTE: We would need something like HasSupportedInstancePool() to early-exit
+
+		for (MeshDefinitionID definition : m_MeshDefinitions.view<PipelineDefinition>()) {
+
+
+			// make sure this mesh is finalized
+			assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(definition));
 
 			const auto* pPipelineDef =
 				m_MeshDefinitions.try_get<PipelineDefinition>(definition);
@@ -122,17 +132,25 @@ namespace qk::gfx {
 			// then the descriptor sets
 			if (const auto* pDescriptorSetDefinition = m_MeshDefinitions.try_get<DescriptorSetGroupDefinition>(definition)) {
 				for (const auto& descriptorSet : *pDescriptorSetDefinition) {
-					result.bindDescriptorSet(descriptorSet.hDescriptorSet);
+					result.bindDescriptorSet(descriptorSet.hDescriptorSet, descriptorSet.slot);
 				}
 			}
 
 			// Just use the DrawParams for the draw call
 			const auto& drawParams = m_MeshDefinitions.get<DrawParams>(definition);
 
-			if (drawParams.numInstances == 0)
+			// temporary fix
+			auto& cache = m_MeshDefinitions.get<CMeshPartitionStateCache>(definition);
+
+			assert(cache.size() == 1);
+
+			u32 numInstances = cache[0].size;
+
+
+			if (numInstances == 0)
 				result.drawArrays(drawParams.VertexBufferOffset, drawParams.VertexBufferSize);
 			else
-				result.drawArraysInstanced(drawParams.VertexBufferOffset, drawParams.VertexBufferSize, drawParams.numInstances);
+				result.drawArraysInstanced(drawParams.VertexBufferOffset, drawParams.VertexBufferSize, numInstances);
 		}
 
 		return result;
@@ -144,49 +162,34 @@ namespace qk::gfx {
 
 	template <class... SupportedTs>
 	template <class... Args>
-	MeshInstance Renderer<SupportedTs...>::insert(
-		MeshDefinitionID mesh_id,
-		u8 partition,
-		Args&&... args
-	) {
+	MeshInstance Renderer<SupportedTs...>::insert(MeshDefinitionID mesh_id, u8 partition, Args&&... args) {
 		// Make sure all Args are supported
-		static_assert(all_of_Ts_v<
-			type_list<std::decay_t<Args>...>,
-			type_list<SupportedTs...>
-		>);
+		static_assert(all_of_Ts_v<type_list<std::decay_t<Args>...>, type_list<SupportedTs...>>);
+
+		// make sure this mesh is finalized
+		assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(mesh_id));
 
 		// Allocate an instance
 		MeshInstance result;
 		result.mesh_ID = mesh_id;
 
-		auto& table =
-			m_MeshDefinitions.get<InstancePoolTable_t>(mesh_id);
+		auto& table = m_MeshDefinitions.get<InstancePoolTable_t>(mesh_id);
 
 		result.instance = table.insert({});
 
 		// Dispatch to each pool that exists on this mesh definition
 		(
 			[&] {
-			if (auto* pPool =
-			m_MeshDefinitions.template try_get<
-				InstancePool<std::decay_t<Args>>
-			>(mesh_id))
-			{
-				pPool->insert(
-					table,
-					std::forward<Args>(args),
-					partition,
-					result.instance
-				);
-			}
-			else {
-				throw std::runtime_error(
-					"Mesh definition is missing a required InstancePool"
-				);
-			}
-		}(),
-			...
-			);
+				if (auto* pPool =m_MeshDefinitions.template try_get<InstancePool<std::decay_t<Args>>>(mesh_id))
+					pPool->insert(table, std::forward<Args>(args), partition, result.instance);
+				else
+					throw std::runtime_error("Mesh definition is missing a InstancePool for an inserted instance-data type.");
+			}(), ...
+		);
+
+
+		m_MeshDefinitions.emplace<CStaleMeshSizeTag>(mesh_id);
+
 
 		return result;
 	}
@@ -203,12 +206,17 @@ namespace qk::gfx {
 			type_list<SupportedTs...>
 		>, "Instance contains an unsupported type");
 
+		// make sure this mesh is finalized
+		assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(instance.mesh_ID));
+
 		auto& table =
 			m_MeshDefinitions.get<InstancePoolTable_t>(instance.mesh_ID);
 
 		if (!table.valid(instance.instance)) {
 			throw std::runtime_error("Invalid mesh instance handle");
 		}
+
+
 
 		// Update each corresponding pool.
 		(
@@ -234,12 +242,17 @@ namespace qk::gfx {
 		}(),
 			...
 			);
+		m_MeshDefinitions.emplace_or_replace<CStaleMeshStateTag>(instance.mesh_ID);
+
 	}
 
 	template <class... SupportedTs>
 	void Renderer<SupportedTs...>::remove(MeshInstance instance) {
 		auto& table =
 			m_MeshDefinitions.get<InstancePoolTable_t>(instance.mesh_ID);
+
+		// make sure this mesh is finalized
+		assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(instance.mesh_ID));
 
 		if (!table.valid(instance.instance)) {
 			throw std::runtime_error("Invalid mesh instance handle");
@@ -248,19 +261,19 @@ namespace qk::gfx {
 		// Remove the instance from every pool present on this definition.
 		(
 			[&] {
-			if (auto* pPool =
-			m_MeshDefinitions.template try_get<
-				InstancePool<SupportedTs>
-			>(instance.mesh_ID))
-			{
-				pPool->remove(table, instance.instance);
-			}
-		}(),
+				if (auto* pPool = m_MeshDefinitions.template try_get<InstancePool<SupportedTs>>(instance.mesh_ID)) {
+					pPool->remove(table, instance.instance);
+				}
+			}(),
 			...
-			);
+		);
 
 		// Invalidate the handle only after the pools have been cleaned up.
 		table.remove(instance.instance);
+
+		m_MeshDefinitions.emplace<CStaleMeshSizeTag>(instance.mesh_ID);
+
+
 	}
 
 
@@ -326,6 +339,69 @@ namespace qk::gfx {
 	}
 
 
+
+	template <class ...SupportedTs>
+	bool Renderer<SupportedTs...>::needs_recompiled(MeshDefinitionID definition) const {
+		return m_MeshDefinitions.all_of<CStaleMeshSizeTag>(definition);
+	}
+	
+	template <class ...SupportedTs>
+	bool Renderer<SupportedTs...>::needs_recompiled() const {
+		return m_MeshDefinitions.view<CStaleMeshSizeTag>().size() != 0;
+	}
+
+	template <class ...SupportedTs>
+	bool Renderer<SupportedTs...>::needs_flushed(MeshDefinitionID definition) const {
+		return m_MeshDefinitions.any_of<CStaleMeshStateTag, CStaleMeshSizeTag>(definition);
+
+	}
+	template <class ...SupportedTs>
+	bool Renderer<SupportedTs...>::needs_flushed() const {
+		bool stale_state = m_MeshDefinitions.view<CStaleMeshStateTag>().size() != 0;
+		bool stale_size = m_MeshDefinitions.view<CStaleMeshSizeTag>().size() != 0;
+		
+		return stale_size || stale_state;
+
+	}
+
+	template <class... SupportedTs>
+	void Renderer<SupportedTs...>::syncPartitionCache(MeshDefinitionID target) {
+		// get the cache
+		auto& cache = m_MeshDefinitions.get<CMeshPartitionStateCache>(target);
+
+		size_t offset = 0;
+		size_t cacheIndex = 0;
+		bool finished = false;
+
+		// since they should always be co-synced for the same mesh,
+		// cache the the first valid instancepool's partitions.
+		// Early exit if one of them hits
+		([&] {
+			if (finished) return;
+			if (auto* pPool = m_MeshDefinitions.template try_get<InstancePool<SupportedTs>>(target)) {
+				for (size_t i = 0; i < pPool->num_partitions(); ++i) {
+					const auto& partition = pPool->get_partition(i);
+
+					cache[cacheIndex].offset = offset;
+					cache[cacheIndex].size = partition.size();
+
+					offset += partition.capacity();
+					++cacheIndex;
+				}
+				finished = true;
+			}
+		}(), ...);
+
+		// there shouldn't be any partitions
+		if (finished == false) cache.resize(0);
+
+	}
+
+
+
+
+
+
 	template <class... SupportedTs>
 	template <class instance_t>
 	bool MeshDefinitionBuilder<SupportedTs...>::hasInstancePool() {
@@ -374,5 +450,75 @@ namespace qk::gfx {
 		params.numInstances = count;
 		return *this;
 	}
+
+	template <class... SupportedTs>
+	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::setLODCount(u8 num_LODs) {
+		assert(num_LODs != 0);
+		m_NumLODs = num_LODs;
+
+
+		
+
+
+
+		return *this;
+	}
+
+	// static by default. Prevents update() from being called. Not implemented
+	template <class... SupportedTs>
+	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::markStatic() {
+		m_Renderer.m_MeshDefinitions.get<EMeshClass>(m_ID) = EMeshClass::Static;
+		return *this;
+	}
+
+
+	// static by default. Allows update() to be called. Not implemented
+	template <class... SupportedTs>
+	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::markDynamic() {
+		m_Renderer.m_MeshDefinitions.get<EMeshClass>(m_ID) = EMeshClass::Dynamic;
+		return *this;
+	}
+
+	template <class... SupportedTs>
+	MeshDefinitionID MeshDefinitionBuilder<SupportedTs...>::finalize() {
+
+		// first, add all the partitions to every instancepool
+
+		size_t size = m_Renderer.m_MeshDefinitions.get<CMeshPartitionStateCache>(m_ID).size();
+
+		if (size > 0) size--;
+
+		(
+			[&] {
+				
+				if (auto* pPool = m_Renderer.m_MeshDefinitions.template try_get<InstancePool<SupportedTs>>(m_ID)) {
+					for (size_t i = 0; i < size; i++) {
+						pPool->add_partition();
+					}
+				}
+			}
+		(), ...);
+
+		// could be get_or_emplace but we want the asserts while in development for now.
+		m_Renderer.m_MeshDefinitions.get<CMeshPartitionStateCache>(m_ID).resize(m_NumLODs);
+
+		m_Renderer.m_MeshDefinitions.emplace<CMeshFinalizedTag>(m_ID);
+		// In practice, Calls m_Renderer.m_MeshDefinitions.get<InstancePool<true_t>>(m_ID, hInstanceBuffer).add_partition() CMeshLODData::partition_sizes.size() - 1 times.
+		// also, resizes m_Renderer.m_MeshDefinitions.get<CMeshPartitionStateCache>(m_ID); to m_NumLODs.
+
+		return m_ID;
+	}
+
+	template <class ...SupportedTs>
+	const CMeshPartitionStateCache& Renderer<SupportedTs...>::LODData(MeshDefinitionID target) const {
+		return m_MeshDefinitions.get<CMeshPartitionStateCache>(target);
+	}
+
+
+
+
+
+
+
 
 }

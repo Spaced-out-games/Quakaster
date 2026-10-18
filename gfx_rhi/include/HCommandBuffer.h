@@ -40,7 +40,7 @@ namespace qk::gfx::rhi {
             CommandBuffer_recipe& bindIndexBuffer(const HIndexBuffer& hIndexBuffer);
 
 
-            CommandBuffer_recipe& bindDescriptorSet(HDescriptorSet hDescriptorSet, u8 slot = 0);
+            CommandBuffer_recipe& bindDescriptorSet(HDescriptorSet hDescriptorSet, u8 slot);
 
             CommandBuffer_recipe& drawArrays(u32 offset, u32 numVertices);
 

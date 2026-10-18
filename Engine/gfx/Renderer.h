@@ -48,8 +48,42 @@ namespace qk::gfx {
 		u32 IndexBufferSize = 0;
 
 		// InstanceBuffer state. 0 = no instancing
-		u32 numInstances = 0;
+		//u32 numInstances = 0;
 	};
+
+	// when in entity storage, denotes a mesh as having a stale state (pending updates), requiring a flush
+	struct CStaleMeshStateTag {
+		u8 _;
+	};
+
+	// when in entity storage, denotes a mesh as having a stale size (pending updates), requiring a commandbuffer recompile.
+	struct CStaleMeshSizeTag {
+		u8 _;
+	};
+
+	// debug; prevents programmer error by raising an assert if not present.
+	struct CMeshFinalizedTag {
+		u8 _;
+	};
+
+	// Denotes the bounds of a partition for a mesh
+	struct MeshPartitionMetaSpan {
+		u32 offset = 0;
+		u32 size   = 0;
+	};
+
+	// Caches partition state for a mesh as a component
+	using CMeshPartitionStateCache = std::vector<MeshPartitionMetaSpan>;
+
+
+
+
+
+	enum class EMeshClass : u8 {
+		Static,
+		Dynamic
+	};
+
 
 
 	enum class MeshDefinitionID : u32 {};
@@ -69,7 +103,8 @@ namespace qk::gfx {
 		MeshDefinitionID mesh_ID;
 		InstancePoolHandle_t instance;
 	};
-
+	
+	// tst
 	template <class ...SupportedTs>
 	struct Renderer {
 		public:
@@ -97,6 +132,11 @@ namespace qk::gfx {
 
 			void flush_all();
 
+			bool needs_recompiled(MeshDefinitionID definition) const;
+			bool needs_recompiled() const;
+
+			bool needs_flushed(MeshDefinitionID definition) const;
+			bool needs_flushed() const;
 
 
 
@@ -168,7 +208,21 @@ namespace qk::gfx {
 
 			// TODO: add move operation
 
+			// NOTE: respects the current partition sizes, not the `new` ones
+			void syncPartitionCache(MeshDefinitionID target);
+
+			const CMeshPartitionStateCache& LODData(MeshDefinitionID target) const;
+
+			template <class instance_t>
+			InstancePool<instance_t>* instancepool(MeshDefinitionID target) {
+				return m_MeshDefinitions.try_get<InstancePool<instance_t>>(target);
+
+			}
+
+
 	};
+
+
 	// Acts as a `view` to a mesh definition.
 	template <class ...SupportedTs>
 	class MeshDefinitionBuilder {
@@ -178,6 +232,7 @@ namespace qk::gfx {
 		MeshDefinitionBuilder(MeshDefinitionID, Renderer<SupportedTs...>&);
 		public:
 			MeshDefinitionID m_ID; // temporary
+			u8 m_NumLODs = 1;
 
 			// sets the pipeline for this mesh
 			MeshDefinitionBuilder& pushPipeline(u64 pipeline_id);
@@ -197,22 +252,42 @@ namespace qk::gfx {
 			bool hasInstancePool();
 
 
-
+			// NOTE: hInstanceBuffer is assumed to be constructed by the end user but otherwise completely empty. 
 			template <class instance_t>
 			MeshDefinitionBuilder& pushInstancePool(HVertexBuffer hInstanceBuffer);
 
-			// these probably should be inline free functions referenced by the builder tbh
+			// Sets the mesh's vertex buffer size information
 			MeshDefinitionBuilder& setVertexBufferRange(u32 offset, u32 size);
+
+			// Sets the mesh's index buffer size information
 			MeshDefinitionBuilder& setIndexBufferRange(u32 offset, u32 size);
+
+			// NOTE: This needs depricated so that instancebuffers can manage it themselves
 			MeshDefinitionBuilder& setInstanceCount(u32 count);
+
+			// Allocates a number of LODs
+			MeshDefinitionBuilder& setLODCount(u8 num_LODs);
+
+			// static by default. Prevents update() from being called. Not implemented
+			MeshDefinitionBuilder& markStatic();
+
+
+			// static by default. Allows update() to be called. Not implemented
+			MeshDefinitionBuilder& markDynamic();
+
+
+			// Tells the renderer that this mesh is in its final state. You can add and remove instances at this point. Not implemented.
+			// In practice, Calls m_Renderer.m_MeshDefinitions.get<InstancePool<true_t>>(m_ID, hInstanceBuffer).add_partition() CMeshPartitionStateCache::size() - 1 times.
+			// also, resizes m_Renderer.m_MeshDefinitions.get<CMeshPartitionStateCache>(m_ID); to m_NumLODs. 
+			MeshDefinitionID finalize();
 
 
 			
 
+			
 
 
 	};
-
 
 
 
