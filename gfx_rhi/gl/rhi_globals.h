@@ -411,12 +411,6 @@ namespace qk::gfx::rhi {
         Buffer_impl(BufferType type, BufferUsage usage, u32 elem_size = 0, u32 elem_count = 0, bool initialized = 0);
 
 
-        // todo: 
-        /*
-        we should have Buffer_malloc(), Buffer_free(), buffer_upload(), Buffer_update(), T* Buffer_access(FLAGS)...
-        
-        
-        */
 
         void upload(const void* pData, size_t num_bytes);
 
@@ -483,17 +477,6 @@ namespace qk::gfx::rhi {
         void bind(DescriptorSetsContext& ctx) const;
 
     };
-
-
-
-    // --------------------------------------------------------- registries --------------------------------------------------------- //
-
-
-
-    // Just the descriptor-ables for now. Eventually heap-allocate, then add an arena allocator.
-
-    //static inline qk::ResourceRegistry<Texture_impl>        g_Textures;
-    //static inline qk::ResourceRegistry<Buffer_impl>         g_Buffers;
 
 
 }

@@ -6,10 +6,8 @@
 
 namespace qk::gfx::rhi {
 
-
 	// Retreives symbols for GLAD function calls
 	int QK_API init(SymbolLoader loader);
-
 
 	// temporary
 	void gl_clear();
