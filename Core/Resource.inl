@@ -6,7 +6,14 @@ namespace qk {
 
     template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
     void ResourceRegistry<Resource_t, Resource_dtor, Resource_free>::insert(const Resource_key_t& key, Resource_t* pResource) {
-        assert(!m_Resources.contains(key));
+        //assert(!m_Resources.contains(key));
+
+        if (m_Resources.contains(key)) {
+            spdlog::info("ResourceRegistry:: hash collision for resource with key: {}", key);
+            __debugbreak();
+            assert(false);
+        }
+
         assert(pResource);
         m_Resources[key] = pResource;
 

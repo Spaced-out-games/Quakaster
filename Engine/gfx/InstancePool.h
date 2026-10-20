@@ -45,7 +45,8 @@ namespace qk::gfx {
 
         size_t num_partitions() const;
 
-        const InstancePoolPartition_t<instance_t>& get_partition(size_t index) const;
+        // debug
+        InstancePoolPartition_t<instance_t>& get_partition(size_t index);
 
 
 

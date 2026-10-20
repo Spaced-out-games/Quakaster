@@ -5,11 +5,15 @@
 #include <DrawCommand.h> // temp
 //#include <glm/ext/matrix_transform.hpp>
 //#include <gfx/InstancePool.h>
-
+#include <utility/time.h>
+#include "debugging/trace.h"
 
 
 // -------------------------------------------------- defines -------------------------------------------------- //
-#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
+//#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
+#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/burger-7419420_1280.jpg"
+
+
 #define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
 
 // aliases
@@ -17,7 +21,7 @@ using namespace qk::media;
 using namespace qk::gfx;
 
 
-
+#include "utility/ScopeTimer.h"
 
 
 // -------------------------------------------------- globals -------------------------------------------------- //
@@ -31,17 +35,17 @@ std::vector<glm::vec3> g_Vertices = {
 
 
 std::vector<glm::mat4> g_Instances = {
-    glm::mat4(1.0),
+    //glm::mat4(1.0),
     //glm::translate(glm::mat4(1.0), {0.2,0.0,0.0}),
     //glm::translate(glm::mat4(1.0), {0.2,0.2,0.0})
 };
 
-glm::vec3 tint = { 0.5, 0.25, 0.0 };
+glm::vec3 tint = { 0.0, 0.0, 0.0 };
 
 entt::registry reg;
 
 
-
+//glm::mat4 m = { 1.0f };
 
 // -------------------------------------------------- helpers -------------------------------------------------- //
 
@@ -72,9 +76,31 @@ MeshDefinitionID renderer_test(Renderer<Ts...>& r,
 
 }
 
+void print_mat4(const glm::mat4& mat) {
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 4; ++col) {
+            std::printf("%8.3f ", mat[col][row]);
+        }
+        std::printf("\n");
+    }
+}
+
+#include <random>
+#include <glm/gtc/matrix_transform.hpp>
+
+static std::mt19937 g_Rng{ 1337 }; // fixed seed so a crash replays
+
+static glm::mat4 random_mat4() {
+    std::uniform_real_distribution<float> pos(-1.0f, 1.0f), ang(0.0f, 0.0f), scl(0.01f, 0.02f);
+    glm::mat4 m = glm::translate(glm::mat4(1.0f), { pos(g_Rng), pos(g_Rng), 0.0f });
+    m = glm::rotate(m, ang(g_Rng), glm::vec3(0, 0, 1));
+    return glm::scale(m, glm::vec3(scl(g_Rng)));
+}
+
+
 
 void Sandbox::init(int argc, char** argv) {
-
+    spdlog::info(qk::trace("hello"));
     printf("// ---------------------------------- INITIALIZATION ---------------------------------- //\n");
 
 
@@ -118,7 +144,7 @@ void Sandbox::init(int argc, char** argv) {
 
     hInstanceBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
     r.define_resource("InstanceBuffer"_sh, hInstanceBuffer);
-    VertexBuffer_upload(hInstanceBuffer, g_Instances);
+    //VertexBuffer_upload(hInstanceBuffer, g_Instances);
 
 
 
@@ -137,9 +163,9 @@ void Sandbox::init(int argc, char** argv) {
     DescriptorSet_setResource(hTextureSet, 0, r.get_resource<HTexture>(qk::string_hash{ TEST_IMAGE_PATH }));
     DescriptorSet_setResource(hTintSet, 0, hTint);
     
-
+    
     // define a mesh
-    MeshDefinitionID mesh_id = renderer_test(r,
+    m_MeshID = renderer_test(r,
         "PBRPipeline"_sh,
         "VertexBuffer"_sh,
         "InstanceBuffer"_sh,
@@ -155,21 +181,19 @@ void Sandbox::init(int argc, char** argv) {
     printf("// ---------------------------------- LIST PARTITIONS BEFORE ---------------------------------- //\n");
 
 
-    for (const auto& entry : r.LODData(mesh_id)) {
+    for (const auto& entry : r.LODData(m_MeshID)) {
         spdlog::info("Partition({}, {})", entry.offset, entry.size);
     }
 
     // preview for debugging
-    const auto* pInstancePool = r.instancepool<glm::mat4>(mesh_id);
+    //auto* pInstancePool = r.instancepool<glm::mat4>(mesh_id);
 
-    assert(pInstancePool->num_partitions() == 1);
+    instance = r.insert(m_MeshID, 0, glm::mat4{ 1.0f });
 
-    const auto& pPartition = pInstancePool->get_partition(0);
 
-    //auto handle = r.insert(mesh_id, 0, glm::mat4(1.0));
-    //r.update(handle, (glm::mat4)glm::mat4_cast(q));
 
-    //r.flush_all();
+
+
     //r.syncPartitionCache(mesh_id);
 
 
@@ -177,11 +201,12 @@ void Sandbox::init(int argc, char** argv) {
     printf("// ---------------------------------- LIST PARTITIONS AFTER ---------------------------------- //\n");
 
 
-    for (const auto& entry : r.LODData(mesh_id)) {
+    for (const auto& entry : r.LODData(m_MeshID)) {
         spdlog::info("Partition({}, {})", entry.offset, entry.size);
     }
 
-
+    r.syncPartitionCache(m_MeshID);
+    
     auto recipe = r.compile();
 
     printf("// ---------------------------------- LIST COMMANDBUFFER ---------------------------------- //\n");
@@ -214,31 +239,99 @@ void Sandbox::init(int argc, char** argv) {
     hCmdBuf = CommandBuffer_ctor(recipe);
     r.define_resource(0, hCmdBuf);
 
-    
+    //m_Live.push_back(r.insert(m_MeshID, 0, random_mat4()));
+    //r.flush_mesh(m_MeshID);
 
 }
  
 
 
 void Sandbox::run() {
+    using utility::ScopeTimer;
 
-	// populates event m_EventQueue
-	m_Window.pollEvents();
-	// flushes it
-	m_Layers.propagate_events();
+    static uint64_t last_report = qk::utility::now();
+    static uint64_t frames = 0;
 
-	CommandBuffer_execute(hCmdBuf);
+    {
+        ScopeTimer t_frame("frame");
 
-	m_Layers.render();
+        {
+            ScopeTimer t("events");
+            m_Window.pollEvents();
+            m_Layers.propagate_events();
+        }
+        
+        {
+            ScopeTimer t("churn");
+            std::uniform_int_distribution<int> pick(0, 99), count(99, 100);
+            static int insert_odds = 90;
+
+            for (int n = count(g_Rng); n > 0; --n) {
+                int p = pick(g_Rng);
 
 
-	// presents offscreen image
-	m_Window.swapBuffers();
+                if (p < insert_odds || m_Live.empty()) {
+                    m_Live.push_back(r.insert(m_MeshID, 0, random_mat4()));
+                } else if ( m_Live.size() >= 10000) { 
+                    size_t i = std::uniform_int_distribution<size_t>(0, m_Live.size() - 1)(g_Rng);
+                    r.remove(m_Live[i]);
+                    m_Live[i] = m_Live.back();
+                    m_Live.pop_back();
+                    insert_odds = 0;
+                    continue;
+                }
+            }
+        }
+
+        if (r.needs_flushed(m_MeshID)) {
+            ScopeTimer t("flush");
+            r.flush_mesh(m_MeshID);
+            r.clear_flags();
+
+        }
+
+        if (r.needs_recompiled(m_MeshID)) {
+            ScopeTimer t("recompile");
+            r.syncPartitionCache(m_MeshID);
+            auto recipe = r.compile();
+            hCmdBuf = CommandBuffer_ctor(recipe);
+            if (r.get_resource<HCommandBuffer>(0))
+                r.remove_resource<HCommandBuffer>(0);
+            r.define_resource(0, hCmdBuf);
+        }
 
 
-	// updates when told to by the m_Window.
-	setStatus(m_Window.shouldClose());
+        {
+            ScopeTimer t("clear");
+            rhi::gl_clear();
+        }
 
+        if (!m_Live.empty()) {
+            ScopeTimer t("execute");
+            CommandBuffer_execute(hCmdBuf);
+        }
+
+        {
+            ScopeTimer t("layers");
+            //m_Layers.render();
+        }
+
+        {
+            ScopeTimer t("swap");
+            m_Window.swapBuffers();
+        }
+
+        setStatus(m_Window.shouldClose());
+    }
+
+    ++frames;
+    const uint64_t now = qk::utility::now();
+    if (now - last_report >= 1'000'000'000ULL) {
+        const double elapsed = double(now - last_report) / 1e9;
+        spdlog::warn("FPS: {}, instance count: {}", double(frames) / elapsed, m_Live.size());
+        frames = 0;
+        last_report = now;
+    }
 }
 
 void Sandbox::shutdown() {

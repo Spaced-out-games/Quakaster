@@ -162,6 +162,10 @@ namespace qk::gfx {
 			template <class T>
 			T get_resource(u64 id);
 
+			// not decomposed
+			void clear_flags();
+
+
 			template <>
 			HDescriptorSet get_resource<HDescriptorSet>(u64 id) {
 				return m_DescriptorSets.peek(id);
@@ -192,6 +196,51 @@ namespace qk::gfx {
 			HShaderProgram get_resource<HShaderProgram>(u64 id) {
 				return m_ShaderPrograms.peek(id);
 			}
+
+
+
+
+			// NOTE: Not completely safe!!! Doesn't check lifetime!
+			template <class T>
+			void remove_resource(u64 id);
+
+
+			template <>
+			void remove_resource<HDescriptorSet>(u64 id) {
+				m_DescriptorSets.try_remove(id);
+			}
+
+			// TEST ONLY BAD CODE!!!
+			template <>
+			void remove_resource<HCommandBuffer>(u64 id) {
+				m_CommandBuffers.destroy_everything();
+			}
+
+			template <>
+			void remove_resource<HBuffer>(u64 id) {
+				m_GBuffers.try_remove(id);
+			}
+
+			template <>
+			void remove_resource<HPipeline>(u64 id) {
+				m_Pipelines.try_remove(id);
+			}
+
+
+			template <>
+			void remove_resource<HTexture>(u64 id) {
+				m_Textures.try_remove(id);
+			}
+
+			template <>
+			void remove_resource<HShaderProgram>(u64 id) {
+				m_ShaderPrograms.try_remove(id);
+			}
+
+
+
+
+
 
 			HTexture load_or_reload_texture(const str& path);
 

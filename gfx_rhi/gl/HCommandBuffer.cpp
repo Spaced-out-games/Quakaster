@@ -174,6 +174,8 @@ namespace qk::gfx::rhi {
             break;
 
         case EDrawCmdType::DrawArrays:
+            // NOTE: The scene compiler might emit this command when the instancebuffer is empty, leading to UB.
+            __debugbreak();
             glDrawArrays(
                 PrimitiveType_cast(hCmdBuf->topology),
                 drawArraysCmd.offset,

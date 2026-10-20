@@ -159,6 +159,11 @@ namespace qk {
 
 		return back;
 	}
+
+	template <class T>
+	size_t Partition<T>::queue_size() const {
+		return m_Queue.size();
+	}
 	
 
 

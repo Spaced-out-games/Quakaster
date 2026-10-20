@@ -10,10 +10,10 @@
 namespace qk::utility {
     // Times the duration of a scope
     struct QK_API ScopeTimer {
-        uint64_t* m_pTarget = nullptr;
+        const char* m_pMsg = nullptr;
         uint64_t m_StartTime = 0;
 
-        explicit ScopeTimer(uint64_t* pTarget);
+        explicit ScopeTimer(const char* pMsg);
 
         ~ScopeTimer();
 
@@ -21,6 +21,5 @@ namespace qk::utility {
         ScopeTimer& operator=(const ScopeTimer&) = delete;
 
         ScopeTimer(ScopeTimer&& other) noexcept;
-        ScopeTimer& operator=(ScopeTimer&& other) noexcept;
     };
 }

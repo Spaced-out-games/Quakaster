@@ -131,7 +131,7 @@ namespace qk::gfx {
 	}
 
 	template <class instance_t>
-	const InstancePoolPartition_t<instance_t>& InstancePool<instance_t>::get_partition(size_t index) const {
+	InstancePoolPartition_t<instance_t>& InstancePool<instance_t>::get_partition(size_t index) {
 		return m_Partitions.at(index);
 	}
 

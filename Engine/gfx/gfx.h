@@ -40,7 +40,7 @@ namespace qk::gfx {
 
 
 
-	HTexture Texture_fromImage(const media::Image& img);
+	HTexture Texture_fromImage(const media::Image& img, TextureFormat upload_format, TextureFormat storage_format);
 
 	inline void registry_upload(rhi::PipelineRegistry& registry, const std::unordered_map<str, rhi::Pipeline_recipe>& pipelines) {
 		rhi::HPipeline hPipeline = nullptr;
@@ -68,7 +68,20 @@ namespace qk::gfx {
 		if (!media::load_image(img, path))
 			return nullptr;
 
-		rhi::HTexture hTex = Texture_fromImage(img);
+		rhi::HTexture hTex = nullptr;
+
+		if (path.ends_with(".png")) {
+			hTex = Texture_fromImage(img, TextureFormat::RGBA_8, TextureFormat::RGBA_8);
+		}
+		else if (path.ends_with(".jpg")) {
+			hTex = Texture_fromImage(img, TextureFormat::RGB_8, TextureFormat::RGB_8);
+		}
+		else {
+			assert(false);
+		}
+
+		assert(hTex);
+
 		registry.insert(id, hTex);
 
 		return hTex;

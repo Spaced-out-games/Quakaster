@@ -208,6 +208,7 @@ namespace qk::gfx::rhi {
     void Buffer_close(const HBuffer& hBuf) {
         assert(hBuf);
         hBuf->close();
+        hBuf->initialized = true;
     }
     void Buffer_cpy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset, size_t num_bytes) {
         Buffer_impl::copy(src, src_offset, dest, dest_offset, num_bytes);

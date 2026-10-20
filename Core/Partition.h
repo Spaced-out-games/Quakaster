@@ -74,6 +74,7 @@ namespace qk {
 
 			//void remove(u32 offset);
 
+			size_t queue_size() const;
 
 			u32 pop_back();
 

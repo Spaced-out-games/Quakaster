@@ -172,7 +172,11 @@ class Sandbox : public qk::Application {
 	// commandbuffers
 	HCommandBuffer hCmdBuf = nullptr;
 
-
+	// testing
+	gfx::MeshInstance instance;
+	gfx::MeshDefinitionID          m_MeshID;
+	std::vector<gfx::MeshInstance> m_Live;
+	float t = 0.0f;
 
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
@@ -197,7 +201,7 @@ class Sandbox : public qk::Application {
 	// initializes the renderer and window.
 	inline void render_init() {
 		qk::startup(); // calls glfwInit
-		m_Window.init(qk::Window::Size{ 1920 / 2, 1080 / 2 }, "Quakaster Demo", nullptr);
+		m_Window.init(qk::Window::Size{ 1920, 1080 }, "Quakaster Demo", nullptr);
 		qk::gfx::rhi::init(m_Window);
 
 	}

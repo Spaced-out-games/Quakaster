@@ -102,6 +102,10 @@ namespace qk {
 
 		spdlog::info("Window@{}: initialized", (const void*)this);
 
+		#ifdef _DEBUG
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+		#endif
+
 
 		m_Title = title;
 

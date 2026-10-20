@@ -26,6 +26,16 @@ namespace qk::gfx {
 		}
 	}
 
+
+	template <class ...SupportedTs>
+	void Renderer<SupportedTs...>::clear_flags() {
+		for (MeshDefinitionID id : m_MeshDefinitions.view<CStaleMeshStateTag, CStaleMeshSizeTag>()) {
+			if (m_MeshDefinitions.all_of<CStaleMeshStateTag>(id)) m_MeshDefinitions.erase<CStaleMeshStateTag>(id);
+			if (m_MeshDefinitions.all_of<CStaleMeshSizeTag>(id)) m_MeshDefinitions.erase<CStaleMeshSizeTag>(id);
+		}
+	}
+
+
 	template <class ...SupportedTs>
 	void Renderer<SupportedTs...>::destroy_all_resources() {
 		m_CommandBuffers.destroy_everything(); // !!!
@@ -63,19 +73,8 @@ namespace qk::gfx {
 
 	template <class ...SupportedTs>
 	HTexture Renderer<SupportedTs...>::load_or_reload_texture(const str& path) {
-		const auto id = qk::string_hash{ path };
 
-		if (auto hTex = m_Textures.peek(id))
-			return hTex;
-
-		media::Image img;
-		if (!media::load_image(img, path))
-			return nullptr;
-
-		rhi::HTexture hTex = Texture_fromImage(img);
-		m_Textures.insert(id, hTex);
-
-		return hTex;
+		return load_or_reload(m_Textures, path);
 	}
 
 	template <class ...SupportedTs>
@@ -143,14 +142,15 @@ namespace qk::gfx {
 			auto& cache = m_MeshDefinitions.get<CMeshPartitionStateCache>(definition);
 
 			assert(cache.size() == 1);
-
+			// LOD 0
 			u32 numInstances = cache[0].size;
 
 
-			if (numInstances == 0)
-				result.drawArrays(drawParams.VertexBufferOffset, drawParams.VertexBufferSize);
-			else
-				result.drawArraysInstanced(drawParams.VertexBufferOffset, drawParams.VertexBufferSize, numInstances);
+			// TODO: add a flag to mesh types to denote instancing, then uncomment and adapt
+			// assert(!isInstanced || numInstances > 0);
+			//assert(numInstances > 0);
+
+			result.drawArraysInstanced(drawParams.VertexBufferOffset, drawParams.VertexBufferSize, numInstances);
 		}
 
 		return result;
@@ -188,7 +188,7 @@ namespace qk::gfx {
 		);
 
 
-		m_MeshDefinitions.emplace<CStaleMeshSizeTag>(mesh_id);
+		m_MeshDefinitions.emplace_or_replace<CStaleMeshSizeTag>(mesh_id);
 
 
 		return result;
@@ -271,7 +271,7 @@ namespace qk::gfx {
 		// Invalidate the handle only after the pools have been cleaned up.
 		table.remove(instance.instance);
 
-		m_MeshDefinitions.emplace<CStaleMeshSizeTag>(instance.mesh_ID);
+		m_MeshDefinitions.emplace_or_replace<CStaleMeshSizeTag>(instance.mesh_ID);
 
 
 	}
@@ -380,6 +380,7 @@ namespace qk::gfx {
 			if (finished) return;
 			if (auto* pPool = m_MeshDefinitions.template try_get<InstancePool<SupportedTs>>(target)) {
 				for (size_t i = 0; i < pPool->num_partitions(); ++i) {
+					assert(cacheIndex < cache.size());
 					const auto& partition = pPool->get_partition(i);
 
 					cache[cacheIndex].offset = offset;
