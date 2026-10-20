@@ -17,8 +17,5 @@ namespace qk::gfx::rhi::gui {
 
 	// shuts down imgui
 	void shutdown();
-
-
-
 	
 }

@@ -251,11 +251,6 @@ namespace qk::gfx::rhi {
 
     }
    
-
-
-
-
-
     HTexture Texture_ctor(const Texture_storage& storage) {
         return new Texture_impl(storage);
     }
