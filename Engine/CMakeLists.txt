@@ -43,26 +43,28 @@ set(ENGINE_SOURCES
     components/CCamera.cpp
 
     # systems
-    systems/System.cpp
+    "kernel/System.cpp"
 
 
     # services
-    services/IService.cpp
-    services/ConvarService.cpp
-    services/GraphNodeService.cpp
+    "kernel/IService.cpp"
+    
+    
 
     # scripting
-    scripting/Convar.cpp
-    scripting/ConvarRegistry.cpp
+    
+    
 
     # gfx
     
-    
+    #"net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp"
 
-          "utility/ByteStream.cpp"   "net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp" "media/LoadPipeline.cpp" "components/CSignalListener.cpp" "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "scene/ComponentLoader.cpp" "scene/EntityLoader.cpp" "scene/SceneLoader.cpp"   "gfx/InstancePool.cpp"  "gfx/Renderer.cpp" "debugging/trace.cpp")
+    "net-v2/Peer.cpp" "net-v2/PeerRegistry.h"
+
+    "utility/ByteStream.cpp"    "media/LoadPipeline.cpp"  "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "kernel/ComponentLoader.cpp" "kernel/EntityLoader.cpp" "kernel/SceneLoader.cpp"   "gfx/InstancePool.cpp"  "gfx/Renderer.cpp" "debugging/trace.cpp" "utility/Profiler.cpp" "gui/ProfilerWidget.cpp" "kernel/KeyValues.cpp" "kernel/Kernel.cpp" "kernel/VDrive.cpp" "kernel/Port.cpp" "kernel/Signal.cpp" "World/World.cpp" "components/CGraphNode.cpp")
 
 message("[ENGINE] Building target `Engine`...")
-add_library(${PROJECT_NAME} ${ENGINE_SOURCES} )
+add_library(${PROJECT_NAME} ${ENGINE_SOURCES}  "kernel/KeyValues.h")
 
 # engine include lists go here
 target_link_libraries(${PROJECT_NAME}
@@ -106,5 +108,6 @@ message(STATUS "[ENGINE] [DEBUG] CMAKE_CURRENT_DIRECTORY: ${CMAKE_CURRENT_SOURCE
 
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE QK_BUILD_ENGINE
+    PRIVATE NOMINMAX
 )
 
