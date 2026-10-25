@@ -3,13 +3,13 @@
 
 namespace qk {
 
-	bool from_json(const json& j, std::vector<EntityArgumentMap>& scene) {
+	bool from_json(const json& j, std::vector<KeyValues>& scene) {
 		if (!j.is_array())
 			return false;
 
-		EntityArgumentMap map;
+		KeyValues map;
 		for (const auto& entity_args : j) {
-			if (from_json(entity_args, map))
+			if (KeyValues_fromJSON(entity_args, "", map, '/'))
 				scene.push_back(map);
 			else
 				return false;
@@ -19,7 +19,7 @@ namespace qk {
 
 	}
 
-	void deserialize_scene(const std::span<EntityArgumentMap>& scene, entt::registry& registry, EntityLoader loader) {
+	void deserialize_scene(const std::span<KeyValues>& scene, entt::registry& registry, EntityLoader loader) {
 		assert(registry.storage<entt::entity>().in_use() == 0);
 
 		entt::entity target = entt::null;
