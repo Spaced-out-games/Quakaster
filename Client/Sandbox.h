@@ -45,9 +45,9 @@
 #include "Resource.h"
 
 #include "spacial/CSpatialHashMap.h"
-#include "scene/ComponentLoader.h"
-#include "scene/EntityLoader.h"
-#include "scene/SceneLoader.h"
+#include "kernel/ComponentLoader.h"
+#include "kernel/EntityLoader.h"
+#include "kernel/SceneLoader.h"
 #include "fnv1a.h"
 
 #include "gfx/Renderer.h"
@@ -57,10 +57,16 @@
 #include "Handle.h"
 #include <Partition.h>
 #include "gfx/InstancePool.h"
+#include "utility/Profiler.h"
+#include "gui/ProfilerWidget.h"
 
 using namespace qk::gfx::rhi;
 
 using qk::operator""_sh;
+
+#include <World/World.h>
+
+qk::World<entt::entity> w(qk::KernelPermissions::ENTRY_CREATE);
 
 using namespace qk;
 qk::EntityLoader loader;
@@ -69,71 +75,49 @@ const qk::ComponentLoader component_loaders[] = {
 	ComponentLoader{
 		.name = "CTransform",
 		.dependencies = {
-			"CTransform/position"_sh,
-			"CTransform/rotation"_sh,
-			"CTransform/scale"_sh
+			"CTransform.position",
+			"CTransform.rotation",
+			"CTransform.scale"
 		},
-		.loader = [](entt::registry&, entt::entity, const EntityArgumentMap& args) {
-			if (args.contains("CTransform/position"_sh)) {
-				const auto& position =
-					std::get<std::vector<f32>>(args.at("CTransform/position"_sh));
+		.loader = [](entt::registry&, entt::entity, const qk::KeyValues& args) {
+			const auto get_vec3 = [&](const char* key) -> std::optional<glm::vec3> {
+				const auto it = args.find(key);
+				if (it == args.end())
+					return std::nullopt;
+				return it->second.as<glm::vec3>();
+			};
 
-				spdlog::info(
-					"CTransform/position: {}, {}, {}",
-					position[0],
-					position[1],
-					position[2]
-				);
-			}
+			if (const auto position = get_vec3("CTransform.position"))
+				spdlog::info("CTransform/position: {}, {}, {}", position->x, position->y, position->z);
 
-			if (args.contains("CTransform/rotation"_sh)) {
-				const auto& rotation =
-					std::get<std::vector<f32>>(args.at("CTransform/rotation"_sh));
+			if (const auto rotation = get_vec3("CTransform.rotation"))
+				spdlog::info("CTransform/rotation: {}, {}, {}", rotation->x, rotation->y, rotation->z);
 
-				spdlog::info(
-					"CTransform/rotation: {}, {}, {}",
-					rotation[0],
-					rotation[1],
-					rotation[2]
-				);
-			}
-
-			if (args.contains("CTransform/scale"_sh)) {
-				const auto& scale =
-					std::get<std::vector<f32>>(args.at("CTransform/scale"_sh));
-
-				spdlog::info(
-					"CTransform/scale: {}, {}, {}",
-					scale[0],
-					scale[1],
-					scale[2]
-				);
-			}
-
-		}	
+			if (const auto scale = get_vec3("CTransform.scale"))
+				spdlog::info("CTransform/scale: {}, {}, {}", scale->x, scale->y, scale->z);
+		}
 	}
-
-
 };
 void loader_demo(entt::registry& registry, entt::entity target) {
 	qk::EntityLoader loader;
 	loader.push_loaders(component_loaders);
 
-	EntityArgumentMap args = {
+	qk::KeyValues args = {
 		{
-			"CTransform/position"_sh,
+			"CTransform.position",
 			std::vector<f32>{ 0.0f, 0.0f, 0.0f }
 		},
 		{
-			"CTransform/rotation"_sh,
+			"CTransform.rotation",
 			std::vector<f32>{ 0.0f, 90.0f, 0.0f }
 		},
 		{
-			"CTransform/scale"_sh,
+			"CTransform.scale",
 			std::vector<f32>{ 1.0f, 1.0f, 1.0f }
 		},
 		{
-			"GARBAGE"_sh, 0
+			"GARBAGE",
+			i32{ 0 }
 		}
 	};
 
@@ -178,6 +162,9 @@ class Sandbox : public qk::Application {
 	std::vector<gfx::MeshInstance> m_Live;
 	float t = 0.0f;
 
+	// profiling
+	qk::utility::ProfilerRegistry m_Profilers;
+	qk::utility::Profiler* m_pFrame = nullptr;
 
 	// A little hack to make assets/ readable in debug mode, where Client.exe is deep in the woods
 	inline void add_symlinks() {
@@ -208,8 +195,21 @@ class Sandbox : public qk::Application {
 
 	// this has to be called last because some m_Layers might depend on m_Window Resources
 	inline void attach_layers() {
-		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());
+		m_pFrame = &m_Profilers.create("frame");
 
+		//m_pFrame->sections()
+
+		m_Profilers.create("events");
+		m_Profilers.create("churn");
+		m_Profilers.create("clear");
+		m_Profilers.create("execute");
+		m_Profilers.create("layers");
+		m_Profilers.create("swap");
+
+		
+		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());
+		gui.emplace<qk::gfx::ProfilerWidget>(&m_Profilers, "Frame profiler");
+		//m_pFrame.
 	}
 
 	inline void init_subsystems() {
