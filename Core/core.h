@@ -105,3 +105,15 @@ struct any_of_Ts<type_list<Ts...>, type_list<Us...>>
 
 template<typename Required, typename Available>
 inline constexpr bool any_of_Ts_v = any_of_Ts<Required, Available>::value;
+
+
+template <template <class...> class Container_t, class TypeList_t>
+struct UnpackTypeList;
+
+template <template <class...> class Container_t, class... Ts>
+struct UnpackTypeList<Container_t, type_list<Ts...>> {
+    using type = Container_t<Ts...>;
+};
+
+template <template <class...> class Container_t, class TypeList_t>
+using UnpackTypeList_t = typename UnpackTypeList<Container_t, TypeList_t>::type;
