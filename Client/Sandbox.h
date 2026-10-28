@@ -66,7 +66,7 @@ using qk::operator""_sh;
 
 #include <World/World.h>
 
-qk::World<entt::entity> w(qk::KernelPermissions::ENTRY_CREATE);
+qk::World w(qk::KernelPermissions::ENTRY_CREATE);
 
 using namespace qk;
 qk::EntityLoader loader;
@@ -88,13 +88,13 @@ const qk::ComponentLoader component_loaders[] = {
 			};
 
 			if (const auto position = get_vec3("CTransform.position"))
-				spdlog::info("CTransform/position: {}, {}, {}", position->x, position->y, position->z);
+				spdlog::info("CTransform.position: {}, {}, {}", position->x, position->y, position->z);
 
 			if (const auto rotation = get_vec3("CTransform.rotation"))
-				spdlog::info("CTransform/rotation: {}, {}, {}", rotation->x, rotation->y, rotation->z);
+				spdlog::info("CTransform.rotation: {}, {}, {}", rotation->x, rotation->y, rotation->z);
 
 			if (const auto scale = get_vec3("CTransform.scale"))
-				spdlog::info("CTransform/scale: {}, {}, {}", scale->x, scale->y, scale->z);
+				spdlog::info("CTransform.scale: {}, {}, {}", scale->x, scale->y, scale->z);
 		}
 	}
 };

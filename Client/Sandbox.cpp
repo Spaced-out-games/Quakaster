@@ -44,7 +44,6 @@ std::vector<glm::mat4> g_Instances = {
 
 
 
-qk::net_v2::DemoProtocol proto;
 
 glm::vec3 tint = { 0.0, 0.0, 0.0 };
 

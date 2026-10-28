@@ -9,7 +9,7 @@ namespace qk {
 
 		KeyValues map;
 		for (const auto& entity_args : j) {
-			if (KeyValues_fromJSON(entity_args, "", map, '/'))
+			if (KeyValues_fromJSON(entity_args, "", map, '.'))
 				scene.push_back(map);
 			else
 				return false;

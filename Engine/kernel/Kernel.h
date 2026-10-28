@@ -3,8 +3,7 @@
 #include <memory>
 
 namespace qk {
-
-    template <class ...Ts>
+    
     class VDrive;
 
     enum class KernelPermissions : std::uint8_t {
@@ -18,9 +17,8 @@ namespace qk {
 
     };
 
-    template <class ...ID_Ts>
 	struct Kernel {
-        using Drive_t = VDrive<ID_Ts...>;
+        using Drive_t = VDrive;
 		std::vector<Drive_t*> m_VDrives;
 
 

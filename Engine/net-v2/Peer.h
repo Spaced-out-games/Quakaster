@@ -72,10 +72,7 @@ namespace qk::net_v2 {
     template<typename T>
     concept Protocol = isProtocol<T>::value;
 
-    using DemoProtocol = qk::net_v2::ChannelMap<
-        qk::net_v2::NetChannel<int, qk::net_v2::NET_UNRELIABLE>,
-        qk::net_v2::NetChannel<float, qk::net_v2::NET_RELIABLE>
-    >;
+    
 
 
 }

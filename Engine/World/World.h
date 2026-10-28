@@ -1,38 +1,55 @@
 #pragma once
-#include <kernel/HObject.h>
+#include <kernel/UURH.h>
 #include <kernel/KeyValues.h>
 #include <kernel/VDrive.h>
+#include <kernel/EntityLoader.h>
 
 
 namespace qk {
 
-	template <class ...ID_Ts>
-	struct World: public VDrive<ID_Ts...> {
+
+    template <>
+    inline entt::entity UURH::to<entt::entity>() const {
+        if (DriveID != drive_id<entt::entity>)
+            return entt::null;
+
+        return static_cast<entt::entity>(EntryID);
+    }
+
+
+	
+	struct World: public VDrive {
+            entt::registry m_Registry;
+            EntityLoader m_Loader;
+        public:
         
         virtual ~World();
 
-        World(KernelPermissions permissions) : VDrive<ID_Ts...>(permissions) {}
+        World(KernelPermissions permissions) : VDrive(permissions) {}
+
+        virtual void execute_loader(qk::UURH target, const KeyValues& args) override;
+
 
         // CRUD
-        virtual std::expected<qk::HObject<ID_Ts...>, VDriveError> create(const KeyValues&) override;
-        virtual std::expected<KeyValues, VDriveError> read(qk::HObject<ID_Ts...>, const KeyValues& request) const override;
-        virtual std::expected<void, VDriveError>  update(qk::HObject<ID_Ts...>, const KeyValues& request) override;
-        virtual std::expected<bool, VDriveError> destroy(qk::HObject<ID_Ts...>, const KeyValues & = {}) override;
+        virtual std::expected<qk::UURH, VDriveError> create(const KeyValues&) override;
+        virtual std::expected<KeyValues, VDriveError> read(qk::UURH, const KeyValues& request) const override;
+        virtual std::expected<void, VDriveError>  update(qk::UURH, const KeyValues& request) override;
+        virtual std::expected<bool, VDriveError> destroy(qk::UURH, const KeyValues&) override;
 
         // validation
-        virtual std::expected<bool, VDriveError> valid(qk::HObject<ID_Ts...>) const override;
+        virtual std::expected<bool, VDriveError> valid(qk::UURH) const override;
 
         // placeholder...consider a bytecode?
         using Query = u32;
 
         // look up entity by its CLabel
-        virtual std::expected<qk::HObject<ID_Ts...>, VDriveError> lookup(str_view label) const override;
-        virtual std::expected<std::vector<qk::HObject<ID_Ts...>>, VDriveError> find(const Query&) const override;
+        virtual std::expected<qk::UURH, VDriveError> lookup(str_view label) const override;
+        virtual std::expected<std::vector<qk::UURH>, VDriveError> find(const Query&) const override;
 
-        virtual str to_string(qk::HObject<ID_Ts...> target, EntryDisplayFlags flags) override;
+        virtual str to_string(qk::UURH target, EntryDisplayFlags flags) override;
 
 
-        virtual void list(qk::HObject<ID_Ts...> target, const std::vector<str>& keys, EntryDisplayFlags flags) const override;
+        virtual void list(qk::UURH target, const std::vector<str>& keys, EntryDisplayFlags flags) const override;
 	};
 
 }

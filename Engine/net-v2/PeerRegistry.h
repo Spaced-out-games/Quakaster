@@ -15,7 +15,7 @@ namespace qk::net_v2 {
 	using PeerRegistry = std::unordered_map<ClientID, Peer>;
 
 
-	template<Protocol Protocol_t = DemoProtocol>
+	template<Protocol Protocol_t>
 	struct PacketRegistry  {
 		
 		entt::registry m_PacketStorage;

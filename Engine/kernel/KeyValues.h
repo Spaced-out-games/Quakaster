@@ -10,6 +10,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
+#include <expected>
 
 
 namespace qk {
@@ -25,6 +26,12 @@ namespace qk {
 		std::vector<f32>,
 		std::vector<str>
 	>;
+
+	enum class KeyValuesParseError : u8 {
+
+		UnsupportedType,
+		MixedArrayTypes,
+	};
 
 	// key type
 	using KeyValues_Key_t = str;
@@ -105,12 +112,19 @@ namespace qk {
 
 	using KeyValues = emhash5::HashMap<KeyValues_Key_t, Value>;
 
-	std::optional<Value> KeyValueScalar_fromJSON(const json& j);
 
-	// array of scalars -> std::vector<T>; fails on null or mixed bool/string/number
-	std::optional<Value> KeyValueArray_fromJSON(const json& arr);
 
-	bool KeyValues_fromJSON(const json& j, const str& key, KeyValues& out, char delimiter);
+
+	std::expected<Value, KeyValuesParseError> KeyValueScalar_fromJSON(const json& j);
+
+	std::expected<Value, KeyValuesParseError> KeyValueArray_fromJSON(const json& arr);
+
+	std::expected<void, KeyValuesParseError> KeyValues_fromJSON(
+			const json& j,
+			const str& key,
+			KeyValues& out,
+			char delimiter = '.'
+	);
 
 
 
