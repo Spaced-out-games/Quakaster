@@ -56,6 +56,19 @@ FetchContent_MakeAvailable(enet)
 FetchContent_MakeAvailable(nlohmann_json)
 
 
+option(QK_ENABLE_DEBUG "Enable Quakaster debug assertions" ON)
+
+message(STATUS "QK_ENABLE_DEBUG = '${QK_ENABLE_DEBUG}'")
+
+if(QK_ENABLE_DEBUG)
+    message(STATUS "Enabling QK_DEBUG")
+    add_compile_definitions(QK_DEBUG=1)
+else()
+    message(STATUS "Disabling QK_DEBUG")
+    add_compile_definitions(QK_DEBUG=0)
+endif()
+
+
 add_subdirectory(Core)
 add_subdirectory(gfx_rhi)
 add_subdirectory(Engine)

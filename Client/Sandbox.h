@@ -170,13 +170,15 @@ class Sandbox : public qk::Application {
 	inline void add_symlinks() {
 
 		namespace fs = std::filesystem;
-		#ifdef _DEBUG
+		#if (!QK_DEBUG)
+		spdlog::warn("Adding symlink in release mode!");
+		#endif
+
 		// NOTE: Requires admin priviledges. 
 		if (!fs::exists("assets"))
 			fs::create_directory_symlink("../../../../assets/", "assets/");
 
 
-		#endif
 	}
 
 	// Can be called before or after render_init()

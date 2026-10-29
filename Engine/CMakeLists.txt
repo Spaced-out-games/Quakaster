@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.16)
 project(Engine)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(QK_GIT_HASH "unknown")
+set(QK_GIT_BRANCH "unknown")
+set(QK_GIT_DIRTY "unknown")
 set(ENGINE_SOURCES
 
     # vendor
@@ -101,13 +103,72 @@ message(STATUS "[ENGINE] [DEBUG] enet_SOURCE_DIR : ${_targets}")
 message(STATUS "[ENGINE] [DEBUG] CMAKE_CURRENT_DIRECTORY: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 
-#target_include_directories(${PROJECT_NAME}
-#    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-#)
+
+
+
+
+
+
+# Asks Git for some metadata about the project. Used to define some status strings
+
+
+
+
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+    execute_process(
+        COMMAND "${GIT_EXECUTABLE}" rev-parse --show-toplevel
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        OUTPUT_VARIABLE QK_GIT_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        RESULT_VARIABLE QK_GIT_RESULT
+    )
+
+    if(QK_GIT_RESULT EQUAL 0)
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
+            WORKING_DIRECTORY "${QK_GIT_ROOT}"
+            OUTPUT_VARIABLE QK_GIT_HASH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" branch --show-current
+            WORKING_DIRECTORY "${QK_GIT_ROOT}"
+            OUTPUT_VARIABLE QK_GIT_BRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" status --porcelain
+            WORKING_DIRECTORY "${QK_GIT_ROOT}"
+            OUTPUT_VARIABLE QK_GIT_STATUS
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        if(QK_GIT_STATUS)
+            set(QK_GIT_DIRTY "dirty")
+        else()
+            set(QK_GIT_DIRTY "clean")
+        endif()
+    endif()
+endif()
+
+
 
 
 target_compile_definitions(${PROJECT_NAME}
-    PRIVATE QK_BUILD_ENGINE
-    PRIVATE NOMINMAX
+    PRIVATE
+        QK_BUILD_ENGINE
+        NOMINMAX
+    PUBLIC
+        QK_GIT_BRANCH="${QK_GIT_BRANCH}"
+        QK_GIT_DIRTY="${QK_GIT_DIRTY}"
+        QK_GIT_HASH="${QK_GIT_HASH}"
+        #QK_GIT_STATUS="${QK_GIT_STATUS}"
 )
-

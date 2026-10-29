@@ -60,9 +60,9 @@ namespace qk {
 
 	Resource::Resource(const str& ResourceTypeName) {
 
-        m_Name = std::format("{}@{:p}", ResourceTypeName, static_cast<const void*>(this));
 
 		#ifdef _DEBUG
+        m_Name = std::format("{}@{:p}", ResourceTypeName, static_cast<const void*>(this));
 		//spdlog::info("`{}`: ctor called.", m_Name);
 		#endif
 	}

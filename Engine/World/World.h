@@ -7,14 +7,21 @@
 
 namespace qk {
 
+    template <>
+    inline constexpr u64 UURH::drive_id<entt::entity> = 0;
 
     template <>
     inline entt::entity UURH::to<entt::entity>() const {
+        // catches programmer error in debug
+        QK_ASSERT(DriveID == drive_id<entt::entity>, "Attempted unsafe cast of qk::UURH to entt::entity!");
         if (DriveID != drive_id<entt::entity>)
             return entt::null;
 
         return static_cast<entt::entity>(EntryID);
     }
+
+
+
 
 
 	
