@@ -10,17 +10,14 @@ namespace qk {
     };
 
     class EntityLoader {
-        emhash5::HashMap<
-            EntityComponentArgumentID,
-            EntityLoaderEntry
-        > m_Loaders;
+        emhash5::HashMap<str, EntityLoaderEntry> m_Loaders;
 
     public:
         void push_loader(const ComponentLoader& loader);
 
         void push_loaders(std::span<const ComponentLoader> loaders);
 
-        void execute(entt::registry& registry, entt::entity entity, const EntityArgumentMap& args) const;
+        void execute(entt::registry& registry, entt::entity entity, const KeyValues& args) const;
 
 
     };

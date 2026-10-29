@@ -10,5 +10,5 @@
 namespace qk::utility {
 
 	// Gets the time (in nanoseconds) since epoch
-	QK_API uint64_t now();
+	QK_API u64 now();
 }

@@ -5,6 +5,7 @@
 /// **************************************************************************************************
 #pragma once
 #include <stdint.h>
+#include "Profiler.h"
 #include "core.h"
 
 namespace qk::utility {
@@ -12,8 +13,9 @@ namespace qk::utility {
     struct QK_API ScopeTimer {
         const char* m_pMsg = nullptr;
         uint64_t m_StartTime = 0;
+        Profiler* m_pProfiler = nullptr;
 
-        explicit ScopeTimer(const char* pMsg);
+        explicit ScopeTimer(const char* pMsg, Profiler* pProfiler = nullptr);
 
         ~ScopeTimer();
 

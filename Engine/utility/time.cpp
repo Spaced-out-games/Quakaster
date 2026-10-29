@@ -6,7 +6,7 @@
 #include <chrono>
 
 namespace qk::utility {
-	uint64_t now() {
+	u64 now() {
 		return std::chrono::duration_cast<std::chrono::nanoseconds>(
 			std::chrono::high_resolution_clock::now().time_since_epoch())
 			.count();

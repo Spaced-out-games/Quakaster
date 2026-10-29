@@ -7,6 +7,7 @@
 //#include <gfx/InstancePool.h>
 #include <utility/time.h>
 #include "debugging/trace.h"
+#include <net-v2/PeerRegistry.h>
 
 
 // -------------------------------------------------- defines -------------------------------------------------- //
@@ -19,9 +20,10 @@
 // aliases
 using namespace qk::media;
 using namespace qk::gfx;
-
+#include "kernel/UURH.h"
 
 #include "utility/ScopeTimer.h"
+#
 
 
 // -------------------------------------------------- globals -------------------------------------------------- //
@@ -39,6 +41,9 @@ std::vector<glm::mat4> g_Instances = {
     //glm::translate(glm::mat4(1.0), {0.2,0.0,0.0}),
     //glm::translate(glm::mat4(1.0), {0.2,0.2,0.0})
 };
+
+
+
 
 glm::vec3 tint = { 0.0, 0.0, 0.0 };
 
@@ -91,7 +96,7 @@ void print_mat4(const glm::mat4& mat) {
 static std::mt19937 g_Rng{ 1337 }; // fixed seed so a crash replays
 
 static glm::mat4 random_mat4() {
-    std::uniform_real_distribution<float> pos(-1.0f, 1.0f), ang(0.0f, 0.0f), scl(0.01f, 0.02f);
+    std::uniform_real_distribution<float> pos(-1.0f, 1.0f), ang(0.0f, 0.0f), scl(0.01f, 0.01f);
     glm::mat4 m = glm::translate(glm::mat4(1.0f), { pos(g_Rng), pos(g_Rng), 0.0f });
     m = glm::rotate(m, ang(g_Rng), glm::vec3(0, 0, 1));
     return glm::scale(m, glm::vec3(scl(g_Rng)));
@@ -100,6 +105,9 @@ static glm::mat4 random_mat4() {
 
 
 void Sandbox::init(int argc, char** argv) {
+
+    
+
     spdlog::info(qk::trace("hello"));
     printf("// ---------------------------------- INITIALIZATION ---------------------------------- //\n");
 
@@ -204,7 +212,7 @@ void Sandbox::init(int argc, char** argv) {
     for (const auto& entry : r.LODData(m_MeshID)) {
         spdlog::info("Partition({}, {})", entry.offset, entry.size);
     }
-
+    
     r.syncPartitionCache(m_MeshID);
     
     auto recipe = r.compile();
@@ -218,7 +226,10 @@ void Sandbox::init(int argc, char** argv) {
     }
 
 
-    
+    for (int n = 10000; n > 0; --n) {
+        m_Live.push_back(r.insert(m_MeshID, 0, random_mat4()));
+    }
+    r.flush_mesh(m_MeshID);
 
 
    
@@ -234,10 +245,16 @@ void Sandbox::init(int argc, char** argv) {
     //    .drawArraysInstanced(0, 4, 3);
 
     
+    if (r.needs_recompiled()) {
+        r.syncPartitionCache(m_MeshID);
+        auto recipe = r.compile();
+        hCmdBuf = CommandBuffer_ctor(recipe);
+        if (r.get_resource<HCommandBuffer>(0))
+            r.remove_resource<HCommandBuffer>(0);
+        r.define_resource(0, hCmdBuf);
+        r.clear_flags();
+    }
     
-    // upload commandbuffer
-    hCmdBuf = CommandBuffer_ctor(recipe);
-    r.define_resource(0, hCmdBuf);
 
     //m_Live.push_back(r.insert(m_MeshID, 0, random_mat4()));
     //r.flush_mesh(m_MeshID);
@@ -248,76 +265,37 @@ void Sandbox::init(int argc, char** argv) {
 
 void Sandbox::run() {
     using utility::ScopeTimer;
-
+    static bool ran = false;
     static uint64_t last_report = qk::utility::now();
     static uint64_t frames = 0;
 
     {
-        ScopeTimer t_frame("frame");
+        
+        ScopeTimer t_frame("frame", m_Profilers.find("frame"));
 
         {
-            ScopeTimer t("events");
+            ScopeTimer t("events", m_Profilers.find("events"));
             m_Window.pollEvents();
             m_Layers.propagate_events();
         }
-        
-        {
-            ScopeTimer t("churn");
-            std::uniform_int_distribution<int> pick(0, 99), count(99, 100);
-            static int insert_odds = 90;
-
-            for (int n = count(g_Rng); n > 0; --n) {
-                int p = pick(g_Rng);
-
-
-                if (p < insert_odds || m_Live.empty()) {
-                    m_Live.push_back(r.insert(m_MeshID, 0, random_mat4()));
-                } else if ( m_Live.size() >= 10000) { 
-                    size_t i = std::uniform_int_distribution<size_t>(0, m_Live.size() - 1)(g_Rng);
-                    r.remove(m_Live[i]);
-                    m_Live[i] = m_Live.back();
-                    m_Live.pop_back();
-                    insert_odds = 0;
-                    continue;
-                }
-            }
-        }
-
-        if (r.needs_flushed(m_MeshID)) {
-            ScopeTimer t("flush");
-            r.flush_mesh(m_MeshID);
-            r.clear_flags();
-
-        }
-
-        if (r.needs_recompiled(m_MeshID)) {
-            ScopeTimer t("recompile");
-            r.syncPartitionCache(m_MeshID);
-            auto recipe = r.compile();
-            hCmdBuf = CommandBuffer_ctor(recipe);
-            if (r.get_resource<HCommandBuffer>(0))
-                r.remove_resource<HCommandBuffer>(0);
-            r.define_resource(0, hCmdBuf);
-        }
-
 
         {
-            ScopeTimer t("clear");
+            ScopeTimer t("clear", m_Profilers.find("clear"));
             rhi::gl_clear();
         }
 
         if (!m_Live.empty()) {
-            ScopeTimer t("execute");
+            ScopeTimer t("execute", m_Profilers.find("execute"));
             CommandBuffer_execute(hCmdBuf);
         }
 
         {
-            ScopeTimer t("layers");
-            //m_Layers.render();
+            ScopeTimer t("layers", m_Profilers.find("layers"));
+            m_Layers.render();
         }
 
         {
-            ScopeTimer t("swap");
+            ScopeTimer t("swap", m_Profilers.find("swap"));
             m_Window.swapBuffers();
         }
 
@@ -332,6 +310,7 @@ void Sandbox::run() {
         frames = 0;
         last_report = now;
     }
+    m_Profilers.end_frame();
 }
 
 void Sandbox::shutdown() {

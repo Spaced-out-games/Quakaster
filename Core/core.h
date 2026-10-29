@@ -3,44 +3,101 @@
 /// Purpose: Defines core Quakaster macros and types.
 /// **************************************************************************************************
 #pragma once
-#include <cassert>
-#include <stdint.h>
+#include <source_location>
+#include <spdlog/spdlog.h>
+#include <cstdint>
+#include <cstdlib>
+#include <csignal>
 #include <string_view>
 #include <string>
+#include <type_traits>
+
+#define QK_API_VERSION(major, minor, patch) (((u32)(major)) << 22U) | (((u32)(minor)) << 12U) | ((u32)(patch)))
+
+// todo: move these to CMakeLists. Doesn't really matter rn lol
+#define QK_VERSION_MAJOR 0
+#define QK_VERSION_MINOR 0
+#define QK_VERSION_PATCH 0
+#define QK_VERSION_DESCRIPTION "Updating netcode framework to a new ECS-based design"
 
 
-#define QK_API_VERSION(variant, major, minor, patch) \
-    ((((u32)(variant)) << 29U) | (((u32)(major)) << 22U) | (((u32)(minor)) << 12U) | ((u32)(patch)))
-// pre-release
-#define QK_VERSION QK_API_VERSION(0,0,0)
+#if QK_DEBUG
+    #define QK_BUILD_CONFIGURATION "Debug"
+#else
+    #define QK_BUILD_CONFIGURATION "Release"
+#endif
 
-#define QK_ASSERT(exp) assert(exp)
 
-constexpr float QK_EPSILON = 0.0e5;
+#define QK_VERSION QK_API_VERSION(QK_VERSION_MAJOR, QK_VERSION_MINOR, QK_VERSION_PATCH) // pre-release
 
-#pragma once
+constexpr float QK_EPSILON = 1.0e-5f;
+
+// ---- Shared Library export ----
 #ifdef QK_SHARED
+#if defined(_MSC_VER)
 #ifdef QK_EXPORT
 #define QK_API __declspec(dllexport)
 #else
 #define QK_API __declspec(dllimport)
 #endif
 #else
+#define QK_API __attribute__((visibility("default")))
+#endif
+#else
 #define QK_API
 #endif
 
-
+// ---- Debug break ----
 #if defined(_MSC_VER)
-// MSVC
+#include <intrin.h>
 #define QK_DEBUG_BREAK() __debugbreak()
-#elif defined(__GNUC__) || defined(__clang__)
-#include <signal.h>
-#define QK_DEBUG_BREAK() raise(SIGTRAP)
-#else
-#include <cstdlib>
-#define QK_DEBUG_BREAK() std::abort() // fallback
+#elif defined(__has_builtin)
+#if __has_builtin(__builtin_debugtrap)
+#define QK_DEBUG_BREAK() __builtin_debugtrap()
+#endif
 #endif
 
+#ifndef QK_DEBUG_BREAK
+#if defined(__i386__) || defined(__x86_64__)
+#define QK_DEBUG_BREAK() __asm__ volatile("int3")
+#elif defined(__aarch64__)
+#define QK_DEBUG_BREAK() __asm__ volatile("brk #0xf000")
+#elif defined(__arm__)
+#define QK_DEBUG_BREAK() __asm__ volatile(".inst 0xe7f001f0")
+#else
+#define QK_DEBUG_BREAK() std::raise(SIGTRAP)
+#endif
+#endif
+
+// ---- Assert ----
+namespace qk {
+
+    inline void assert_failed(
+        const char* condition,
+        std::string_view message,
+        const std::source_location location = std::source_location::current())
+    {
+        spdlog::critical("QK_ASSERT({}) FAILED:", condition);
+        spdlog::critical("Detail: {}", message);
+        spdlog::critical("Where: {} @ {} [line {}]",
+            location.function_name(), location.file_name(), location.line());
+        spdlog::default_logger()->flush();
+    }
+
+}
+
+// Define QK_DEBUG in your debug build configs (e.g. via CMake), instead of relying on _DEBUG.
+#if(QK_DEBUG)
+#define QK_ASSERT(expression, message)                          \
+        do {                                                        \
+            if (!(expression)) {                                    \
+                ::qk::assert_failed(#expression, message);          \
+                QK_DEBUG_BREAK();                                   \
+            }                                                       \
+        } while (0)
+#else
+#define QK_ASSERT(expression, message) ((void)0)
+#endif
 
 using i8 = int8_t;
 using i16 = int16_t;
@@ -105,3 +162,15 @@ struct any_of_Ts<type_list<Ts...>, type_list<Us...>>
 
 template<typename Required, typename Available>
 inline constexpr bool any_of_Ts_v = any_of_Ts<Required, Available>::value;
+
+
+template <template <class...> class Container_t, class TypeList_t>
+struct UnpackTypeList;
+
+template <template <class...> class Container_t, class... Ts>
+struct UnpackTypeList<Container_t, type_list<Ts...>> {
+    using type = Container_t<Ts...>;
+};
+
+template <template <class...> class Container_t, class TypeList_t>
+using UnpackTypeList_t = typename UnpackTypeList<Container_t, TypeList_t>::type;

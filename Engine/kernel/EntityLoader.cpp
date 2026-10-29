@@ -60,7 +60,7 @@ namespace qk {
     void EntityLoader::execute(
         entt::registry& registry,
         entt::entity entity,
-        const EntityArgumentMap& args) const
+        const KeyValues& args) const
     {
         std::unordered_set<EntityComponentLoader_pfn_t> used;
 

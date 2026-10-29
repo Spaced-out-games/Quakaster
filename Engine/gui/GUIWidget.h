@@ -14,7 +14,6 @@ namespace qk::gfx::gui {
 	// interface for ImGui widgets.
 	struct QK_API Widget {
 
-		int m_Z = 0;
 
 		// Entry point for rendering and input logic.
 		virtual void render() = 0;

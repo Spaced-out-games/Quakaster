@@ -3,7 +3,9 @@ cmake_minimum_required(VERSION 3.16)
 project(Engine)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
+set(QK_GIT_HASH "unknown")
+set(QK_GIT_BRANCH "unknown")
+set(QK_GIT_DIRTY "unknown")
 set(ENGINE_SOURCES
 
     # vendor
@@ -43,26 +45,28 @@ set(ENGINE_SOURCES
     components/CCamera.cpp
 
     # systems
-    systems/System.cpp
+    "kernel/System.cpp"
 
 
     # services
-    services/IService.cpp
-    services/ConvarService.cpp
-    services/GraphNodeService.cpp
+    "kernel/IService.cpp"
+    
+    
 
     # scripting
-    scripting/Convar.cpp
-    scripting/ConvarRegistry.cpp
+    
+    
 
     # gfx
     
-    
+    #"net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp"
 
-          "utility/ByteStream.cpp"   "net/Endpoint.cpp" "net/Connection.cpp" "net/PacketQueue.cpp" "media/LoadPipeline.cpp" "components/CSignalListener.cpp" "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "scene/ComponentLoader.cpp" "scene/EntityLoader.cpp" "scene/SceneLoader.cpp"   "gfx/InstancePool.cpp"  "gfx/Renderer.cpp" "debugging/trace.cpp")
+    "net-v2/Peer.cpp" "net-v2/PeerRegistry.h"
+
+    "utility/ByteStream.cpp"    "media/LoadPipeline.cpp"  "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "kernel/ComponentLoader.cpp" "kernel/EntityLoader.cpp" "kernel/SceneLoader.cpp"   "gfx/InstancePool.cpp"  "gfx/Renderer.cpp" "debugging/trace.cpp" "utility/Profiler.cpp" "gui/ProfilerWidget.cpp" "kernel/KeyValues.cpp" "kernel/Kernel.cpp" "kernel/VDrive.cpp" "kernel/Port.cpp" "kernel/Signal.cpp" "World/World.cpp" "components/CGraphNode.cpp")
 
 message("[ENGINE] Building target `Engine`...")
-add_library(${PROJECT_NAME} ${ENGINE_SOURCES} )
+add_library(${PROJECT_NAME} ${ENGINE_SOURCES}  "kernel/KeyValues.h")
 
 # engine include lists go here
 target_link_libraries(${PROJECT_NAME}
@@ -99,12 +103,72 @@ message(STATUS "[ENGINE] [DEBUG] enet_SOURCE_DIR : ${_targets}")
 message(STATUS "[ENGINE] [DEBUG] CMAKE_CURRENT_DIRECTORY: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 
-#target_include_directories(${PROJECT_NAME}
-#    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-#)
+
+
+
+
+
+
+# Asks Git for some metadata about the project. Used to define some status strings
+
+
+
+
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+    execute_process(
+        COMMAND "${GIT_EXECUTABLE}" rev-parse --show-toplevel
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        OUTPUT_VARIABLE QK_GIT_ROOT
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+        RESULT_VARIABLE QK_GIT_RESULT
+    )
+
+    if(QK_GIT_RESULT EQUAL 0)
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
+            WORKING_DIRECTORY "${QK_GIT_ROOT}"
+            OUTPUT_VARIABLE QK_GIT_HASH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" branch --show-current
+            WORKING_DIRECTORY "${QK_GIT_ROOT}"
+            OUTPUT_VARIABLE QK_GIT_BRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        execute_process(
+            COMMAND "${GIT_EXECUTABLE}" status --porcelain
+            WORKING_DIRECTORY "${QK_GIT_ROOT}"
+            OUTPUT_VARIABLE QK_GIT_STATUS
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+        )
+
+        if(QK_GIT_STATUS)
+            set(QK_GIT_DIRTY "dirty")
+        else()
+            set(QK_GIT_DIRTY "clean")
+        endif()
+    endif()
+endif()
+
+
 
 
 target_compile_definitions(${PROJECT_NAME}
-    PRIVATE QK_BUILD_ENGINE
+    PRIVATE
+        QK_BUILD_ENGINE
+        NOMINMAX
+    PUBLIC
+        QK_GIT_BRANCH="${QK_GIT_BRANCH}"
+        QK_GIT_DIRTY="${QK_GIT_DIRTY}"
+        QK_GIT_HASH="${QK_GIT_HASH}"
+        #QK_GIT_STATUS="${QK_GIT_STATUS}"
 )
-
