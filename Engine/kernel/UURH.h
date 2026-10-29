@@ -14,7 +14,7 @@ namespace qk {
         u16 DriveID = NULL_DRIVE;
 
         template <class T>
-        T to() const {
+        inline T to() const {
             static_assert(!sizeof(T), "Unsupported UURH conversion");
         }
 
