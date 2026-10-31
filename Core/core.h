@@ -174,3 +174,43 @@ struct UnpackTypeList<Container_t, type_list<Ts...>> {
 
 template <template <class...> class Container_t, class TypeList_t>
 using UnpackTypeList_t = typename UnpackTypeList<Container_t, TypeList_t>::type;
+
+
+
+
+
+
+template <template <class...> class Container_t, class TypeList_t>
+struct UnfoldTypeList;
+
+template <template <class...> class Container_t, class... Ts>
+struct UnfoldTypeList<Container_t, type_list<Ts...>> {
+    using type = type_list<Container_t<Ts>...>;
+};
+
+template <template <class...> class Container_t, class TypeList_t>
+using UnfoldTypeList_t = typename UnfoldTypeList<Container_t, TypeList_t>::type;
+
+
+template <class... Lists>
+struct ConcatTypeLists;
+
+template <>
+struct ConcatTypeLists<> {
+    using type = type_list<>;
+};
+
+template <class... Ts>
+struct ConcatTypeLists<type_list<Ts...>> {
+    using type = type_list<Ts...>;
+};
+
+template <class... A, class... B, class... Rest>
+struct ConcatTypeLists<type_list<A...>, type_list<B...>, Rest...> {
+    using type = typename ConcatTypeLists<
+        type_list<A..., B...>, Rest...
+    >::type;
+};
+
+template <class... Lists>
+using ConcatTypeLists_t = typename ConcatTypeLists<Lists...>::type;

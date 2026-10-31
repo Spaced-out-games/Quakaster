@@ -17,15 +17,18 @@ namespace qk {
 
 	using media::json;
 
-	// supported variant types
-	using KeyValues_SupportedTypes = type_list<
-		bool, i32, u32, f32, str,
-		std::vector<bool>,
-		std::vector<i32>,
-		std::vector<u32>,
-		std::vector<f32>,
-		std::vector<str>
+
+	using KeyValuesPrimitives = type_list<bool, i32, u32, f32, str>;
+	using KeyValuesVectors = UnfoldTypeList_t<std::vector, KeyValuesPrimitives>;
+
+	using KeyValues_SupportedTypes = ConcatTypeLists_t<
+		KeyValuesPrimitives,
+		KeyValuesVectors
 	>;
+
+
+
+
 
 	enum class KeyValuesParseError : u8 {
 
