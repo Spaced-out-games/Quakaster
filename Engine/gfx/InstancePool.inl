@@ -17,7 +17,7 @@ namespace qk::gfx {
 	template <class instance_t>
 	InstancePool<instance_t>::InstancePool(qk::gfx::rhi::HVertexBuffer hInstanceBuffer)
 		: m_Storage(hInstanceBuffer) {
-		assert(hInstanceBuffer);
+		QK_ASSERT(hInstanceBuffer, "hInstanceBuffer was nullptr");
 		//add_partition();
 	}
 
@@ -47,9 +47,9 @@ namespace qk::gfx {
 		auto& partition = m_Partitions.at(partition_index);
 		auto& reverse = m_ReverseHandleLookup[partition_index];
 
-		assert(partition.new_size() > 0);
+		QK_ASSERT(partition.new_size() > 0, "Partition.new_size() must be > 0");
 		const u32 back = partition.new_size() - 1;
-		assert(local <= back);
+		QK_ASSERT(local <= back, "local > back");
 
 		if (local != back) {
 			// The back element moves into the hole.
@@ -71,8 +71,7 @@ namespace qk::gfx {
 		const instance_t& payload,
 		u16 target_partition,
 		InstancePoolHandle_t handle) {
-		assert(target_partition < m_Partitions.size());
-		assert(handle_table.valid(handle));
+		QK_ASSERT(target_partition < m_Partitions.size(), "target_partition was out of bounds");
 
 		if (target_partition >= m_Partitions.size() || !handle_table.valid(handle))
 			return;
@@ -86,7 +85,8 @@ namespace qk::gfx {
 		if (!handle_table.valid(handle))
 			return;
 
-		assert(handle.sparse < m_Locations.size());
+		QK_ASSERT(handle.sparse < m_Locations.size(), "handle.sparse was out of bounds");
+
 		const Location loc = m_Locations[handle.sparse];
 		detach(loc.partition, loc.local_sparse);
 	}
@@ -98,7 +98,7 @@ namespace qk::gfx {
 		if (!handle_table.valid(handle))
 			return;
 
-		assert(handle.sparse < m_Locations.size());
+		QK_ASSERT(handle.sparse < m_Locations.size(), "handle.sparse was out of bounds");
 		const Location loc = m_Locations[handle.sparse];
 		m_Partitions.at(loc.partition).queue_set(value, loc.local_sparse);
 	}
@@ -108,12 +108,12 @@ namespace qk::gfx {
 		InstancePoolHandle_t handle,
 		const instance_t& initial_value,
 		u16 new_partition) {
-		assert(new_partition < m_Partitions.size());
+		QK_ASSERT(new_partition < m_Partitions.size(), "new_partition was out of bounds");
 		if (new_partition >= m_Partitions.size() || !handle_table.valid(handle))
 			return;
 
-		assert(handle.sparse < m_Locations.size());
-		const Location loc = m_Locations[handle.sparse];
+		QK_ASSERT(handle.sparse < m_Locations.size(), "handle.sparse was out of bounds");
+		const Location loc = m_Locations[handle.spasrse];
 
 		// Same partition: just a write.
 		if (loc.partition == new_partition) {

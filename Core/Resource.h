@@ -33,7 +33,7 @@ namespace qk
         std::atomic<u32> m_RefCount = 0;
         std::atomic<bool> m_FlaggedForDeletion = false;
 
-        #ifdef _DEBUG 
+        #if QK_DEBUG 
         str m_Name;
         #endif
 

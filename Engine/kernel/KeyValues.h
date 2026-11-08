@@ -1,4 +1,6 @@
+
 #pragma once
+
 #include <variant>
 #include <vector>
 #include <core.h>
@@ -12,124 +14,157 @@
 #include <glm/vec4.hpp>
 #include <expected>
 
-
 namespace qk {
 
-	using media::json;
+    using media::json;
 
+    using KeyValuesPrimitives = type_list<bool, i32, u32, f32, str>;
 
-	using KeyValuesPrimitives = type_list<bool, i32, u32, f32, str>;
-	using KeyValuesVectors = UnfoldTypeList_t<std::vector, KeyValuesPrimitives>;
+    using KeyValuesVectors =
+        transform_type_list_t<std::vector, KeyValuesPrimitives>;
 
-	using KeyValues_SupportedTypes = ConcatTypeLists_t<
-		KeyValuesPrimitives,
-		KeyValuesVectors
-	>;
+    using KeyValuesSupportedTypes = concat_type_lists_t<
+        KeyValuesPrimitives,
+        KeyValuesVectors
+    >;
 
+    enum class KeyValuesParseError : u8 {
+        UnsupportedType,
+        MixedArrayTypes,
+    };
 
+    // Key type
+    using KeyValues_Key_t = str;
 
+    // Value storage
+    using KeyValuesValueStorage_t =
+        apply_type_list_t<std::variant, KeyValuesSupportedTypes>;
 
+    // Value type
+    struct Value : KeyValuesValueStorage_t {
 
-	enum class KeyValuesParseError : u8 {
+        using KeyValuesValueStorage_t::KeyValuesValueStorage_t;
 
-		UnsupportedType,
-		MixedArrayTypes,
-	};
+        // Tries to cast to T for obvious cases.
+        template <class T>
+        std::optional<T> as() const {
+            static_assert(contains_type_v<T, KeyValuesSupportedTypes>);
 
-	// key type
-	using KeyValues_Key_t = str;
+            if (const T* pValue = std::get_if<T>(this))
+                return *pValue;
 
-	using KeyValuesValueStorage_t = UnpackTypeList<std::variant, KeyValues_SupportedTypes>::type;
+            return std::nullopt;
+        }
 
-	// value type
-	struct Value : KeyValuesValueStorage_t {
-		using KeyValuesValueStorage_t::KeyValuesValueStorage_t;
+        template <>
+        std::optional<glm::vec2> as() const {
 
-		// tries to cast to T for obvious case
-		template <class T>
-		std::optional<T> as() const {
-			static_assert(contains_T<T, KeyValues_SupportedTypes>);
+            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
+                if (pValue->size() == 2)
+                    return glm::vec2{
+                        pValue->at(0),
+                        pValue->at(1)
+                };
+            }
+            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
+                if (pValue->size() == 2)
+                    return glm::vec2{
+                        static_cast<f32>(pValue->at(0)),
+                        static_cast<f32>(pValue->at(1))
+                };
+            }
 
-			if (const T* pValue = std::get_if<T>(this))
-				return *pValue;
+            return std::nullopt;
+        }
 
-			return std::nullopt;
+        template <>
+        std::optional<glm::vec3> as() const {
 
-		}
+            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
+                if (pValue->size() == 3)
+                    return glm::vec3{
+                        pValue->at(0),
+                        pValue->at(1),
+                        pValue->at(2)
+                };
+            }
+            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
+                if (pValue->size() == 3)
+                    return glm::vec3{
+                        static_cast<f32>(pValue->at(0)),
+                        static_cast<f32>(pValue->at(1)),
+                        static_cast<f32>(pValue->at(2))
+                };
+            }
 
+            return std::nullopt;
+        }
 
-		template <>
-		std::optional<glm::vec2> as() const {
+        template <>
+        std::optional<glm::vec4> as() const {
 
-			if (const auto* pValue = std::get_if<std::vector<f32>>(this))
-				if (pValue->size() == 2) return glm::vec2{ pValue->at(0), pValue->at(1) };
-				else if (const auto* pValue = std::get_if<std::vector<i32>>(this))
-					if (pValue->size() == 2) return glm::vec2{ (f32)pValue->at(0), (f32)pValue->at(1) };
-			return std::nullopt;
+            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
+                if (pValue->size() == 4)
+                    return glm::vec4{
+                        pValue->at(0),
+                        pValue->at(1),
+                        pValue->at(2),
+                        pValue->at(3)
+                };
+            }
+            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
+                if (pValue->size() == 4)
+                    return glm::vec4{
+                        static_cast<f32>(pValue->at(0)),
+                        static_cast<f32>(pValue->at(1)),
+                        static_cast<f32>(pValue->at(2)),
+                        static_cast<f32>(pValue->at(3))
+                };
+            }
 
-		}
+            return std::nullopt;
+        }
 
-		template <>
-		std::optional<glm::vec3> as() const {
+        template <>
+        std::optional<glm::quat> as() const {
 
-			if (const auto* pValue = std::get_if<std::vector<f32>>(this))
-				if (pValue->size() == 3) return glm::vec3{ pValue->at(0), pValue->at(1), pValue->at(2) };
-				else if (const auto* pValue = std::get_if<std::vector<i32>>(this))
-					if (pValue->size() == 3) return glm::vec3{ (f32)pValue->at(0),(f32)pValue->at(1), (f32)pValue->at(3) };
+            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
+                if (pValue->size() == 4)
+                    return glm::quat{
+                        pValue->at(0),
+                        pValue->at(1),
+                        pValue->at(2),
+                        pValue->at(3)
+                };
+            }
+            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
+                if (pValue->size() == 4)
+                    return glm::quat{
+                        static_cast<f32>(pValue->at(0)),
+                        static_cast<f32>(pValue->at(1)),
+                        static_cast<f32>(pValue->at(2)),
+                        static_cast<f32>(pValue->at(3))
+                };
+            }
 
-			return std::nullopt;
+            return std::nullopt;
+        }
+    };
 
-		}
+    using KeyValues = emhash5::HashMap<KeyValues_Key_t, Value>;
 
-		template <>
-		std::optional<glm::vec4> as() const {
+    std::expected<Value, KeyValuesParseError>
+        KeyValueScalar_fromJSON(const json& j);
 
-			if (const auto* pValue = std::get_if<std::vector<f32>>(this))
-				if (pValue->size() == 4) return glm::vec4{ pValue->at(0), pValue->at(1), pValue->at(2), pValue->at(3) };
+    std::expected<Value, KeyValuesParseError>
+        KeyValueArray_fromJSON(const json& arr);
 
-				else if (const auto* pValue = std::get_if<std::vector<i32>>(this))
-					if (pValue->size() == 4) return glm::vec4{ (f32)pValue->at(0), (f32)pValue->at(1), (f32)pValue->at(2), (f32)pValue->at(3) };
-
-			return std::nullopt;
-
-		}
-
-		template <>
-		std::optional<glm::quat> as() const {
-
-			if (const auto* pValue = std::get_if<std::vector<f32>>(this))
-				if (pValue->size() == 4) return glm::quat{ pValue->at(0), pValue->at(1), pValue->at(2), pValue->at(3) };
-
-				else if (const auto* pValue = std::get_if<std::vector<i32>>(this))
-					if (pValue->size() == 4) return glm::quat{ (f32)pValue->at(0), (f32)pValue->at(1), (f32)pValue->at(2), (f32)pValue->at(3) };
-
-			return std::nullopt;
-
-		}
-
-
-
-
-	};
-
-
-	using KeyValues = emhash5::HashMap<KeyValues_Key_t, Value>;
-
-
-
-
-	std::expected<Value, KeyValuesParseError> KeyValueScalar_fromJSON(const json& j);
-
-	std::expected<Value, KeyValuesParseError> KeyValueArray_fromJSON(const json& arr);
-
-	std::expected<void, KeyValuesParseError> KeyValues_fromJSON(
-			const json& j,
-			const str& key,
-			KeyValues& out,
-			char delimiter = '.'
-	);
-
-
-
+    std::expected<void, KeyValuesParseError>
+        KeyValues_fromJSON(
+            const json& j,
+            const str& key,
+            KeyValues& out,
+            char delimiter = '.'
+        );
 
 }

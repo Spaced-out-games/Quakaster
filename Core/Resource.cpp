@@ -2,7 +2,7 @@
 #include "fnv1a.h"
 #include <spdlog/spdlog.h>
 
-#ifdef _DEBUG
+#if QK_DEBUG
 #include <iostream>
 #endif
 
@@ -16,14 +16,14 @@ namespace qk {
 
 	// Sets the label in debug builds
 	void Resource::label(const str& name) {
-		#ifdef _DEBUG
+		#if QK_DEBUG
 		m_Name = name;
 		#endif
 	}
 
     // Returns the string value in debug builds, nullptr in release
     const str* Resource::label() const {
-        #ifdef _DEBUG
+        #if QK_DEBUG
         return &m_Name;
         #else
         return nullptr;
@@ -54,21 +54,21 @@ namespace qk {
     }
 
     void Resource::release() {
-		assert(m_RefCount > 0);
+		QK_ASSERT(m_RefCount > 0, "Resource release was attempted with m_RefCount == 0.");
         m_RefCount--;
     }
 
 	Resource::Resource(const str& ResourceTypeName) {
 
 
-		#ifdef _DEBUG
+		#if QK_DEBUG
         m_Name = std::format("{}@{:p}", ResourceTypeName, static_cast<const void*>(this));
 		//spdlog::info("`{}`: ctor called.", m_Name);
 		#endif
 	}
 
 	Resource::~Resource() {
-		#ifdef _DEBUG
+		#if QK_DEBUG
         //spdlog::info("`{}`: dtor called.", m_Name);
 
 		#endif

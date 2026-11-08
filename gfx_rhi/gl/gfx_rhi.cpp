@@ -47,7 +47,7 @@ namespace qk::gfx::rhi {
 
 		int result = gladLoadGLLoader((GLADloadproc)loader);
 		
-		#ifdef _DEBUG
+		#if QK_DEBUG
 			//glEnable(GL_PROGRAM_POINT_SIZE);
 		#endif
 

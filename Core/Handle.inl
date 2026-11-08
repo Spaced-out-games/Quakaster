@@ -161,8 +161,14 @@ namespace qk {
 	void HandleTable<T>::swap(u32 sparse_a, u32 sparse_b) {
 
 		// validate
-		assert(sparse_a < m_Entries.size() && m_Entries[sparse_a].alive);
-		assert(sparse_b < m_Entries.size() && m_Entries[sparse_b].alive);
+		QK_ASSERT(sparse_a < m_Entries.size(), "sparse_a was too big");
+		QK_ASSERT(m_Entries[sparse_a].alive, "sparse_a wasn't alive");
+
+		QK_ASSERT(sparse_b < m_Entries.size(), "sparse_b was too big");
+		QK_ASSERT(m_Entries[sparse_b].alive, "sparse_b wasn't alive");
+
+
+
 
 
 		std::swap(m_Entries[sparse_a].payload, m_Entries[sparse_b].payload);
@@ -193,7 +199,7 @@ namespace qk {
 
 	template <class T>
 	typename HandleTable<T>::iterator& HandleTable<T>::iterator::operator++() {
-		assert(pTable);
+		QK_ASSERT(pTable, "pTable was nullptr");
 		do {
 			++current_sparse;
 		} while (current_sparse < pTable->sparse_size());// && !pTable->valid(current_sparse));
@@ -204,7 +210,8 @@ namespace qk {
 
 	template <class T>
 	u32 HandleTable<T>::iterator::operator*() {
-		assert(pTable);
+		QK_ASSERT(pTable, "pTable was nullptr");
+
 		return current_sparse;
 	}
 

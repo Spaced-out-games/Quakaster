@@ -1,29 +1,38 @@
 
 #include <spdlog/spdlog.h>
-
+#include <format>
 
 namespace qk {
 
     template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
     void ResourceRegistry<Resource_t, Resource_dtor, Resource_free>::insert(const Resource_key_t& key, Resource_t* pResource) {
-        //assert(!m_Resources.contains(key));
 
-        if (m_Resources.contains(key)) {
-            spdlog::info("ResourceRegistry:: hash collision for resource with key: {}", key);
-            __debugbreak();
-            assert(false);
-        }
+        QK_ASSERT(pResource, "pResource was nullptr.");
 
-        assert(pResource);
+        Resource* pResourceBase = Resource_cast(pResource);
         m_Resources[key] = pResource;
 
 
-        Resource* pResourceBase = Resource_cast(pResource);
-        // We know from the previous asserts that pResource is always non-null but we can't gaurantee Resource_cast(Resource_t*) never returns nullptr so we aught put an assert here to catch some bizarre edge cases
-        assert(pResourceBase);
 
-        // Not a strict invariant but is the most hygeinic practice. Feel free to comment if you must.
-        assert(pResourceBase->refcount() == 0);
+
+        #if QK_DEBUG
+            QK_ASSERT(!m_Resources.contains(key), std::format("ResourceRegistry::insert hash collision for resource with key: {}", *(pResourceBase->label())));
+        #else
+            QK_ASSERT(!m_Resources.contains(key), std::format("ResourceRegistry::insert hash collision for resource with key: {}", key));
+        #endif
+
+
+
+
+
+        // We know from the previous asserts that pResource is always non-null but we can't gaurantee Resource_cast(Resource_t*) never returns nullptr so we aught put an assert here to catch some bizarre edge cases
+
+        QK_ASSERT(pResourceBase, "Resource_cast(pResource) returned nullptr");
+
+
+        // Not a strict invariant but is the most hygeinic practice. Feel free to comment if you must.  
+        QK_ASSERT(pResourceBase->refcount() == 0, "[PROGRAMMER WARNING]: pResourceBase->refcount() was non-zero.");
+
 
         // hold a lock on lifecycle
         pResourceBase->acquire();
@@ -34,13 +43,13 @@ namespace qk {
 
     template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
     bool ResourceRegistry<Resource_t, Resource_dtor, Resource_free>::try_remove(const Resource_key_t& key) {
-        assert(m_Resources.contains(key));
+        QK_ASSERT(m_Resources.contains(key), std::format("Key {} does not exist", key));
 
         Resource_t* pResource = m_Resources[key];
 
         Resource* pResourceBase = Resource_cast(pResource);
         // We know from the previous asserts that pResource is always non-null but we can't gaurantee Resource_cast(Resource_t*) never returns nullptr so we aught put an assert here to catch some bizarre edge cases
-        assert(pResourceBase);
+        QK_ASSERT(pResourceBase, "Resource_cast(pResource) returned nullptr");
 
         // only delete and free if this is the only owner AND it's ready to go
         if (pResourceBase->refcount() == 1 && pResourceBase->flagged()) {
@@ -66,16 +75,16 @@ namespace qk {
 
     template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
     Resource_t* ResourceRegistry<Resource_t, Resource_dtor, Resource_free>::acquire(const Resource_key_t& key) {
-        assert(m_Resources.contains(key));
+        QK_ASSERT(m_Resources.contains(key), std::format("Resource with key {} does not exist", key));
         Resource_t* pResource = m_Resources.at(key);
         Resource* pResourceBase = Resource_cast(pResource);
 
         // We know from the previous asserts that pResource is always non-null but we can't gaurantee Resource_cast(Resource_t*) never returns nullptr so we aught put an assert here to catch some bizarre edge cases
-        assert(pResourceBase);
+        QK_ASSERT(pResourceBase, "Resource_cast(pResource) returned nullptr");
 
         if (pResourceBase->flagged()) return nullptr;
 
-        assert(pResourceBase->refcount() < UINT32_MAX);
+        QK_ASSERT(pResourceBase->refcount(), "pResourceBase->refcount() was too high");
 
 
         pResourceBase->acquire();
@@ -87,13 +96,14 @@ namespace qk {
     template <class Resource_t, Resource_dtor_pfn_t<Resource_t> Resource_dtor, Resource_free_pfn_t<Resource_t> Resource_free>
     bool ResourceRegistry<Resource_t, Resource_dtor, Resource_free>::try_release(const Resource_key_t& key)
     {
-        assert(m_Resources.contains(key));
+        QK_ASSERT(m_Resources.contains(key), std::format("Resource with key {} does not exist", key));
+
 
         Resource_t* pResource = m_Resources.at(key);
         Resource* pResourceBase = Resource_cast(pResource);
 
-        assert(pResourceBase);
-        assert(pResourceBase->refcount() >= 1);
+        QK_ASSERT(pResourceBase, "pResourceBase was nullptr");
+        QK_ASSERT(pResourceBase, "pResourceBase->refcount() was 0");
 
         if (pResourceBase->refcount() == 1)
             return false;

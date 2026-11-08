@@ -77,10 +77,10 @@ namespace qk::gfx {
 			hTex = Texture_fromImage(img, TextureFormat::RGB_8, TextureFormat::RGB_8);
 		}
 		else {
-			assert(false);
+			QK_ASSERT(false, "Unsupported image type");
 		}
 
-		assert(hTex);
+		QK_ASSERT(hTex, "hTex was nullptr");
 
 		registry.insert(id, hTex);
 

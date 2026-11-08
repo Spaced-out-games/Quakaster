@@ -20,7 +20,7 @@ namespace qk {
 	}
 
 	void deserialize_scene(const std::span<KeyValues>& scene, entt::registry& registry, EntityLoader loader) {
-		assert(registry.storage<entt::entity>().in_use() == 0);
+		QK_ASSERT(registry.storage<entt::entity>().in_use() == 0, "Scene was not empty");
 
 		entt::entity target = entt::null;
 		for (const auto& entity_args : scene) {

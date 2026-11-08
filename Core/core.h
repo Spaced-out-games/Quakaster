@@ -99,6 +99,19 @@ namespace qk {
 #define QK_ASSERT(expression, message) ((void)0)
 #endif
 
+
+#if(QK_DEBUG)
+#define QK_SOFT_ASSERT(expression, message)                          \
+        do {                                                        \
+            if (!(expression)) {                                    \
+                ::qk::assert_failed(#expression, message);          \
+            }                                                       \
+        } while (0)
+#else
+#define QK_SOFT_ASSERT(expression, message) ((void)0)
+#endif
+
+
 using i8 = int8_t;
 using i16 = int16_t;
 using i32 = int32_t;
@@ -126,91 +139,104 @@ typedef void* (*SymbolLoader)(const char* name);
 using HWindow = void*;
 
 
+
+
+// Compile-time type sequence.
 template<typename... Ts>
 struct type_list {};
 
+
+// Tests whether a type exists in a type_list.
 template<typename T, typename List>
-struct contains_T;
+struct contains_type;
 
 template<typename T, typename... Ts>
-struct contains_T<T, type_list<Ts...>>
-    : std::disjunction<std::is_same<T, Ts>...> {};
+struct contains_type<T, type_list<Ts...>>
+    : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
 
 template<typename T, typename List>
-inline constexpr bool is_type_in_list_v = contains_T<T, List>::value;
+inline constexpr bool contains_type_v = contains_type<T, List>::value;
 
 
-// Every type in the first list exists in the second list.
+// Every type in Required exists in Available.
 template<typename Required, typename Available>
-struct all_of_Ts;
+struct contains_all_types;
 
 template<typename... Ts, typename... Us>
-struct all_of_Ts<type_list<Ts...>, type_list<Us...>>
-    : std::conjunction<contains_T<Ts, type_list<Us...>>...> {};
+struct contains_all_types<type_list<Ts...>, type_list<Us...>>
+    : std::bool_constant<
+    (contains_type<Ts, type_list<Us...>>::value && ...)
+    > {};
 
 template<typename Required, typename Available>
-inline constexpr bool all_of_Ts_v = all_of_Ts<Required, Available>::value;
+inline constexpr bool contains_all_types_v =
+contains_all_types<Required, Available>::value;
 
 
-// At least one type in the first list exists in the second list.
+// At least one type in Required exists in Available.
 template<typename Required, typename Available>
-struct any_of_Ts;
+struct contains_any_type;
 
 template<typename... Ts, typename... Us>
-struct any_of_Ts<type_list<Ts...>, type_list<Us...>>
-    : std::disjunction<contains_T<Ts, type_list<Us...>>...> {};
+struct contains_any_type<type_list<Ts...>, type_list<Us...>>
+    : std::bool_constant<
+    (contains_type<Ts, type_list<Us...>>::value || ...)
+    > {};
 
 template<typename Required, typename Available>
-inline constexpr bool any_of_Ts_v = any_of_Ts<Required, Available>::value;
+inline constexpr bool contains_any_type_v =
+contains_any_type<Required, Available>::value;
 
 
-template <template <class...> class Container_t, class TypeList_t>
-struct UnpackTypeList;
+// Expands a type_list into a variadic template.
+template<template<class...> class Container_t, typename TypeList>
+struct apply_type_list;
 
-template <template <class...> class Container_t, class... Ts>
-struct UnpackTypeList<Container_t, type_list<Ts...>> {
+template<template<class...> class Container_t, typename... Ts>
+struct apply_type_list<Container_t, type_list<Ts...>> {
     using type = Container_t<Ts...>;
 };
 
-template <template <class...> class Container_t, class TypeList_t>
-using UnpackTypeList_t = typename UnpackTypeList<Container_t, TypeList_t>::type;
+template<template<class...> class Container_t, typename TypeList>
+using apply_type_list_t =
+typename apply_type_list<Container_t, TypeList>::type;
 
 
+// Applies a template to every type in a type_list.
+template<template<class...> class Container_t, typename TypeList>
+struct transform_type_list;
 
-
-
-
-template <template <class...> class Container_t, class TypeList_t>
-struct UnfoldTypeList;
-
-template <template <class...> class Container_t, class... Ts>
-struct UnfoldTypeList<Container_t, type_list<Ts...>> {
+template<template<class...> class Container_t, typename... Ts>
+struct transform_type_list<Container_t, type_list<Ts...>> {
     using type = type_list<Container_t<Ts>...>;
 };
 
-template <template <class...> class Container_t, class TypeList_t>
-using UnfoldTypeList_t = typename UnfoldTypeList<Container_t, TypeList_t>::type;
+template<template<class...> class Container_t, typename TypeList>
+using transform_type_list_t =
+typename transform_type_list<Container_t, TypeList>::type;
 
 
-template <class... Lists>
-struct ConcatTypeLists;
+// Concatenates multiple type_lists.
+template<typename... Lists>
+struct concat_type_lists;
 
-template <>
-struct ConcatTypeLists<> {
+template<>
+struct concat_type_lists<> {
     using type = type_list<>;
 };
 
-template <class... Ts>
-struct ConcatTypeLists<type_list<Ts...>> {
+template<typename... Ts>
+struct concat_type_lists<type_list<Ts...>> {
     using type = type_list<Ts...>;
 };
 
-template <class... A, class... B, class... Rest>
-struct ConcatTypeLists<type_list<A...>, type_list<B...>, Rest...> {
-    using type = typename ConcatTypeLists<
+template<typename... A, typename... B, typename... Rest>
+struct concat_type_lists<type_list<A...>, type_list<B...>, Rest...> {
+    using type = typename concat_type_lists<
         type_list<A..., B...>, Rest...
     >::type;
 };
 
-template <class... Lists>
-using ConcatTypeLists_t = typename ConcatTypeLists<Lists...>::type;
+template<typename... Lists>
+using concat_type_lists_t =
+typename concat_type_lists<Lists...>::type;

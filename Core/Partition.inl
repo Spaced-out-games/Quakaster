@@ -43,8 +43,10 @@ namespace qk {
 
 
 		// ensure it's in logical bounds
-		assert(offset_a <= m_NextSize);
-		assert(offset_b <= m_NextSize);
+		QK_ASSERT(offset_a <= m_NextSize, "offset_a was outside logical bounds");
+		QK_ASSERT(offset_b <= m_NextSize, "offset_b was outside logical bounds");
+
+
 
 
 		m_Queue.push_back({
@@ -58,8 +60,7 @@ namespace qk {
 
 	template <class T>
 	void Partition<T>::queue_set(const T& payload, u32 offset) {
-		// FYI: This isn't strictly < nextsize because it's fine to set out of logical bounds
-		assert(offset <= m_NextSize);
+		QK_ASSERT(offset <= m_NextSize, "Offset was out of logical bounds");
 
 		m_Queue.push_back({
 			.set = {
@@ -89,13 +90,14 @@ namespace qk {
 
 	template <class T>
 	u32 Partition<T>::pop_back() {
-		assert(m_NextSize > 0);
+		QK_ASSERT(m_NextSize > 0, "Partition size is zero!");
 		return m_NextSize--;
 	}
 
 	template <class T>
 	void Partition<T>::flush(T* pBase) {
-		assert(pBase);
+
+		QK_ASSERT(pBase, "pBase was nullptr.");
 
 		// temporary, for debugging purposes. Intentional off by one to make sure I'm not reading past
 		std::span<T> temp(pBase, 5);
@@ -137,6 +139,7 @@ namespace qk {
 
 		auto popped = pop_back();
 		assert(back == popped - 1);
+		QK_ASSERT(back == popped - 1, "back didn't actually point to the back.");
 
 
 		return;
@@ -154,7 +157,7 @@ namespace qk {
 		}
 
 		auto popped = pop_back();
-		assert(back == popped - 1);
+		QK_ASSERT(back == popped - 1, "back didn't actually point to the back.");
 
 
 		return back;

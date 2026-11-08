@@ -56,7 +56,7 @@ namespace qk {
         CSignalListener* pSignalListener = reg.try_get<CSignalListener>(dest);
 
         // not a hard error but in debug builds treat it as such to catch programmer error
-        assert(pSignalListener);
+        QK_SOFT_ASSERT(pSignalListener, "Attempted to send signal to entity without a listener");
         if (!pSignalListener)
             return;
 

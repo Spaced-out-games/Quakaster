@@ -107,7 +107,7 @@ namespace qk::gfx {
 
 
 			// make sure this mesh is finalized
-			assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(definition));
+			QK_ASSERT(m_MeshDefinitions.all_of<CMeshFinalizedTag>(definition), "Mesh was not finalized.");
 
 			const auto* pPipelineDef =
 				m_MeshDefinitions.try_get<PipelineDefinition>(definition);
@@ -141,7 +141,7 @@ namespace qk::gfx {
 			// temporary fix
 			auto& cache = m_MeshDefinitions.get<CMeshPartitionStateCache>(definition);
 
-			assert(cache.size() == 1);
+			QK_ASSERT(cache.size() == 1, "LOD0 only support");
 			// LOD 0
 			u32 numInstances = cache[0].size;
 
@@ -164,10 +164,10 @@ namespace qk::gfx {
 	template <class... Args>
 	MeshInstance Renderer<SupportedTs...>::insert(MeshDefinitionID mesh_id, u8 partition, Args&&... args) {
 		// Make sure all Args are supported
-		static_assert(all_of_Ts_v<type_list<std::decay_t<Args>...>, type_list<SupportedTs...>>);
+		static_assert(contains_all_types_v<type_list<std::decay_t<Args>...>, type_list<SupportedTs...>>);
 
 		// make sure this mesh is finalized
-		assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(mesh_id));
+		QK_ASSERT(m_MeshDefinitions.all_of<CMeshFinalizedTag>(mesh_id), "Mesh definition was not finalized");
 
 		// Allocate an instance
 		MeshInstance result;
@@ -180,10 +180,11 @@ namespace qk::gfx {
 		// Dispatch to each pool that exists on this mesh definition
 		(
 			[&] {
-				if (auto* pPool =m_MeshDefinitions.template try_get<InstancePool<std::decay_t<Args>>>(mesh_id))
-					pPool->insert(table, std::forward<Args>(args), partition, result.instance);
-				else
-					throw std::runtime_error("Mesh definition is missing a InstancePool for an inserted instance-data type.");
+
+				auto* pPool = m_MeshDefinitions.template try_get<InstancePool<std::decay_t<Args>>>(mesh_id)
+				QK_ASSERT(pPool != nullptr, "Mesh definition is missing a InstancePool for an inserted instance-data type.")
+				pPool->insert(table, std::forward<Args>(args), partition, result.instance);
+
 			}(), ...
 		);
 
@@ -207,14 +208,12 @@ namespace qk::gfx {
 		>, "Instance contains an unsupported type");
 
 		// make sure this mesh is finalized
-		assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(instance.mesh_ID));
+		QK_ASSERT(m_MeshDefinitions.all_of<CMeshFinalizedTag>(instance.mesh_ID), "Mesh definition was not finalized");
 
 		auto& table =
 			m_MeshDefinitions.get<InstancePoolTable_t>(instance.mesh_ID);
 
-		if (!table.valid(instance.instance)) {
-			throw std::runtime_error("Invalid mesh instance handle");
-		}
+		QK_ASSERT(table.valid(instance.instance), "Invalid mesh instance handle");
 
 
 
@@ -228,11 +227,9 @@ namespace qk::gfx {
 				instance.mesh_ID
 				);
 
-		if (!pPool) {
-			throw std::runtime_error(
-				"Mesh definition is missing a required InstancePool"
-			);
-		}
+		QK_ASSERT(pPool != nullptr, "Mesh definition is missing a required InstancePool");
+
+		
 
 		pPool->set(
 			table,
@@ -252,11 +249,9 @@ namespace qk::gfx {
 			m_MeshDefinitions.get<InstancePoolTable_t>(instance.mesh_ID);
 
 		// make sure this mesh is finalized
-		assert(m_MeshDefinitions.all_of<CMeshFinalizedTag>(instance.mesh_ID));
+		QK_ASSERT(m_MeshDefinitions.all_of<CMeshFinalizedTag>(instance.mesh_ID), "Mesh was not finalized.");
 
-		if (!table.valid(instance.instance)) {
-			throw std::runtime_error("Invalid mesh instance handle");
-		}
+		QK_ASSERT(table.valid(instance.instance), "Invalid mesh instance handle");
 
 		// Remove the instance from every pool present on this definition.
 		(
@@ -414,7 +409,7 @@ namespace qk::gfx {
 	template <class instance_t>
 	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::pushInstancePool(HVertexBuffer hInstanceBuffer) {
 		using true_t = std::decay_t<instance_t>;
-		static_assert(is_type_in_list_v<true_t, type_list<SupportedTs...>>,
+		static_assert(contains_type_v<true_t, type_list<SupportedTs...>>,
 			"PoolType is not in the allowed set of types");
 		
 		if (hasInstancePool<true_t>()) {
