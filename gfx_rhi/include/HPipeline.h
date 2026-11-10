@@ -1,5 +1,5 @@
 #pragma once
-#include "HCommandBuffer.h" // for PrimitiveTopology
+#include "HCommandBuffer.h" // for EPrimitiveTopology
 #include "VertexLayoutDesc.h"
 #include <array>
 #include "HShader.h"
@@ -12,7 +12,7 @@ namespace qk::gfx::rhi {
     // -------- Pipeline state -------- //
 
     // What to draw with
-    enum class PrimitiveTopology {
+    enum class EPrimitiveTopology {
         Unknown,
         Triangle,
         Lines,
@@ -74,7 +74,7 @@ namespace qk::gfx::rhi {
 	struct Pipeline_recipe {
 
 		std::vector<ShaderModule>   shader_modules;
-		PrimitiveTopology			topology;
+		EPrimitiveTopology			topology;
 		VertexLayout_recipe			layout;
 		//CullMode cull;
 		//DepthState depth;

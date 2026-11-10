@@ -10,7 +10,6 @@ namespace qk {
         QK_ASSERT(pResource, "pResource was nullptr.");
 
         Resource* pResourceBase = Resource_cast(pResource);
-        m_Resources[key] = pResource;
 
 
 
@@ -21,6 +20,7 @@ namespace qk {
             QK_ASSERT(!m_Resources.contains(key), std::format("ResourceRegistry::insert hash collision for resource with key: {}", key));
         #endif
 
+        m_Resources[key] = pResource;
 
 
 

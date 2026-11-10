@@ -1059,7 +1059,7 @@ static int draw_mouse_pointer(AVFilterContext *avctx, AVFrame *frame)
 
         ID3D11DeviceContext_IASetVertexBuffers(devctx, 0, 1, &mouse_vertex_buffer, &stride, &offset);
         ID3D11DeviceContext_IASetInputLayout(devctx, dda->input_layout);
-        ID3D11DeviceContext_IASetPrimitiveTopology(devctx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+        ID3D11DeviceContext_IASetEPrimitiveTopology(devctx, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
     }
 
     ID3D11DeviceContext_VSSetShader(devctx, dda->vertex_shader, NULL, 0);

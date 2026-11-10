@@ -160,13 +160,11 @@ namespace qk {
 			constexpr size_t payload_size = sizeof(m_Payload);
 
 			// bounds check
-			assert(offset + sizeof(T) <= payload_size &&
-				"Event::view<T>: payload overflow");
+			QK_ASSERT(offset + sizeof(T) <= payload_size, "Event::view<T>: payload overflow");
 
 			// alignment check
 			uintptr_t addr = reinterpret_cast<uintptr_t>(m_Payload + offset);
-			assert(addr % alignof(T) == 0 &&
-				"Event::view<T>: misaligned access");
+			QK_ASSERT(addr % alignof(T) == 0, "Event::view<T>: misaligned access");
 
 			return *reinterpret_cast<T*>(m_Payload + offset);
 		}
@@ -183,13 +181,11 @@ namespace qk {
 			constexpr size_t payload_size = sizeof(m_Payload);
 
 			// bounds check
-			assert(offset + sizeof(T) <= payload_size &&
-				"Event::view<T>: payload overflow");
+			QK_ASSERT(offset + sizeof(T) <= payload_size, "Event::view<T>: payload overflow");
 
 			// alignment check
 			uintptr_t addr = reinterpret_cast<uintptr_t>(m_Payload + offset);
-			assert(addr % alignof(T) == 0 &&
-				"Event::view<T>: misaligned access");
+			QK_ASSERT(addr % alignof(T) == 0, "Event::view<T>: misaligned access");
 
 			return *reinterpret_cast<const T*>(m_Payload + offset);
 		}

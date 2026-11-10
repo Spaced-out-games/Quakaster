@@ -13,16 +13,16 @@ namespace qk::gfx::rhi {
 		for (const DescriptorDeclaration& binding : recipe) {
 			switch (binding.type)
 			{
-			case Texture:
-				m_DescriptorVTable.emplace_back(Texture, m_Textures.size());
-				m_Textures.emplace_back(nullptr, m_Textures.size());
-				break;
-			case UniformBuffer:
-				m_DescriptorVTable.emplace_back(UniformBuffer, m_UniformBuffers.size());
-				m_UniformBuffers.emplace_back(nullptr, m_UniformBuffers.size());
-				break;
-			default:
-				break;
+				case Texture:
+					m_DescriptorVTable.emplace_back(Texture, m_Textures.size());
+					m_Textures.emplace_back(nullptr, m_Textures.size());
+					break;
+				case UniformBuffer:
+					m_DescriptorVTable.emplace_back(UniformBuffer, m_UniformBuffers.size());
+					m_UniformBuffers.emplace_back(nullptr, m_UniformBuffers.size());
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -50,13 +50,13 @@ namespace qk::gfx::rhi {
 	}
 
 	void DescriptorSet_impl::setResource(u32 binding, HTexture hTexture) {
-		assert(hTexture);
-		assert(binding < m_DescriptorVTable.size());
+		QK_ASSERT(hTexture != nullptr, "hTexture was nullptr");
+		QK_ASSERT(binding < m_DescriptorVTable.size(), "Bind index out of range");
 		
 		const auto& details = m_DescriptorVTable[binding];
 
-		assert(details.type == EDescriptorType::Texture);
-		assert(m_Textures.size() > details.index);
+		QK_ASSERT(details.type == EDescriptorType::Texture, "attempted to assign a texture descriptor to a non-texture descriptor slot");
+		QK_ASSERT(details.index < m_Textures.size(), "descriptor index out of range");
 		auto& slot = m_Textures[details.index];
 
 		if (slot.hTex)
@@ -68,14 +68,14 @@ namespace qk::gfx::rhi {
 	}
 
 	void DescriptorSet_impl::setResource(u32 binding, HUniformBuffer hUniformBuffer) {
-		assert(hUniformBuffer);
-		assert(binding < m_DescriptorVTable.size());
+		QK_ASSERT(hUniformBuffer != nullptr, "hUniformBuffer was nullptr");
+		QK_ASSERT(binding < m_DescriptorVTable.size(), "descriptor index out of range");
 		
 		const auto& details = m_DescriptorVTable[binding];
 		
 		
-		assert(details.type == EDescriptorType::UniformBuffer);
-		assert(m_UniformBuffers.size() > details.index);
+		QK_ASSERT(details.type == EDescriptorType::UniformBuffer, "Attempted to assign a uniform buffer to a non-uniformbuffer descriptor slot");
+		QK_ASSERT(details.index < m_UniformBuffers.size(), "descriptor index out of range");
 
 
 		auto& slot = m_UniformBuffers[details.index];
@@ -119,14 +119,14 @@ namespace qk::gfx::rhi {
 
 	void DescriptorSet_dtor(const HDescriptorSet& hDescriptorSet) {
 
-		assert(hDescriptorSet->refcount() == 0 && hDescriptorSet->flagged());
+		QK_ASSERT(hDescriptorSet->refcount() == 0 && hDescriptorSet->flagged(), "");
 
 		hDescriptorSet->destroy();
 
 	}
 
 	void DescriptorSet_free(HDescriptorSet& hDescriptorSet) {
-		assert(hDescriptorSet->refcount() == 0 && hDescriptorSet->flagged());
+		QK_ASSERT(hDescriptorSet->refcount() == 0 && hDescriptorSet->flagged(), "");
 
 		delete hDescriptorSet;
 

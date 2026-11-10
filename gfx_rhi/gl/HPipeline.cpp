@@ -107,7 +107,7 @@ namespace qk::gfx::rhi {
 		const std::span<const ShaderModule> modules = recipe.shader_modules;
 
 		program = new ShaderProgram_impl(modules);
-		assert(program);
+		QK_ASSERT(program != nullptr, "ShaderProgram_impl() returned nullptr");
 		program->acquire();
 
 		// copy the topology
@@ -131,7 +131,7 @@ namespace qk::gfx::rhi {
 		if (!vao) return;
 		glDeleteVertexArrays(1, &vao);
 		// todo: fix shaders not being deleted here! Probably should just decrease the refcount instead of full on deletion!
-		assert(program);
+		QK_ASSERT(program, "program was nullptr");
 		program->release();
 		program->flag_for_deletion();
 		ShaderProgram_dtor(program);
@@ -157,16 +157,16 @@ namespace qk::gfx::rhi {
 	}
 
 	void Pipeline_dtor(const HPipeline& hPipeline) {
-		assert(hPipeline);
-		assert(hPipeline->refcount() == 0 && hPipeline->flagged());
+		QK_ASSERT(hPipeline != nullptr, "hPipeline was nullptr");
+		QK_ASSERT(hPipeline->refcount() == 0 && hPipeline->flagged(), "Attepted to destroy locked resource");
 
 		hPipeline->destroy();
 
 	}
 
 	void Pipeline_free(HPipeline& hPipeline) {
-		assert(hPipeline);
-		assert(hPipeline->refcount() == 0 && hPipeline->flagged());
+		QK_ASSERT(hPipeline, "hPipeline was nullptr");
+		QK_ASSERT(hPipeline->refcount() == 0 && hPipeline->flagged(), "Attepted to destroy locked resource");
 
 
 		delete hPipeline;

@@ -60,15 +60,14 @@ namespace qk::gfx {
 
 	inline rhi::HTexture load_or_reload(rhi::TextureRegistry& registry, const str& path) {
 		const auto id = qk::string_hash{ path };
-
-		if (auto hTex = registry.peek(id))
+		auto hTex = registry.peek(id);
+		if (hTex)
 			return hTex;
 
 		media::Image img;
 		if (!media::load_image(img, path))
 			return nullptr;
 
-		rhi::HTexture hTex = nullptr;
 
 		if (path.ends_with(".png")) {
 			hTex = Texture_fromImage(img, TextureFormat::RGBA_8, TextureFormat::RGBA_8);

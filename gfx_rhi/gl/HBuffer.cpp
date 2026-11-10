@@ -1,5 +1,5 @@
 #include "HBuffer.h"
-
+#include <core.h>
 #include <Resource.h>
 #include <glad/glad.h>
 #include <stdexcept>
@@ -31,7 +31,7 @@ namespace qk::gfx::rhi {
 
 
     void Buffer_impl::upload(const void* pData, size_t num_bytes) {
-        assert(hBuffer);
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
 
         //elem_count = count;
         size = num_bytes;
@@ -47,7 +47,7 @@ namespace qk::gfx::rhi {
     }
 
     void Buffer_impl::alloc(size_t num_bytes) {
-        assert(hBuffer);
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
         size = num_bytes;
         initialized = false;
 
@@ -60,7 +60,7 @@ namespace qk::gfx::rhi {
     }
 
     void Buffer_impl::update(const void* pSrc, size_t offset, size_t num_bytes) {
-        assert(hBuffer);
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
 
         glBindBuffer(BufferType_cast(type), hBuffer);
 
@@ -72,16 +72,21 @@ namespace qk::gfx::rhi {
     }
 
     void* Buffer_impl::open(EBufferAccessFlags flags) {
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
         glBindBuffer(BufferType_cast(type), hBuffer);
         return glMapBuffer(BufferType_cast(type), EBufferAccessFlags_cast(flags));
     }
 
     void Buffer_impl::close() {
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
         glBindBuffer(BufferType_cast(type), hBuffer);
         glUnmapBuffer(BufferType_cast(type));
     }
 
     void Buffer_impl::copy(const HBuffer& src, size_t src_offset, const HBuffer& dest, size_t dest_offset, size_t num_bytes) {
+        QK_ASSERT(src->hBuffer != 0, "Invalid src->hBuffer");
+        QK_ASSERT(dest->hBuffer != 0, "Invalid dest->hBuffer");
+
         glBindBuffer(GL_COPY_READ_BUFFER, src->hBuffer);
         glBindBuffer(GL_COPY_WRITE_BUFFER, dest->hBuffer);
         
@@ -95,7 +100,9 @@ namespace qk::gfx::rhi {
     }
 
     bool Buffer_impl::VertexBuffer_bind(u8 slot, u32 offset, u32 stride) {
-        assert(type == BufferType::Vertex);
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
+        QK_ASSERT(type == BufferType::Vertex, "Attempted to bind non-vertexbuffer");
+        QK_ASSERT(initialized, "IndexBuffer was not initialized");
 
         if (!initialized) return false;
         glBindVertexBuffer(slot, hBuffer, offset, stride);
@@ -104,8 +111,9 @@ namespace qk::gfx::rhi {
     }
 
     bool Buffer_impl::IndexBuffer_bind() {
-
-        assert(type == BufferType::Index);
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
+        QK_ASSERT(type == BufferType::Index, "Attempted to bind non-indexbuffer");
+        QK_ASSERT(initialized, "IndexBuffer was not initialized");
 
         if (!initialized) return false;
 
@@ -116,7 +124,9 @@ namespace qk::gfx::rhi {
     }
 
     bool Buffer_impl::UniformBuffer_bind(u8 slot) {
-        assert(type == BufferType::Uniform);
+        QK_ASSERT(hBuffer != 0, "Invalid hBuffer");
+        QK_ASSERT(type == BufferType::Uniform, "Attempted to bind non-uniformbuffer");
+        QK_ASSERT(initialized, "UniformBuffer was not initialized");
 
         if (!initialized) return false;
         glBindBufferBase(GL_UNIFORM_BUFFER, slot, hBuffer);
@@ -140,17 +150,16 @@ namespace qk::gfx::rhi {
 
     void Buffer_dtor(const HBuffer& hBuf)
     {
-        assert(hBuf);
-        assert(hBuf->refcount() == 0 && hBuf->flagged());
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
+        QK_ASSERT(hBuf->refcount() == 0 && hBuf->flagged(), "hBuf was locked!");
 
         hBuf->destroy();
         
     }
 
     void Buffer_free(HBuffer& hBuf) {
-        assert(hBuf);
-        if(!hBuf->refcount() == 0 || !hBuf->flagged())
-            assert(false);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
+        QK_ASSERT(hBuf->refcount() == 0 && hBuf->flagged(), "hBuf was locked!");
 
         delete hBuf;
         hBuf = nullptr;
@@ -158,7 +167,8 @@ namespace qk::gfx::rhi {
 
     void Buffer_upload(const HBuffer& hBuf, const void* pData, size_t num_bytes)
     {
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
+
 
         hBuf->upload(pData, num_bytes);
     }
@@ -167,14 +177,16 @@ namespace qk::gfx::rhi {
 
     bool VertexBuffer_bind(const HVertexBuffer& hBuf, u8 slot, u32 offset, u32 stride)
     {
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
+
 
         return hBuf->VertexBuffer_bind(slot, offset, stride);
     }
 
     bool IndexBuffer_bind(const HIndexBuffer& hBuf)
     {
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
+
 
         return hBuf->IndexBuffer_bind();
 
@@ -183,7 +195,8 @@ namespace qk::gfx::rhi {
     bool UniformBuffer_bind(const HUniformBuffer& hBuf, u8 slot)
     {
 
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
+
 
         return hBuf->UniformBuffer_bind(slot);
 
@@ -191,22 +204,22 @@ namespace qk::gfx::rhi {
 
 
     void Buffer_alloc(const HBuffer& hBuf, size_t num_bytes) {
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
         hBuf->alloc(num_bytes);
     }
 
     void Buffer_update(const HBuffer& hBuf, const void* pSrc, size_t offset, size_t num_bytes) {
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
         hBuf->update(pSrc, offset, num_bytes);
     }
 
     void* Buffer_open(const HBuffer& hBuf, EBufferAccessFlags flags) {
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
         return hBuf->open(flags);
     }
 
     void Buffer_close(const HBuffer& hBuf) {
-        assert(hBuf);
+        QK_ASSERT(hBuf != nullptr, "hBuf was nullptr");
         hBuf->close();
         hBuf->initialized = true;
     }

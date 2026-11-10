@@ -77,8 +77,8 @@ namespace qk::media {
 
 	bool load_image(Image& target, const std::string& path)
 	{
-		assert(path != "");
-		assert(target.m_pData == nullptr);
+		QK_ASSERT(!path.empty(), "path was empty");
+		QK_ASSERT(target.m_pData == nullptr, "m_pData was nullptr");
 
 		int width, height, channels;
 
@@ -96,25 +96,27 @@ namespace qk::media {
 		target.m_Channels = (u32)channels;
 
 
-		if (!target.m_pData) {
-			spdlog::info("Image `{}` failed to load: {}", path, stbi_failure_reason());
-			return false;
-		}
+		QK_ASSERT(target.m_pData, std::format("Image `{}` failed to load: {}", path, stbi_failure_reason()));
+
+		if (!target.m_pData) return false;
+
 		return true;
 	}
 
 	void make_image(Image& target, u32 width, u32 height, u32 channels)
 	{
 
-		assert(target.m_pData == nullptr);
+		QK_ASSERT(target.m_pData == nullptr, "m_pData overwrite was attempted");
 		
-		assert(channels > 0);
+		QK_ASSERT(channels > 0 && channels <= 4, "channel count of range: expected value in [0:4]");
 
 		size_t size = (size_t)width * (size_t)height * (size_t)channels;
 
 		target.m_pData = (uint8_t*)malloc(size);
-		if (!target.m_pData)
-			throw std::runtime_error("malloc failed");
+
+		QK_ASSERT(target.m_pData != nullptr, "m_pData was nullptr");
+
+		if (target.m_pData == nullptr) return;
 
 		memset(target.m_pData, 0, size);
 

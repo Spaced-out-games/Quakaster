@@ -140,7 +140,7 @@ static void ImGui_ImplDX10_SetupRenderState(ImDrawData* draw_data, ID3D10Device*
     device->IASetInputLayout(bd->pInputLayout);
     device->IASetVertexBuffers(0, 1, &bd->pVB, &stride, &offset);
     device->IASetIndexBuffer(bd->pIB, sizeof(ImDrawIdx) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-    device->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    device->IASetEPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     device->VSSetShader(bd->pVertexShader);
     device->VSSetConstantBuffers(0, 1, &bd->pVertexConstantBuffer);
     device->PSSetShader(bd->pPixelShader);
@@ -236,7 +236,7 @@ void ImGui_ImplDX10_RenderDrawData(ImDrawData* draw_data)
         ID3D10PixelShader*          PS;
         ID3D10VertexShader*         VS;
         ID3D10GeometryShader*       GS;
-        D3D10_PRIMITIVE_TOPOLOGY    PrimitiveTopology;
+        D3D10_PRIMITIVE_TOPOLOGY    EPrimitiveTopology;
         ID3D10Buffer*               IndexBuffer, *VertexBuffer, *VSConstantBuffer;
         UINT                        IndexBufferOffset, VertexBufferStride, VertexBufferOffset;
         DXGI_FORMAT                 IndexBufferFormat;
@@ -255,7 +255,7 @@ void ImGui_ImplDX10_RenderDrawData(ImDrawData* draw_data)
     device->VSGetShader(&old.VS);
     device->VSGetConstantBuffers(0, 1, &old.VSConstantBuffer);
     device->GSGetShader(&old.GS);
-    device->IAGetPrimitiveTopology(&old.PrimitiveTopology);
+    device->IAGetEPrimitiveTopology(&old.EPrimitiveTopology);
     device->IAGetIndexBuffer(&old.IndexBuffer, &old.IndexBufferFormat, &old.IndexBufferOffset);
     device->IAGetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset);
     device->IAGetInputLayout(&old.InputLayout);
@@ -323,7 +323,7 @@ void ImGui_ImplDX10_RenderDrawData(ImDrawData* draw_data)
     device->VSSetShader(old.VS); if (old.VS) old.VS->Release();
     device->GSSetShader(old.GS); if (old.GS) old.GS->Release();
     device->VSSetConstantBuffers(0, 1, &old.VSConstantBuffer); if (old.VSConstantBuffer) old.VSConstantBuffer->Release();
-    device->IASetPrimitiveTopology(old.PrimitiveTopology);
+    device->IASetEPrimitiveTopology(old.EPrimitiveTopology);
     device->IASetIndexBuffer(old.IndexBuffer, old.IndexBufferFormat, old.IndexBufferOffset); if (old.IndexBuffer) old.IndexBuffer->Release();
     device->IASetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset); if (old.VertexBuffer) old.VertexBuffer->Release();
     device->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();

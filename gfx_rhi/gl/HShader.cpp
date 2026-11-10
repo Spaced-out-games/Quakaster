@@ -51,7 +51,7 @@ namespace qk::gfx::rhi {
 
     // destruction
     void ShaderProgram_impl::destroy() {
-        assert(refcount() == 0 && flagged());
+        QK_ASSERT(refcount() == 0 && flagged(), "Attepted to destroy locked resource");
         if (!hProgram) return;
 
         glDeleteProgram(hProgram);
@@ -69,7 +69,7 @@ namespace qk::gfx::rhi {
 
 
     bool ShaderProgram_impl::bind_uniform_block(const char* pName, u8 slot) {
-        assert(hProgram);
+        QK_ASSERT(hProgram != 0, "hProgram was nullptr");
 
         GLuint block = glGetUniformBlockIndex(hProgram, pName);
 
@@ -87,7 +87,7 @@ namespace qk::gfx::rhi {
     // helpers
     Result <GLuint, str>
     ShaderProgram_impl::Shader_compile(const ShaderModule& recipe) {
-        GLuint hShader = glCreateShader(ShaderType_cast(recipe.type));
+        GLuint hShader = glCreateShader(EShaderType_cast(recipe.type));
         if (!hShader) return qk::Error<str>{ "glCreateShader failed" };
 
 
@@ -169,22 +169,6 @@ namespace qk::gfx::rhi {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // RHI frontend
 
     Resource* Resource_cast(const HShaderProgram& hShaderProgram) {
@@ -198,8 +182,8 @@ namespace qk::gfx::rhi {
 
     void ShaderProgram_dtor(const HShaderProgram& hProgram) {
 
-        assert(hProgram);
-        assert(hProgram->refcount() == 0 && hProgram->flagged());
+        QK_ASSERT(hProgram != nullptr, "hProgram was nullptr");
+        QK_ASSERT(hProgram->refcount() == 0 && hProgram->flagged(), "");
 
         hProgram->destroy();
 
@@ -208,8 +192,8 @@ namespace qk::gfx::rhi {
     }
 
     void ShaderProgram_free(HShaderProgram& hProgram) {
-        assert(hProgram);
-        assert(hProgram->refcount() == 0 && hProgram->flagged());
+        QK_ASSERT(hProgram != nullptr, "hProgram was nullptr");
+        QK_ASSERT(hProgram->refcount() == 0 && hProgram->flagged(), "");
 
         delete hProgram;
         hProgram = nullptr;

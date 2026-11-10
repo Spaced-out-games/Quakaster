@@ -63,10 +63,10 @@ set(ENGINE_SOURCES
 
     "net-v2/Peer.cpp" "net-v2/PeerRegistry.h"
 
-    "utility/ByteStream.cpp"    "media/LoadPipeline.cpp"  "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "kernel/ComponentLoader.cpp" "kernel/EntityLoader.cpp" "kernel/SceneLoader.cpp"   "gfx/InstancePool.cpp"  "gfx/Renderer.cpp" "debugging/trace.cpp" "utility/Profiler.cpp" "gui/ProfilerWidget.cpp" "kernel/KeyValues.cpp" "kernel/Kernel.cpp" "kernel/VDrive.cpp" "kernel/Port.cpp" "kernel/Signal.cpp" "World/World.cpp" "components/CGraphNode.cpp")
+    "utility/ByteStream.cpp"    "media/LoadPipeline.cpp"  "gfx/gfx.cpp"  "math/geometric/Vec3.cpp" "math/geometric/Vec2.cpp" "math/geometric/Vec4.cpp" "math/geometric/Quat.cpp" "spacial/SpatialHashMap.cpp" "math/geometric/Plane.cpp" "gfx/CStaticMeshInstance.cpp" "io/CEventListener.cpp" "math/geometric/Transform.cpp" "math/geometric/Mat4.cpp" "kernel/ComponentLoader.cpp" "kernel/EntityLoader.cpp" "kernel/SceneLoader.cpp"   "gfx/InstancePool.cpp"  "gfx/Renderer.cpp" "debugging/trace.cpp" "utility/Profiler.cpp" "gui/ProfilerWidget.cpp" "../Core/KeyValues.cpp" "kernel/Kernel.cpp" "kernel/VDrive.cpp" "kernel/Port.cpp" "kernel/Signal.cpp" "World/World.cpp" "components/CGraphNode.cpp")
 
 message("[ENGINE] Building target `Engine`...")
-add_library(${PROJECT_NAME} ${ENGINE_SOURCES}  "kernel/KeyValues.h")
+add_library(${PROJECT_NAME} ${ENGINE_SOURCES}  "../Core/KeyValues.h")
 
 # engine include lists go here
 target_link_libraries(${PROJECT_NAME}

@@ -113,7 +113,7 @@ namespace qk::gfx {
 			return;
 
 		QK_ASSERT(handle.sparse < m_Locations.size(), "handle.sparse was out of bounds");
-		const Location loc = m_Locations[handle.spasrse];
+		const Location loc = m_Locations[handle.sparse];
 
 		// Same partition: just a write.
 		if (loc.partition == new_partition) {

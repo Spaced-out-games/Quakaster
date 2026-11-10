@@ -5,9 +5,9 @@
 namespace qk {
 
     static void glfw_error_callback(int error, const char* description) {
-        //QK_DEBUG_BREAK();
-        spdlog::error("GLFW Error {}: {}", error, description);
-        QK_DEBUG_BREAK();
+
+        QK_ASSERT(error == 0, std::format("GLFW Error {}: {}", error, description));
+
     }
 
     bool startup() {

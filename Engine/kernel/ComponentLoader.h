@@ -7,7 +7,7 @@
 #include <core.h>
 #include <media/json.h>
 #include <fnv1a.h>
-#include "../kernel/KeyValues.h"
+#include <KeyValues.h>
 using qk::media::JSONArrayClassification;
 using qk::media::flatten_json;
 using qk::media::classify;

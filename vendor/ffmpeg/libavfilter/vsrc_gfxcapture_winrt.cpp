@@ -1377,7 +1377,7 @@ static int render_capture_to_frame(AVFilterContext *avctx, AVFrame *frame, const
     const float clear_color[4] = {0.f, 0.f, 0.f, 1.f};
     def_ctx->ClearRenderTargetView(rtv.Get(), clear_color);
 
-    def_ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    def_ctx->IASetEPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     def_ctx->VSSetShader(d3dctx->vertex_shader.Get(), nullptr, 0);
     def_ctx->VSSetConstantBuffers(0, 1, d3dctx->shader_cb.GetAddressOf());
     def_ctx->PSSetShader(d3dctx->pixel_shader.Get(), nullptr, 0);

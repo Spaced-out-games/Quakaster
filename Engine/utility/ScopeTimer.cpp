@@ -10,16 +10,15 @@
 namespace qk::utility {
 	ScopeTimer::~ScopeTimer() {
 		
-		#ifdef _DEBUG
+		#ifdef QK_DEBUG
 		//spdlog::info("{} took {}ns.", m_pMsg, (now() - m_StartTime));
 		#endif
 		if(m_pProfiler)
 			m_pProfiler->record(m_pMsg, qk::utility::now() - m_StartTime);
-		//if (m_pTarget) (*m_pTarget += now() - m_StartTime);
 	}
 
 	ScopeTimer::ScopeTimer(const char* pMsg, Profiler* pProfiler) {
-		assert(pMsg);
+		QK_ASSERT(pMsg, "pMsg was nullptr");
 		m_pProfiler = pProfiler;
 		m_pMsg = pMsg;
 		m_StartTime = now();

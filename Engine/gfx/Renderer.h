@@ -20,6 +20,12 @@ using qk::gfx::rhi::CommandBuffer_recipe;
 
 namespace qk::gfx {
 
+
+	enum class MeshDefinitionError {
+		POOL_DOUBLE_INSERT_ERROR = 0
+	};
+
+
 	using MeshComponentPrimitive_t = u64;
 
 	// convenience aliases

@@ -181,8 +181,8 @@ namespace qk::gfx {
 		(
 			[&] {
 
-				auto* pPool = m_MeshDefinitions.template try_get<InstancePool<std::decay_t<Args>>>(mesh_id)
-				QK_ASSERT(pPool != nullptr, "Mesh definition is missing a InstancePool for an inserted instance-data type.")
+				auto* pPool = m_MeshDefinitions.template try_get<InstancePool<std::decay_t<Args>>>(mesh_id);
+				QK_ASSERT(pPool != nullptr, "Mesh definition is missing a InstancePool for an inserted instance-data type.");
 				pPool->insert(table, std::forward<Args>(args), partition, result.instance);
 
 			}(), ...
@@ -279,10 +279,12 @@ namespace qk::gfx {
 	template <class ...SupportedTs>
 	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::pushPipeline(u64 pipeline_id) {
 		HPipeline hPipeline = m_Renderer.get_resource<HPipeline>(pipeline_id);
-		if (!hPipeline) {
-			assert(false);
-			return *this;
-		}
+
+		QK_ASSERT(hPipeline, "hPipeline was nullptr");
+
+		if (!hPipeline) return *this;
+
+
 		m_Renderer.m_MeshDefinitions.emplace_or_replace<PipelineDefinition>(m_ID, hPipeline);
 		return *this;
 	}
@@ -290,10 +292,10 @@ namespace qk::gfx {
 	template <class ...SupportedTs>
 	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::pushVertexBuffer(u64 buffer_id, u32 offset, u32 stride, u8 slot) {
 		HVertexBuffer hVertexBuffer = m_Renderer.get_resource<HVertexBuffer>(buffer_id);
-		if (!hVertexBuffer) {
-			assert(false);
-			return *this;
-		}
+
+		QK_ASSERT(hVertexBuffer != nullptr, "hVertexBuffer was nullptr");
+
+		if (!hVertexBuffer) return *this;
 
 		auto& groups = m_Renderer.m_MeshDefinitions.get_or_emplace<VertexBufferGroupDefinition>(m_ID);
 
@@ -305,10 +307,11 @@ namespace qk::gfx {
 	template <class ...SupportedTs>
 	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::pushIndexBuffer(u64 buffer_id, u32 default_offset, u32 default_stride, u8 slot) {
 		HIndexBuffer hIndexBuffer = m_Renderer.get_resource<HIndexBuffer>(buffer_id);
-		if (!hIndexBuffer) {
-			assert(false);
-			return *this;
-		}
+
+		QK_ASSERT(hIndexBuffer != nullptr, "hIndexBuffer was nullptr");
+
+
+		if (!hIndexBuffer) return *this;
 
 		m_Renderer.m_MeshDefinitions.emplace_or_replace<IndexBufferDefinition>(m_ID, IndexBufferBinding{ hIndexBuffer, default_offset, default_stride, slot });
 
@@ -320,10 +323,12 @@ namespace qk::gfx {
 	MeshDefinitionBuilder<Ts...>& MeshDefinitionBuilder<Ts...>::pushDescriptorSet(u64 id, u8 slot) {
 		HDescriptorSet hDescriptorSet = m_Renderer.get_resource<HDescriptorSet>(id);
 
-		if (!hDescriptorSet) {
-			assert(false);
-			return *this;
-		}
+
+		QK_ASSERT(hDescriptorSet, "hDescriptorSet was nullptr");
+
+
+
+		if (!hDescriptorSet) return *this;
 
 		// NOTICE TO SELF: Descriptor sets weren't compiling because they are using different storages. These need re-written lol
 		DescriptorSetGroupDefinition& bindings = m_Renderer.m_MeshDefinitions.get_or_emplace<DescriptorSetGroupDefinition>(m_ID);
@@ -375,7 +380,7 @@ namespace qk::gfx {
 			if (finished) return;
 			if (auto* pPool = m_MeshDefinitions.template try_get<InstancePool<SupportedTs>>(target)) {
 				for (size_t i = 0; i < pPool->num_partitions(); ++i) {
-					assert(cacheIndex < cache.size());
+					QK_ASSERT(cacheIndex < cache.size(), "cacheIndex was out of bounds");
 					const auto& partition = pPool->get_partition(i);
 
 					cache[cacheIndex].offset = offset;
@@ -412,10 +417,10 @@ namespace qk::gfx {
 		static_assert(contains_type_v<true_t, type_list<SupportedTs...>>,
 			"PoolType is not in the allowed set of types");
 		
-		if (hasInstancePool<true_t>()) {
-			assert(false && "mesh definition already has a pool for this instance type");
-			return *this;
-		}
+		QK_ASSERT(!hasInstancePool<true_t>(), "Mesh definition already has a pool for this instance type");
+
+		// don't double-insert. Semantics unclear, so throw.
+		if (hasInstancePool<true_t>()) throw MeshDefinitionError::POOL_DOUBLE_INSERT_ERROR;
 
 		m_Renderer.m_MeshDefinitions.emplace<InstancePool<true_t>>(m_ID, hInstanceBuffer);
 		return *this;
@@ -449,7 +454,7 @@ namespace qk::gfx {
 
 	template <class... SupportedTs>
 	MeshDefinitionBuilder<SupportedTs...>& MeshDefinitionBuilder<SupportedTs...>::setLODCount(u8 num_LODs) {
-		assert(num_LODs != 0);
+		QK_ASSERT(num_LODs != 0, "Only one LOD currently supported!!!");
 		m_NumLODs = num_LODs;
 
 

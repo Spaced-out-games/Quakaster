@@ -2,8 +2,8 @@
 
 using qk::gfx::rhi::EScalarType;
 using qk::gfx::rhi::InputRate;
-using qk::gfx::rhi::ShaderType;
-using qk::gfx::rhi::PrimitiveTopology;
+using qk::gfx::rhi::EShaderType;
+using qk::gfx::rhi::EPrimitiveTopology;
 using qk::gfx::rhi::EDescriptorType;
 using qk::gfx::rhi::DescriptorDeclaration;
 namespace qk::media {
@@ -27,28 +27,31 @@ namespace qk::media {
 		else assert(false);
 	}
 
-	inline ShaderType ShaderType_fromString(const str& value) {
-		if (value == "vertex") return ShaderType::Vertex;
-		else if (value == "fragment") return ShaderType::Fragment;
-		else if (value == "geometry") return ShaderType::Geometry;
-		else if (value == "compute") return ShaderType::Compute;
-		else assert(false);
+	inline EShaderType EShaderType_fromString(const str& value) {
+		if (value == "vertex") return EShaderType::Vertex;
+		else if (value == "fragment") return EShaderType::Fragment;
+		else if (value == "geometry") return EShaderType::Geometry;
+		else if (value == "compute") return EShaderType::Compute;
+
+
+		QK_ASSERT(false, "EShaderType was out of range!");
 	}
 
-	inline PrimitiveTopology PrimitiveTopology_fromString(const str& value) {
-		if (value == "triangle") return PrimitiveTopology::Triangle;
-		else if (value == "lines") return PrimitiveTopology::Lines;
-		else if (value == "points") return PrimitiveTopology::Points;
-		else if (value == "triangle_strip") return PrimitiveTopology::TriangleStrip;
-		else if (value == "line_strip") return PrimitiveTopology::LineStrip;
-		else assert(false);
+	inline EPrimitiveTopology EPrimitiveTopology_fromString(const str& value) {
+		if (value == "triangle") return EPrimitiveTopology::Triangle;
+		else if (value == "lines") return EPrimitiveTopology::Lines;
+		else if (value == "points") return EPrimitiveTopology::Points;
+		else if (value == "triangle_strip") return EPrimitiveTopology::TriangleStrip;
+		else if (value == "line_strip") return EPrimitiveTopology::LineStrip;
+		QK_ASSERT(false, "EPrimitiveTopology was out of range!");
+
 	}
 
 	inline EDescriptorType EDescriptorType_fromString(const str& value) {
 		if (value == "texture") return EDescriptorType::Texture;
 		else if (value == "uniform_buffer") return EDescriptorType::UniformBuffer;
-		else
-			assert(false);
+		
+		QK_ASSERT(false, "EDescriptorType was out of range!");
 	}
 
 
@@ -132,8 +135,8 @@ namespace qk::media {
 		if (!j.is_object()) return false;
 
 		if (j.contains("type") && j["type"].is_string()) {
-			module.type = ShaderType_fromString(j["type"]);
-			if (module.type == ShaderType::Unknown) return false;
+			module.type = EShaderType_fromString(j["type"]);
+			if (module.type == EShaderType::Unknown) return false;
 		}
 
 		if (j.contains("path") && j["path"].is_string())
@@ -171,9 +174,9 @@ namespace qk::media {
 
 
 		if (j.contains("topology") && j["topology"].is_string())
-			pipeline.topology = PrimitiveTopology_fromString(j["topology"]);
+			pipeline.topology = EPrimitiveTopology_fromString(j["topology"]);
 		else
-			pipeline.topology = PrimitiveTopology::Triangle;
+			pipeline.topology = EPrimitiveTopology::Triangle;
 
 		if (j.contains("layout") && j["layout"].is_array()) {
 			if (!VertexLayout_recipeFromJSON(j["layout"], pipeline.layout))

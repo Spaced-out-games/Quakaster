@@ -2,28 +2,23 @@
 #include "Sandbox.h"
 #include <gfx/gfx.h>
 #include <spdlog/spdlog.h>
-#include <DrawCommand.h> // temp
-//#include <glm/ext/matrix_transform.hpp>
-//#include <gfx/InstancePool.h>
+#include <DrawCommand.h>
 #include <utility/time.h>
 #include "debugging/trace.h"
 #include <net-v2/PeerRegistry.h>
+#include "utility/ScopeTimer.h"
+#include "kernel/UURH.h"
 
 
 // -------------------------------------------------- defines -------------------------------------------------- //
 //#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/Screenshots/Screenshot (53).png"
-#define TEST_IMAGE_PATH "C:/Users/devin/Desktop/burger-7419420_1280.jpg"
-
-
+#define TEST_IMAGE_PATH "assets/burger.jpg"
 #define TEST_PIPELINE_PATH "assets/pipeline.jsonc"
 
 // aliases
 using namespace qk::media;
 using namespace qk::gfx;
-#include "kernel/UURH.h"
 
-#include "utility/ScopeTimer.h"
-#
 
 
 // -------------------------------------------------- globals -------------------------------------------------- //
@@ -266,7 +261,7 @@ void Sandbox::init(int argc, char** argv) {
 void Sandbox::run() {
     using utility::ScopeTimer;
     static bool ran = false;
-    static uint64_t last_report = qk::utility::now();
+    static u64 last_report = qk::utility::now();
     static uint64_t frames = 0;
 
     {

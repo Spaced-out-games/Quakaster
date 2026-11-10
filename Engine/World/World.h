@@ -1,6 +1,6 @@
 #pragma once
 #include <kernel/UURH.h>
-#include <kernel/KeyValues.h>
+#include <KeyValues.h>
 #include <kernel/VDrive.h>
 #include <kernel/EntityLoader.h>
 

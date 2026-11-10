@@ -47,8 +47,8 @@ namespace qk::gfx::rhi {
     }
 
     CommandBuffer_recipe& CommandBuffer_recipe::bindDescriptorSet(HDescriptorSet hDescriptorSet, u8 slot) {
-        assert(slot < RHI_MAX_DESCRIPTORSETS_BOUND);
-        assert(hDescriptorSet);
+        QK_ASSERT(slot < RHI_MAX_DESCRIPTORSETS_BOUND, std::format("Quakaster only supports up to {} descriptor sets", RHI_MAX_DESCRIPTORSETS_BOUND));
+        QK_ASSERT(hDescriptorSet != nullptr, "hDescriptorSet was nullptr");
 
         m_DrawCommands.emplace_back(
             DrawCmd{ BindDescriptorSetCmd{hDescriptorSet, slot} }
@@ -89,6 +89,7 @@ namespace qk::gfx::rhi {
     CommandBuffer_impl::CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands) :
         dependencies(resources),
         draw_commands(commands),
+        topology(EPrimitiveTopology::Triangle), // safe default
         Resource("CommandBuffer_impl") {
 
         for (Resource* pDependency : dependencies) {
@@ -110,13 +111,11 @@ namespace qk::gfx::rhi {
 
     HCommandBuffer CommandBuffer_ctor(const CommandBuffer_recipe& recipe) {
         return new CommandBuffer_impl(recipe.dependencies(), recipe.commands());
-
-
     }
 
     void CommandBuffer_dtor(const HCommandBuffer& hCmdBuf) {
-        assert(hCmdBuf);
-        assert(hCmdBuf->refcount() == 0 && hCmdBuf->flagged());
+        QK_ASSERT(hCmdBuf != nullptr, "hCmdBuf was nullptr");
+        QK_ASSERT(hCmdBuf->refcount() == 0 && hCmdBuf->flagged(), "Attempted to destroy a locked CommandBuffer");
         
         // since commandbuffers are entirely emulated in GL using standard types, 'destruction'
         // is trivial:
@@ -127,14 +126,14 @@ namespace qk::gfx::rhi {
 
         hCmdBuf->dependencies.clear();
         hCmdBuf->draw_commands.clear();
-        hCmdBuf->topology = PrimitiveTopology::Unknown;
+        hCmdBuf->topology = EPrimitiveTopology::Unknown;
 
     }
 
     void CommandBuffer_free(HCommandBuffer& hCmdBuf) {
 
-        assert(hCmdBuf);
-        assert(hCmdBuf->refcount() == 0 && hCmdBuf->flagged());
+        QK_ASSERT(hCmdBuf != nullptr, "hCmdBuf was nullptr");
+        QK_ASSERT(hCmdBuf->refcount() == 0 && hCmdBuf->flagged(), "Attempted to destroy a locked CommandBuffer");
 
         delete hCmdBuf;
         hCmdBuf = nullptr;
@@ -177,7 +176,7 @@ namespace qk::gfx::rhi {
             // NOTE: The scene compiler might emit this command when the instancebuffer is empty, leading to UB.
             __debugbreak();
             glDrawArrays(
-                PrimitiveType_cast(hCmdBuf->topology),
+                EPrimitiveTopology_cast(hCmdBuf->topology),
                 drawArraysCmd.offset,
                 drawArraysCmd.count
             );
@@ -185,7 +184,7 @@ namespace qk::gfx::rhi {
 
         case EDrawCmdType::DrawArraysInstanced:
             glDrawArraysInstanced(
-                PrimitiveType_cast(hCmdBuf->topology),
+                EPrimitiveTopology_cast(hCmdBuf->topology),
                 drawArraysInstancedCmd.offset,
                 drawArraysInstancedCmd.numVertices,
                 drawArraysInstancedCmd.numInstances
@@ -226,7 +225,7 @@ namespace qk::gfx::rhi {
     // Maybe consider moving this to implementation and wrapping it here instead!
     void CommandBuffer_execute(const HCommandBuffer& hCmdBuf)
     {
-        assert(hCmdBuf);
+        QK_ASSERT(hCmdBuf != 0, "hCmdBuf was nullptr");
 
         DescriptorSetsContext ctx{};
         HDescriptorSet hDescriptorSets[RHI_MAX_DESCRIPTORSETS_BOUND]{};

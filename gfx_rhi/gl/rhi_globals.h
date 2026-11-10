@@ -28,9 +28,10 @@ namespace qk::gfx::rhi {
         case qk::gfx::rhi::Unknown:
             throw std::runtime_error("unexpected Input Rate!");
         default:
-            assert(false);
+            
             break;
         }
+        QK_ASSERT(false, "unexpected InputRate!");
     }
 
     inline GLuint EBufferAccessFlags_cast(EBufferAccessFlags flags) {
@@ -45,6 +46,8 @@ namespace qk::gfx::rhi {
         default:
             break;
         }
+        QK_ASSERT(false, "unexpected EBufferAccessFlags!");
+
     }
 
     inline GLint TextureFilter_cast(TextureFilter filter) {
@@ -71,6 +74,8 @@ namespace qk::gfx::rhi {
         default:
             break;
         }
+        QK_ASSERT(false, "unexpected TextureFilter!");
+
     }
 
     inline GLint TextureWrap_cast(TextureWrap wrap) {
@@ -91,6 +96,8 @@ namespace qk::gfx::rhi {
         default:
             break;
         }
+        QK_ASSERT(false, "unexpected TextureWrap!");
+
     }
 
 
@@ -103,11 +110,11 @@ namespace qk::gfx::rhi {
             case DynamicDraw: return GL_DYNAMIC_DRAW;
             case StreamDraw:  return GL_STREAM_DRAW;
             default:
-                assert(false);
+                QK_ASSERT(false, "");
                 break;
         }
 
-        throw std::runtime_error("Invalid BufferUsage");
+        QK_ASSERT(false, "unexpected BufferUsage!");
     }
 
     inline GLenum BufferType_cast(
@@ -125,9 +132,11 @@ namespace qk::gfx::rhi {
             return GL_UNIFORM_BUFFER;
 
         default:
-            assert(false);
             break;
+
         }
+
+        QK_ASSERT(false, "unexpected BufferType!");
     }
 
 
@@ -160,9 +169,10 @@ namespace qk::gfx::rhi {
             return GL_DOUBLE;
 
         default:
-            assert(false);
             break;
         }
+
+        QK_ASSERT(false, "unexpected EScalarType!");
     }
 
     inline GLuint TextureType_cast(TextureType type)
@@ -178,10 +188,11 @@ namespace qk::gfx::rhi {
             case TEX_2D_ARRAY: return GL_TEXTURE_2D_ARRAY;
 
             default:
-                assert(false);
                 break;
 
         }
+
+        QK_ASSERT(false, "unexpected TextureType!");
     }
 
     inline GLenum TextureStorageFormat_cast(TextureFormat format)
@@ -207,9 +218,10 @@ namespace qk::gfx::rhi {
             return GL_RGBA8;
 
         default:
-            assert(false);
             return GL_RGBA8;
         }
+
+        QK_ASSERT(false, "unexpected TextureStorageFormat!");
     }
 
     inline GLenum TextureSourceFormat_cast(TextureFormat format)
@@ -229,25 +241,26 @@ namespace qk::gfx::rhi {
             return GL_RGBA;
 
         default:
-            assert(false);
             return GL_RGBA;
         }
+        QK_ASSERT(false, "unexpected TextureSourceFormat!");
     }
 
-    inline GLenum ShaderType_cast(ShaderType type)
+    inline GLenum EShaderType_cast(EShaderType type)
     {
         switch (type)
         {
-        case ShaderType::Vertex:
+        case EShaderType::Vertex:
             return GL_VERTEX_SHADER;
-        case ShaderType::Fragment:
+        case EShaderType::Fragment:
             return GL_FRAGMENT_SHADER;
-        case ShaderType::Geometry:
+        case EShaderType::Geometry:
             return GL_GEOMETRY_SHADER;
         default:
-            assert(false);
             break;
         }
+
+        QK_ASSERT(false, "unexpected EShaderType!");
     }
 
 
@@ -267,29 +280,30 @@ namespace qk::gfx::rhi {
         return result;
     }
 
-    inline GLuint PrimitiveType_cast(PrimitiveTopology type)
+    inline GLuint EPrimitiveTopology_cast(EPrimitiveTopology type)
     {
         switch (type)
         {
-        case PrimitiveTopology::Triangle:
+        case EPrimitiveTopology::Triangle:
             return GL_TRIANGLES;
 
-        case PrimitiveTopology::Lines:
+        case EPrimitiveTopology::Lines:
             return GL_LINES;
 
-        case PrimitiveTopology::Points:
+        case EPrimitiveTopology::Points:
             return GL_POINTS;
 
-        case PrimitiveTopology::TriangleStrip:
+        case EPrimitiveTopology::TriangleStrip:
             return GL_TRIANGLE_STRIP;
 
-        case PrimitiveTopology::LineStrip:
+        case EPrimitiveTopology::LineStrip:
             return GL_LINE_STRIP;
 
         default:
-            assert(false);
             break;
         }
+
+        QK_ASSERT(false, "unexpected EPrimitiveTopology!");
     }
 
 
@@ -335,7 +349,7 @@ namespace qk::gfx::rhi {
 
     struct Pipeline_impl : qk::Resource {
         HShaderProgram				program;
-        PrimitiveTopology			topology;
+        EPrimitiveTopology			topology;
         GLuint						vao;
         std::unordered_map<u8, u32> strides;
         //CullMode cull;
@@ -383,7 +397,7 @@ namespace qk::gfx::rhi {
 
         std::vector<DrawCmd>          draw_commands;
         // belongs here for now
-        PrimitiveTopology             topology;
+        EPrimitiveTopology             topology;
         CommandBuffer_impl(const std::unordered_set<Resource*>& resources, const std::vector<DrawCmd>& commands);
 
         void destroy();

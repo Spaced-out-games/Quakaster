@@ -7,9 +7,9 @@ namespace qk::gfx::rhi {
 
     // Descriptor type
     enum class EDescriptorType {
-        Unknown,
         Texture,
         UniformBuffer,
+        Unknown
         //StorageBuffer
     };
 
@@ -61,20 +61,15 @@ namespace qk::gfx::rhi {
 
             switch (type)
             {
-            case qk::gfx::rhi::EDescriptorType::Unknown:
-                assert(false);
-                break;
             case qk::gfx::rhi::EDescriptorType::Texture:
                 hTexture = (HTexture)hDescriptor;
                 break;
             case qk::gfx::rhi::EDescriptorType::UniformBuffer:
                 hUniformBuffer = (HUniformBuffer)hDescriptor;
                 break;
-            default:
-                assert(false);
-                break;
             }
 
+            QK_ASSERT(false, "Invalid EDescriptorType");
 
         }
 

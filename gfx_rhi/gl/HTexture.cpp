@@ -15,7 +15,7 @@ namespace qk::gfx::rhi {
 
     }
     void Texture_impl::bind(u8 slot) const {
-        assert(texture);
+        QK_ASSERT(texture != 0, "texture was 0");
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(GL_TEXTURE_2D, texture);
     }
@@ -30,7 +30,7 @@ namespace qk::gfx::rhi {
         u32 mip_levels = storage.mip_levels;
 
         glGenTextures(1, &texture);
-        assert(texture != 0);
+        QK_ASSERT(texture != 0, "texture was 0");
 
         glBindTexture(target, texture);
 
@@ -162,8 +162,8 @@ namespace qk::gfx::rhi {
         );
 
 
-        assert(texture != 0);
-        assert(source.pData != nullptr);
+        QK_ASSERT(texture != 0, "texture was 0");
+        QK_ASSERT(source.pData != nullptr, "pData was nullptr");
 
         GLenum target = TextureType_cast(type);
         GLenum source_format = TextureSourceFormat_cast(source.format);
@@ -212,7 +212,7 @@ namespace qk::gfx::rhi {
             break;
 
         default:
-            assert(false);
+            QK_ASSERT(false, "");
             break;
         }
 
@@ -220,7 +220,7 @@ namespace qk::gfx::rhi {
     }
 
     void Texture_impl::set_sampling_parameters(const Sampler_recipe& recipe) {
-        assert(texture != 0);
+        QK_ASSERT(texture != 0, "");
 
         spdlog::info("Texture_impl @{} sampler: min filter = {}, mag filter = {}, wrap_s = {}, wrap_r = {}, wrap_t = {}",
             (const void*)this,
@@ -261,8 +261,8 @@ namespace qk::gfx::rhi {
 
     void Texture_dtor(const HTexture& hTex)
     {
-        assert(hTex);
-        assert(hTex->refcount() == 0 && hTex->flagged());
+        QK_ASSERT(hTex != nullptr, "hTex was nullptr");
+        QK_ASSERT(hTex->refcount() == 0 && hTex->flagged(), "Attepted to destroy locked resource");
 
         hTex->destroy();
 
@@ -272,8 +272,8 @@ namespace qk::gfx::rhi {
 
     void Texture_free(HTexture& hTex) {
 
-        assert(hTex);
-        assert(hTex->refcount() == 0 && hTex->flagged());
+        QK_ASSERT(hTex != nullptr, "hTex was nullptr");
+        QK_ASSERT(hTex->refcount() == 0 && hTex->flagged(), "Attepted to destroy locked resource");
 
         delete hTex;
 
@@ -281,12 +281,12 @@ namespace qk::gfx::rhi {
     }
 
     void Texture_upload(const HTexture& hTex, const Texture_source& source) {
-        assert(hTex);
+        QK_ASSERT(hTex != nullptr, "hTex was nullptr");
         hTex->upload(source);
     }
 
     void Texture_setSamplingParameters(const HTexture& hTex, const Sampler_recipe& recipe) {
-        assert(hTex);
+        QK_ASSERT(hTex != nullptr, "hTex was nullptr");
         hTex->set_sampling_parameters(recipe);
     }
 

@@ -8,7 +8,7 @@
 namespace qk::gfx::rhi {
 
 
-    enum class ShaderType {
+    enum class EShaderType {
         Unknown,
         Vertex,
         Fragment,
@@ -18,7 +18,7 @@ namespace qk::gfx::rhi {
 
     struct ShaderModule {
         str source;
-        ShaderType type;
+        EShaderType type;
     };
 
 

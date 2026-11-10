@@ -144,7 +144,7 @@ static void ImGui_ImplDX11_SetupRenderState(const ImDrawData* draw_data, ID3D11D
     device_ctx->IASetInputLayout(bd->pInputLayout);
     device_ctx->IASetVertexBuffers(0, 1, &bd->pVB, &stride, &offset);
     device_ctx->IASetIndexBuffer(bd->pIB, sizeof(ImDrawIdx) == 2 ? DXGI_FORMAT_R16_UINT : DXGI_FORMAT_R32_UINT, 0);
-    device_ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    device_ctx->IASetEPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
     device_ctx->VSSetShader(bd->pVertexShader, nullptr, 0);
     device_ctx->VSSetConstantBuffers(0, 1, &bd->pVertexConstantBuffer);
     device_ctx->PSSetShader(bd->pPixelShader, nullptr, 0);
@@ -247,7 +247,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
         ID3D11GeometryShader*       GS;
         UINT                        PSInstancesCount, VSInstancesCount, GSInstancesCount;
         ID3D11ClassInstance         *PSInstances[256], *VSInstances[256], *GSInstances[256];   // 256 is max according to PSSetShader documentation
-        D3D11_PRIMITIVE_TOPOLOGY    PrimitiveTopology;
+        D3D11_PRIMITIVE_TOPOLOGY    EPrimitiveTopology;
         ID3D11Buffer*               IndexBuffer, *VertexBuffer, *VSConstantBuffer;
         UINT                        IndexBufferOffset, VertexBufferStride, VertexBufferOffset;
         DXGI_FORMAT                 IndexBufferFormat;
@@ -268,7 +268,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     device->VSGetConstantBuffers(0, 1, &old.VSConstantBuffer);
     device->GSGetShader(&old.GS, old.GSInstances, &old.GSInstancesCount);
 
-    device->IAGetPrimitiveTopology(&old.PrimitiveTopology);
+    device->IAGetEPrimitiveTopology(&old.EPrimitiveTopology);
     device->IAGetIndexBuffer(&old.IndexBuffer, &old.IndexBufferFormat, &old.IndexBufferOffset);
     device->IAGetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset);
     device->IAGetInputLayout(&old.InputLayout);
@@ -340,7 +340,7 @@ void ImGui_ImplDX11_RenderDrawData(ImDrawData* draw_data)
     device->VSSetConstantBuffers(0, 1, &old.VSConstantBuffer); if (old.VSConstantBuffer) old.VSConstantBuffer->Release();
     device->GSSetShader(old.GS, old.GSInstances, old.GSInstancesCount); if (old.GS) old.GS->Release();
     for (UINT i = 0; i < old.VSInstancesCount; i++) if (old.VSInstances[i]) old.VSInstances[i]->Release();
-    device->IASetPrimitiveTopology(old.PrimitiveTopology);
+    device->IASetEPrimitiveTopology(old.EPrimitiveTopology);
     device->IASetIndexBuffer(old.IndexBuffer, old.IndexBufferFormat, old.IndexBufferOffset); if (old.IndexBuffer) old.IndexBuffer->Release();
     device->IASetVertexBuffers(0, 1, &old.VertexBuffer, &old.VertexBufferStride, &old.VertexBufferOffset); if (old.VertexBuffer) old.VertexBuffer->Release();
     device->IASetInputLayout(old.InputLayout); if (old.InputLayout) old.InputLayout->Release();

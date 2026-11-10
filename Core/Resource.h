@@ -52,6 +52,7 @@ namespace qk
         const str* label() const;
 
         u32 refcount() const;
+        // todo: rename reset()
         void refcount_override(u32 new_refcount);
 
         bool flagged() const;
