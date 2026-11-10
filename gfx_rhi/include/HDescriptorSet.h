@@ -47,7 +47,7 @@ namespace qk::gfx::rhi {
 
 
     struct DescriptorDefinition {
-        #ifdef _DEBUG
+        #if QK_DEBUG
             EDescriptorType type;
         #endif
         union {
@@ -75,7 +75,7 @@ namespace qk::gfx::rhi {
 
         bool operator==(const DescriptorDefinition& other) const {
             
-            #ifdef _DEBUG
+            #if QK_DEBUG
                 return type == other.type && pDescriptor == other.pDescriptor;
             #else
                     return pDescriptor == other.pDescriptor;
