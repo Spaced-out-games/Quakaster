@@ -1,92 +1,75 @@
 #pragma once
+
 #include "EntityLoader.h"
+
 #include <unordered_set>
 #include <spdlog/spdlog.h>
 
 namespace qk {
+
     void EntityLoader::push_loader(const ComponentLoader& loader) {
-        // don't insert bad loaders
-        if (loader.loader == nullptr) {
-            //spdlog::warn("EntityLoader@{}: Attempted to insert component loader `{}` with no implementation",
-            //    (const void*)this,
-            //    loader.name
-            //);
+        // Don't insert invalid loaders.
+        if (loader)
             return;
-        }
 
-        if (loader.dependencies.size() == 0) {
-            //spdlog::warn("EntityLoader@{}: Attempted to insert component loader `{}` with no dependency list",
-            //    (const void*)this,
-            //    loader.name
-            //);
+        if (loader.num_dependencies() == 0)
             return;
-        }
 
-        // check to make sure none of the dependencies exist
-
-        for (const auto& dependency : loader.dependencies) {
-            if (m_Loaders.contains(dependency)) {
-                //spdlog::warn(
-                //    "EntityLoader@{}: Component loader `{}` conflicts on an existing dependency",
-                //    (const void*)this,
-                //    loader.name
-                //);
-
+        // Check all dependencies before inserting anything.
+        for (const auto& dependency : loader.dependencies()) {
+            if (m_Loaders.contains(dependency))
                 return;
-            }
         }
 
-        // then push it
-        for (const auto& dependency : loader.dependencies) {
-            EntityLoaderEntry entry = {
-                .name = loader.name,
-                .impl = loader.loader
-            };
+        // Insert the loader for each dependency.
+        for (const auto& dependency : loader.dependencies()) {
 
-            m_Loaders[dependency] = entry;
 
+            m_Loaders[dependency] = EntityLoaderEntry{ loader.name(), loader.impl() };
         }
-
-
-
     }
+
 
     void EntityLoader::push_loaders(std::span<const ComponentLoader> loaders) {
-        for (const auto& loader : loaders) {
+        for (const auto& loader : loaders)
             push_loader(loader);
-        }
     }
+
 
     void EntityLoader::execute(
         entt::registry& registry,
         entt::entity entity,
-        const KeyValues& args) const
-    {
+        const KeyValues& args
+    ) const {
         std::unordered_set<EntityComponentLoader_pfn_t> used;
 
-        for (auto it = args.begin(); it != args.end(); ++it)
+        // Iterate over named arguments.
+        for (auto it = args.m_ValueLookup.cbegin();
+            it != args.m_ValueLookup.cend();
+            ++it)
         {
-            const auto id = it->first;
-            const auto& arg = it->second;
+            const auto& id = it->first;
 
             auto loader = m_Loaders.find(id);
 
-            if (loader == m_Loaders.end())
-            {
-               spdlog::warn(
+            if (loader == m_Loaders.end()) {
+                spdlog::warn(
                     "EntityLoader@{}: Unknown entity argument `{}`",
-                    (const void*)this,
+                    static_cast<const void*>(this),
                     id
                 );
+
                 continue;
             }
 
             const auto& entry = loader->second;
 
+            // Don't execute the same implementation more than once.
             if (!used.insert(entry.impl).second)
                 continue;
 
             entry.impl(registry, entity, args);
         }
     }
+
 }

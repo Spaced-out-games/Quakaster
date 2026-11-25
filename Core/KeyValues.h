@@ -1,170 +1,193 @@
-
 #pragma once
 
+
+#include "../vendor/emhash/hash_table5.hpp"
+#include <type_traits>
+#include <media/json.h>
+#include <expected>
+#include <iterator>
+#include <optional>
+#include <concepts>
+#include <utility>
 #include <variant>
+#include <compare>
+#include <cstddef>
 #include <vector>
 #include <core.h>
-#include <optional>
-#include "../vendor/emhash/hash_table5.hpp"
-#include <media/json.h>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <expected>
 
 namespace qk {
 
     using media::json;
 
-    using KeyValuesPrimitives = type_list<bool, i32, u32, f32, str>;
-
-    using KeyValuesVectors =
-        transform_type_list_t<std::vector, KeyValuesPrimitives>;
-
-    using KeyValuesSupportedTypes = concat_type_lists_t<
-        KeyValuesPrimitives,
-        KeyValuesVectors
-    >;
-
     enum class KeyValuesParseError : u8 {
         UnsupportedType,
         MixedArrayTypes,
+        MissingKey,
+        InvalidIndex,
+        DuplicateKey,
     };
 
-    // Key type
-    using KeyValues_Key_t = str;
+    using KeyValueVariant_t = std::variant<
+        str,
+        u32,
+        f32,
+        bool,
+        std::vector<u32>,
+        std::vector<f32>,
+        std::vector<str>,
+        std::vector<bool>
+    >;
 
-    // Value storage
-    using KeyValuesValueStorage_t =
-        apply_type_list_t<std::variant, KeyValuesSupportedTypes>;
+    struct KeyValue : KeyValueVariant_t {
+        using Base = KeyValueVariant_t;
+        using Base::Base;
+        using Base::operator=;
 
-    // Value type
-    struct Value : KeyValuesValueStorage_t {
-
-        using KeyValuesValueStorage_t::KeyValuesValueStorage_t;
-
-        // Tries to cast to T for obvious cases.
         template <class T>
-        std::optional<T> as() const {
-            static_assert(contains_type_v<T, KeyValuesSupportedTypes>);
+        std::optional<T> as() const;
 
-            if (const T* pValue = std::get_if<T>(this))
-                return *pValue;
-
-            return std::nullopt;
-        }
-
-        template <>
-        std::optional<glm::vec2> as() const {
-
-            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
-                if (pValue->size() == 2)
-                    return glm::vec2{
-                        pValue->at(0),
-                        pValue->at(1)
-                };
-            }
-            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
-                if (pValue->size() == 2)
-                    return glm::vec2{
-                        static_cast<f32>(pValue->at(0)),
-                        static_cast<f32>(pValue->at(1))
-                };
-            }
-
-            return std::nullopt;
-        }
-
-        template <>
-        std::optional<glm::vec3> as() const {
-
-            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
-                if (pValue->size() == 3)
-                    return glm::vec3{
-                        pValue->at(0),
-                        pValue->at(1),
-                        pValue->at(2)
-                };
-            }
-            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
-                if (pValue->size() == 3)
-                    return glm::vec3{
-                        static_cast<f32>(pValue->at(0)),
-                        static_cast<f32>(pValue->at(1)),
-                        static_cast<f32>(pValue->at(2))
-                };
-            }
-
-            return std::nullopt;
-        }
-
-        template <>
-        std::optional<glm::vec4> as() const {
-
-            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
-                if (pValue->size() == 4)
-                    return glm::vec4{
-                        pValue->at(0),
-                        pValue->at(1),
-                        pValue->at(2),
-                        pValue->at(3)
-                };
-            }
-            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
-                if (pValue->size() == 4)
-                    return glm::vec4{
-                        static_cast<f32>(pValue->at(0)),
-                        static_cast<f32>(pValue->at(1)),
-                        static_cast<f32>(pValue->at(2)),
-                        static_cast<f32>(pValue->at(3))
-                };
-            }
-
-            return std::nullopt;
-        }
-
-        template <>
-        std::optional<glm::quat> as() const {
-
-            if (const auto* pValue = std::get_if<std::vector<f32>>(this)) {
-                if (pValue->size() == 4)
-                    return glm::quat{
-                        pValue->at(0),
-                        pValue->at(1),
-                        pValue->at(2),
-                        pValue->at(3)
-                };
-            }
-            else if (const auto* pValue = std::get_if<std::vector<i32>>(this)) {
-                if (pValue->size() == 4)
-                    return glm::quat{
-                        static_cast<f32>(pValue->at(0)),
-                        static_cast<f32>(pValue->at(1)),
-                        static_cast<f32>(pValue->at(2)),
-                        static_cast<f32>(pValue->at(3))
-                };
-            }
-
-            return std::nullopt;
-        }
+        template <class T>
+        bool is() const;
     };
 
-    using KeyValues = emhash5::HashMap<KeyValues_Key_t, Value>;
+    template <class Key_t>
+    struct TKeyValues {
 
-    std::expected<Value, KeyValuesParseError>
-        KeyValueScalar_fromJSON(const json& j);
+        using ValueVariant_t = KeyValue;
+        using ValueStorage_t = std::vector<ValueVariant_t>;
+        using ValueLookup_t = emhash5::HashMap<Key_t, size_t>;
 
-    std::expected<Value, KeyValuesParseError>
-        KeyValueArray_fromJSON(const json& arr);
+        using size_type = size_t;
+        using key_type = Key_t;
+        using value_type = ValueVariant_t;
 
-    std::expected<void, KeyValuesParseError>
-        KeyValues_fromJSON(
-            const json& j,
-            const str& key,
-            KeyValues& out,
-            char delimiter = '.'
-        );
+        using iterator = ValueStorage_t::iterator;
+        using const_iterator = ValueStorage_t::const_iterator;
+        using reverse_iterator = ValueStorage_t::reverse_iterator;
+        using const_reverse_iterator = ValueStorage_t::const_reverse_iterator;
+
+        using key_iterator = typename ValueLookup_t::iterator;
+        using const_key_iterator = typename ValueLookup_t::const_iterator;
+
+        ValueStorage_t m_Values;
+        ValueLookup_t m_ValueLookup;
+
+        // Create
+        void insert(const Key_t& key, const ValueVariant_t& value);
+        void insert(const ValueVariant_t& value);
+
+
+
+        // Read / update
+        ValueVariant_t& operator[](size_type index);
+        const ValueVariant_t& operator[](size_type index) const;
+
+        ValueVariant_t& operator[](const Key_t& key);
+        const ValueVariant_t& operator[](const Key_t& key) const;
+
+        // Delete
+        void remove(const Key_t& key);
+        void remove(size_type index);
+
+        // Queries
+        bool contains(const Key_t& key) const;
+        size_type size() const noexcept;
+        size_type named_size() const noexcept;
+        bool empty() const noexcept;
+        void clear() noexcept;
+
+        // Positional iteration
+        iterator begin() noexcept;
+        iterator end() noexcept;
+
+        const_iterator begin() const noexcept;
+        const_iterator end() const noexcept;
+
+        const_iterator cbegin() const noexcept;
+        const_iterator cend() const noexcept;
+
+        reverse_iterator rbegin() noexcept;
+        reverse_iterator rend() noexcept;
+
+        const_reverse_iterator rbegin() const noexcept;
+        const_reverse_iterator rend() const noexcept;
+
+        // Value iterator
+        struct ValueIterator {
+            using iterator_category = std::random_access_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using value_type = ValueVariant_t;
+            using reference = value_type&;
+            using pointer = value_type*;
+
+            iterator m_Iterator;
+
+            reference operator*() const;
+
+            ValueIterator& operator++();
+            ValueIterator operator++(int);
+
+            ValueIterator& operator--();
+            ValueIterator operator--(int);
+
+            ValueIterator& operator+=(difference_type n);
+            ValueIterator& operator-=(difference_type n);
+
+            ValueIterator operator+(difference_type n) const;
+            ValueIterator operator-(difference_type n) const;
+
+            difference_type operator-(const ValueIterator& other) const;
+
+            reference operator[](difference_type n) const;
+
+            bool operator==(const ValueIterator&) const = default;
+            auto operator<=>(const ValueIterator&) const = default;
+        };
+
+        // Key iterator
+        struct KeyValueEntry {
+            const Key_t& key;
+            ValueVariant_t& value;
+        };
+
+        struct KeyIterator {
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using MapIterator = typename ValueLookup_t::iterator;
+
+            TKeyValues* m_Owner;
+            MapIterator m_Iterator;
+
+            KeyValueEntry operator*() const;
+
+
+            KeyIterator& operator++();
+            KeyIterator operator++(int);
+
+            bool operator==(const KeyIterator& other) const;
+        };
+
+        // Iterator access
+        ValueIterator value_begin() noexcept;
+        ValueIterator value_end() noexcept;
+
+        KeyIterator key_begin() noexcept;
+        KeyIterator key_end() noexcept;
+    };
+
+    using KeyValues = TKeyValues<str>;
+
+    // Concrete, non-template parser.
+    std::expected<KeyValue, KeyValuesParseError>
+        KeyValue_fromJSON(const json& j);
+
+    // Template parser.
+    template <class Key_t>
+    std::expected<TKeyValues<Key_t>, KeyValuesParseError>
+    KeyValues_fromJSON(const json& j, char delimiter = '.');
 
 }
+
+
+
+#include "KeyValues.inl"

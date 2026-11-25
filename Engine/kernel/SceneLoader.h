@@ -7,9 +7,10 @@
 
 namespace qk {
 
+	// Loads a list of key-value pairs from a JSON file
+	std::optional<std::vector<KeyValues>> from_json(const json& j);
 
-	bool from_json(const json& j, std::vector<KeyValues>& scene);
-
+	// Loads a list of key-value pairs into a registry, using a component loader
 	void deserialize_scene(const std::span<KeyValues>& scene, entt::registry& registry, EntityLoader loader);
 
 }

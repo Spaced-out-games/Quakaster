@@ -11,7 +11,7 @@
       "buildCommandArgs": "",
       "ctestCommandArgs": ""
     },
-	{
+    {
       "name": "x64-Release",
       "generator": "Ninja",
       "configurationType": "Release",
@@ -20,7 +20,14 @@
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "-DQK_ENABLE_DEBUG=OFF",
       "buildCommandArgs": "",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "GLM_ENABLE_SIMD_AVX2",
+          "value": "True",
+          "type": "BOOL"
+        }
+      ]
     }
   ]
 }

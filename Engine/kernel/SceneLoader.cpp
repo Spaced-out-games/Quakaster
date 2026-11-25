@@ -3,19 +3,26 @@
 
 namespace qk {
 
-	bool from_json(const json& j, std::vector<KeyValues>& scene) {
+	std::optional<std::vector<KeyValues>> from_json(const json& j) {
 		if (!j.is_array())
-			return false;
+			return std::nullopt;
 
-		KeyValues map;
+
+		std::vector<KeyValues> objects;
+
 		for (const auto& entity_args : j) {
-			if (KeyValues_fromJSON(entity_args, "", map, '.'))
-				scene.push_back(map);
-			else
-				return false;
+
+			
+			auto map = KeyValues_fromJSON<str>(entity_args, '.');
+
+			if (map) {
+				objects.push_back(*map);
+			} else return std::nullopt;
+
+
 		}
 
-		return true;
+		return objects;
 
 	}
 

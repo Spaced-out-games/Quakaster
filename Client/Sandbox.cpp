@@ -24,10 +24,10 @@ using namespace qk::gfx;
 // -------------------------------------------------- globals -------------------------------------------------- //
 
 std::vector<glm::vec3> g_Vertices = {
-	{-1.0f,  1.0f, 0.0f}, // top-left
-	{-1.0f, -1.0f, 0.0f}, // bottom-left
-	{ 1.0f,  1.0f, 0.0f}, // top-right
-	{ 1.0f, -1.0f, 0.0f}, // bottom-right
+    {-1.0f,  1.0f, 0.0f}, // top-left
+    {-1.0f, -1.0f, 0.0f}, // bottom-left
+    { 1.0f,  1.0f, 0.0f}, // top-right
+    { 1.0f, -1.0f, 0.0f}, // bottom-right
 };
 
 
@@ -37,7 +37,12 @@ std::vector<glm::mat4> g_Instances = {
     //glm::translate(glm::mat4(1.0), {0.2,0.2,0.0})
 };
 
+// CPU-side mirror of every live instance's transform. Index-parallel with m_Live.
+// The instance pool is write-only, so this is the source of truth for the current transforms.
+static std::vector<glm::mat4> g_LiveTransforms;
 
+// World-space velocity applied to every instance, in units per second.
+static const glm::vec3 k_Velocity{ 0.1f, 0.0f, 0.0f };
 
 
 glm::vec3 tint = { 0.0, 0.0, 0.0 };
@@ -61,16 +66,16 @@ MeshDefinitionID renderer_test(Renderer<Ts...>& r,
 
 
 
-     return r.new_definition()
-         .pushPipeline(pipeline_id)
-         .pushVertexBuffer(VertexBuffer_id, 0, sizeof(glm::vec3), 0)
-         .pushVertexBuffer(InstanceBuffer_id, 0, sizeof(glm::mat4), 1)
-         .pushDescriptorSet(GlobalsDescriptorSetID, 0)
-         .pushDescriptorSet(MaterialDescriptorSetID, 1)
-         .pushInstancePool<glm::mat4>(hInstanceBuffer)
-         .setVertexBufferRange(0, 4)
-         .setLODCount(1)
-         .finalize();
+    return r.new_definition()
+        .pushPipeline(pipeline_id)
+        .pushVertexBuffer(VertexBuffer_id, 0, sizeof(glm::vec3), 0)
+        .pushVertexBuffer(InstanceBuffer_id, 0, sizeof(glm::mat4), 1)
+        .pushDescriptorSet(GlobalsDescriptorSetID, 0)
+        .pushDescriptorSet(MaterialDescriptorSetID, 1)
+        .pushInstancePool<glm::mat4>(hInstanceBuffer)
+        .setVertexBufferRange(0, 4)
+        .setLODCount(1)
+        .finalize();
 
 
 
@@ -101,14 +106,13 @@ static glm::mat4 random_mat4() {
 
 void Sandbox::init(int argc, char** argv) {
 
-    
 
     spdlog::info(qk::trace("hello"));
     printf("// ---------------------------------- INITIALIZATION ---------------------------------- //\n");
 
 
     init_subsystems();
-    loader_demo(reg, entt::null);
+    loader_demo(reg, entt::null, m_Kernel);
 
 
     printf("// ---------------------------------- RESOURCE LOADING ---------------------------------- //\n");
@@ -129,6 +133,8 @@ void Sandbox::init(int argc, char** argv) {
     }
 
     
+
+
     // get the pipeline
     hPipeline = r.get_resource<HPipeline>("PBRPipeline"_sh);
 
@@ -145,13 +151,15 @@ void Sandbox::init(int argc, char** argv) {
     r.define_resource("VertexBuffer"_sh, hVertexBuffer);
     VertexBuffer_upload(hVertexBuffer, g_Vertices);
 
-    hInstanceBuffer = VertexBuffer_ctor(BufferUsage::StaticDraw);
+    // NOTE: this buffer is now rewritten every frame. If you have a dynamic/stream
+    // usage enum, use it here instead of StaticDraw.
+    hInstanceBuffer = VertexBuffer_ctor(BufferUsage::DynamicDraw);
     r.define_resource("InstanceBuffer"_sh, hInstanceBuffer);
     //VertexBuffer_upload(hInstanceBuffer, g_Instances);
 
-
-
     
+
+
 
     printf("// ---------------------------------- DESCRIPTOR LOAD ---------------------------------- //\n");
 
@@ -165,8 +173,8 @@ void Sandbox::init(int argc, char** argv) {
     // add to descriptor set
     DescriptorSet_setResource(hTextureSet, 0, r.get_resource<HTexture>(qk::string_hash{ TEST_IMAGE_PATH }));
     DescriptorSet_setResource(hTintSet, 0, hTint);
-    
-    
+
+
     // define a mesh
     m_MeshID = renderer_test(r,
         "PBRPipeline"_sh,
@@ -191,7 +199,6 @@ void Sandbox::init(int argc, char** argv) {
     // preview for debugging
     //auto* pInstancePool = r.instancepool<glm::mat4>(mesh_id);
 
-    instance = r.insert(m_MeshID, 0, glm::mat4{ 1.0f });
 
 
 
@@ -207,9 +214,9 @@ void Sandbox::init(int argc, char** argv) {
     for (const auto& entry : r.LODData(m_MeshID)) {
         spdlog::info("Partition({}, {})", entry.offset, entry.size);
     }
-    
+
     r.syncPartitionCache(m_MeshID);
-    
+
     auto recipe = r.compile();
 
     printf("// ---------------------------------- LIST COMMANDBUFFER ---------------------------------- //\n");
@@ -222,12 +229,14 @@ void Sandbox::init(int argc, char** argv) {
 
 
     for (int n = 10000; n > 0; --n) {
-        m_Live.push_back(r.insert(m_MeshID, 0, random_mat4()));
+        glm::mat4 m = random_mat4();
+        g_LiveTransforms.push_back(m);                       // keep the CPU-side copy
+        m_Live.push_back(r.insert(m_MeshID, 0, m));
     }
     r.flush_mesh(m_MeshID);
 
 
-   
+
 
     // Command buffer
     //CommandBuffer_recipe cmdBuf;
@@ -239,7 +248,7 @@ void Sandbox::init(int argc, char** argv) {
     //    .bindVertexBuffer(hVertexBuffer, 0, 0, sizeof(Vertex))
     //    .drawArraysInstanced(0, 4, 3);
 
-    
+
     if (r.needs_recompiled()) {
         r.syncPartitionCache(m_MeshID);
         auto recipe = r.compile();
@@ -249,48 +258,77 @@ void Sandbox::init(int argc, char** argv) {
         r.define_resource(0, hCmdBuf);
         r.clear_flags();
     }
-    
+
 
     //m_Live.push_back(r.insert(m_MeshID, 0, random_mat4()));
     //r.flush_mesh(m_MeshID);
 
 }
- 
+
 
 
 void Sandbox::run() {
     using utility::ScopeTimer;
     static bool ran = false;
     static u64 last_report = qk::utility::now();
+    static u64 last_tick = qk::utility::now();
     static uint64_t frames = 0;
 
     {
-        
-        ScopeTimer t_frame("frame", m_Profilers.find("frame"));
+
+        ScopeTimer t("frame", &m_Profilers.create("frame"));
+
 
         {
-            ScopeTimer t("events", m_Profilers.find("events"));
+            ScopeTimer t("events", &m_Profilers.create("events"));
             m_Window.pollEvents();
             m_Layers.propagate_events();
         }
 
+        
+        if (!m_Live.empty()) {
+            const u64 tick = qk::utility::now();
+            const float dt = float(double(tick - last_tick) / 1e9);
+            last_tick = tick;
+
+
+            const glm::vec4 step(k_Velocity * dt, 0.0f);
+
+
+            {
+                ScopeTimer t("move", &m_Profilers.create("move"));
+
+                for (size_t i = 0; i < m_Live.size(); ++i) {
+                    g_LiveTransforms[i][3] += step;
+                    r.update(m_Live[i], g_LiveTransforms[i]);
+                }
+            }
+
+
+            {
+                ScopeTimer t("flush", &m_Profilers.create("flush"));
+                r.flush_mesh(m_MeshID);   // applies the queued sets
+            }
+            r.clear_flags();          // requires the clear_flags() fix, or the state tag sticks
+        }
+
         {
-            ScopeTimer t("clear", m_Profilers.find("clear"));
+            ScopeTimer t("clear", &m_Profilers.create("clear"));
             rhi::gl_clear();
         }
 
         if (!m_Live.empty()) {
-            ScopeTimer t("execute", m_Profilers.find("execute"));
+            ScopeTimer t("execute", &m_Profilers.create("execute"));
             CommandBuffer_execute(hCmdBuf);
         }
 
         {
-            ScopeTimer t("layers", m_Profilers.find("layers"));
+            ScopeTimer t("layers", &m_Profilers.create("layers"));
             m_Layers.render();
         }
 
         {
-            ScopeTimer t("swap", m_Profilers.find("swap"));
+            ScopeTimer t("swap", &m_Profilers.create("swap"));
             m_Window.swapBuffers();
         }
 
@@ -310,11 +348,11 @@ void Sandbox::run() {
 
 void Sandbox::shutdown() {
 
-	r.destroy_all_resources();
+    r.destroy_all_resources();
 
 }
 
 
 std::unique_ptr<qk::Application> qk::create_application(int argc, char** argv) {
-	return std::make_unique<Sandbox>();
+    return std::make_unique<Sandbox>();
 }

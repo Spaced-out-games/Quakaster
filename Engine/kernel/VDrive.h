@@ -8,7 +8,7 @@
 namespace qk {
 
 
-
+    /*
     enum class EntryDisplayFlags : std::uint16_t {
         NONE = 0,
         LONG = 1 << 0,   // ls -l: one entry per line with details
@@ -21,81 +21,38 @@ namespace qk {
         RECURSIVE = 1 << 7,   // descend into contained entries (-r)
         SORTED = 1 << 8,   // stable sort before printing
         RAW = 1 << 9,   // machine-readable: paths only, one per line, no decoration
-    };
+    };*/
 
     enum class EVDriveErrorCode_t : u8 {
         STATUS_OKAY = 0
     };
 
-    struct VDriveError {
-
-        str what;
-        EVDriveErrorCode_t code;
-
-        VDriveError(std::nullopt_t) {
-            code = EVDriveErrorCode_t::STATUS_OKAY;
-            what = "";
-        }
-        VDriveError() {
-            code = EVDriveErrorCode_t::STATUS_OKAY;
-            what = "";
-        }
-
-        VDriveError(str what, EVDriveErrorCode_t code)
-            : what(std::move(what)), code(code) {}
 
 
-    };
-
-
-    class VDrive;
-
-    using EntryToString_pfn_t = str(*)(VDrive*, qk::UURH, EntryDisplayFlags);
 
     class VDrive {
         KernelPermissions m_Permissions;
-        protected:
         public:
+
+        std::unordered_map<str, KernelSyscall_pfn_t> m_pSyscalls;
 
             // Lifetime
             VDrive(KernelPermissions);
             virtual ~VDrive() = default;
 
+            // Registers this vdrive to the kernel
+            virtual void on_mount(Kernel&);
 
+            // Unregisters this vdrive from the kernel
+            virtual void on_unmount(Kernel&);
 
-            virtual void execute_loader(qk::UURH target, const KeyValues& args) = 0;
-
+            // issue a syscall to this vdrive
+            KernelCallResult syscall(Kernel& k, const str& name, const KeyValues& args);
 
 
             // get permissions
             KernelPermissions Permissions() const;
 
-            // CRUD
-            virtual std::expected<qk::UURH, VDriveError> create(const KeyValues&) = 0;
-            virtual std::expected<KeyValues, VDriveError> read(qk::UURH, const KeyValues& request) const = 0;
-            virtual std::expected<void, VDriveError>  update(qk::UURH, const KeyValues& request) = 0;
-            virtual std::expected<bool, VDriveError> destroy(qk::UURH, const KeyValues&) = 0;
-
-            // validation
-            virtual std::expected<bool, VDriveError> valid(qk::UURH) const = 0;
-
-            // placeholder...consider a bytecode?
-            using Query = u32;
-
-            // look up entity by its CLabel
-            virtual std::expected<qk::UURH, VDriveError> lookup(str_view label) const = 0;
-            virtual std::expected<std::vector<qk::UURH>, VDriveError> find(const Query&) const = 0;
-
-            virtual str to_string(qk::UURH target, EntryDisplayFlags flags) = 0;
-
-
-
-
-            
-            virtual void list(qk::UURH target, const std::vector<str>& keys, EntryDisplayFlags flags) const = 0;
-
     };
 
 }
-
-#include "VDrive.inl"

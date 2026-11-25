@@ -66,60 +66,134 @@ using qk::operator""_sh;
 
 #include <World/World.h>
 
-qk::World w(qk::KernelPermissions::ENTRY_CREATE);
 
 using namespace qk;
 qk::EntityLoader loader;
 
+
+
+
+
+void deserialize_transform(entt::registry&, entt::entity, const qk::KeyValues& args) {
+	const auto get_vec3 = [&](const char* key) -> std::optional<glm::vec3> {
+		if (!args.contains(key))
+			return std::nullopt;
+
+		const auto value = args[key].as<std::vector<f32>>();
+
+		if (!value || value->size() != 3)
+			return std::nullopt;
+
+		return glm::vec3{(*value)[0],(*value)[1],(*value)[2]};
+	};
+
+	if (const auto position = get_vec3("CTransform.position"))
+		spdlog::info(
+			"CTransform.position: {}, {}, {}",
+			position->x, position->y, position->z
+		);
+
+	if (const auto rotation = get_vec3("CTransform.rotation"))
+		spdlog::info(
+			"CTransform.rotation: {}, {}, {}",
+			rotation->x, rotation->y, rotation->z
+		);
+
+	if (const auto scale = get_vec3("CTransform.scale"))
+		spdlog::info(
+			"CTransform.scale: {}, {}, {}",
+			scale->x, scale->y, scale->z
+		);
+}
+
+
+
+
 const qk::ComponentLoader component_loaders[] = {
-	ComponentLoader{
-		.name = "CTransform",
-		.dependencies = {
+	ComponentLoader {
+		"CTransform",
+		std::array<str_view,3> {
 			"CTransform.position",
 			"CTransform.rotation",
 			"CTransform.scale"
-		},
-		.loader = [](entt::registry&, entt::entity, const qk::KeyValues& args) {
-			const auto get_vec3 = [&](const char* key) -> std::optional<glm::vec3> {
-				const auto it = args.find(key);
-				if (it == args.end())
-					return std::nullopt;
-				return it->second.as<glm::vec3>();
-			};
-
-			if (const auto position = get_vec3("CTransform.position"))
-				spdlog::info("CTransform.position: {}, {}, {}", position->x, position->y, position->z);
-
-			if (const auto rotation = get_vec3("CTransform.rotation"))
-				spdlog::info("CTransform.rotation: {}, {}, {}", rotation->x, rotation->y, rotation->z);
-
-			if (const auto scale = get_vec3("CTransform.scale"))
-				spdlog::info("CTransform.scale: {}, {}, {}", scale->x, scale->y, scale->z);
-		}
+		}, deserialize_transform
+		
 	}
 };
-void loader_demo(entt::registry& registry, entt::entity target) {
+
+template <typename T>
+concept Streamable = requires(std::ostream & os, const T & value) {
+	{ os << value } -> std::same_as<std::ostream&>;
+};
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
+	os << '[';
+
+	for (size_t i = 0; i < vec.size(); ++i) {
+		if (i) os << ", ";
+		os << vec[i];
+	}
+
+	return os << ']';
+}
+
+
+KernelCallResult sys_print_transform(Kernel&, VDrive* pVDrive, const std::vector<f32>& position, const std::vector<f32>& rotation, const std::vector<f32>& scale) {
+
+	std::cout << position;
+	std::cout << rotation;
+	std::cout << scale;
+
+	return KernelCallResult{ KERNEL_STATUS_SUCCESS, KeyValues() };
+}
+
+KernelCallResult sys_print_kvs(Kernel&, VDrive* pVDrive, const KeyValues& kvs) {
+
+	// Positional arguments
+	for (size_t i = 0; i < kvs.size(); ++i) {
+		std::cout << '[' << i << "]: ";
+
+		std::visit([](const auto& item) {
+			using T = std::remove_cvref_t<decltype(item)>;
+
+		if constexpr (Streamable<T>)
+			std::cout << item;
+		else
+			std::cout << "<unstreamable>";
+		}, kvs[i]);
+
+		std::cout << '\n';
+	}
+
+	return KernelCallResult{ KERNEL_STATUS_SUCCESS, KeyValues() };
+
+}
+
+
+
+void loader_demo(entt::registry& registry, entt::entity target, Kernel& kernel) {
 	qk::EntityLoader loader;
 	loader.push_loaders(component_loaders);
 
-	qk::KeyValues args = {
-		{
-			"CTransform.position",
-			std::vector<f32>{ 0.0f, 0.0f, 0.0f }
-		},
-		{
-			"CTransform.rotation",
-			std::vector<f32>{ 0.0f, 90.0f, 0.0f }
-		},
-		{
-			"CTransform.scale",
-			std::vector<f32>{ 1.0f, 1.0f, 1.0f }
-		},
-		{
-			"GARBAGE",
-			i32{ 0 }
-		}
-	};
+	qk::KeyValues args;
+	args.insert("CTransform.position", std::vector<f32>{ 0.0f, 0.0f, 0.0f });
+	args.insert("CTransform.rotation", std::vector<f32>{ 0.0f, 90.0f, 0.0f });
+	args.insert("CTransform.scale", std::vector<f32>{ 1.0f, 1.0f, 1.0f });
+	//args.insert("GARBAGE", "this is a garbage value");
+
+	VDrive* pVDrive = new VDrive(qk::KernelPermissions::ENTRY_CREATE);
+
+	//pVDrive->m_pSyscalls["print_transform"]  
+	auto a = qk::kernel_trampoline<&sys_print_transform, std::vector<f32>, std::vector<f32>, std::vector<f32>>;
+
+	a(kernel, nullptr, args);
+	//if (pVDrive->syscall(kernel, "print_transform", args).status != KERNEL_STATUS_SUCCESS) {
+	//	std::cout << "BAD ARGUMENTS";
+	//}
+	
+
+
 
 	loader.execute(registry, target, args);
 }
@@ -130,6 +204,8 @@ class Sandbox : public qk::Application {
 	qk::Window m_Window;
 	qk::EventQueue m_EventQueue;
 	qk::LayerStack m_Layers;
+
+	qk::Kernel m_Kernel;
 
 	std::unordered_map<str, Pipeline_recipe> pipelines;
 	std::unordered_map<str, DescriptorSetLayout> sets;
@@ -199,14 +275,6 @@ class Sandbox : public qk::Application {
 	inline void attach_layers() {
 		m_pFrame = &m_Profilers.create("frame");
 
-		//m_pFrame->sections()
-
-		m_Profilers.create("events");
-		m_Profilers.create("churn");
-		m_Profilers.create("clear");
-		m_Profilers.create("execute");
-		m_Profilers.create("layers");
-		m_Profilers.create("swap");
 
 		
 		auto& gui = m_Layers.emplace_layer<qk::gfx::gui::GUILayer>(m_Window.handle());

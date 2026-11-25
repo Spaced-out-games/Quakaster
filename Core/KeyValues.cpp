@@ -1,281 +1,213 @@
 #include "KeyValues.h"
 
+#include <cmath>
+#include <cstdint>
+#include <limits>
+#include <string>
+#include <type_traits>
+
 namespace qk {
 
-    std::expected<Value, KeyValuesParseError>
-        KeyValueScalar_fromJSON(const json& j) {
-        if (j.is_boolean())
-            return Value{ j.get<bool>() };
+    namespace {
 
-        if (j.is_number_integer()) {
-            if (j.is_number_unsigned()) {
-                const auto v = j.get<uint64_t>();
+        enum class JSONType : u8 {
+            String,
+            Number,
+            Boolean,
+            Other
+        };
 
-                if (v <= (uint64_t)std::numeric_limits<i32>::max())
-                    return Value{
-                        std::in_place_type<i32>,
-                        (i32)v
-                };
+        JSONType GetJSONType(const json& j) {
+            if (j.is_string())
+                return JSONType::String;
 
-                if (v <= (uint64_t)std::numeric_limits<u32>::max())
-                    return Value{
-                        std::in_place_type<u32>,
-                        (u32)v
-                };
-            }
-            else {
-                const auto v = j.get<int64_t>();
+            if (j.is_number())
+                return JSONType::Number;
 
-                if (v >= std::numeric_limits<i32>::min() &&
-                    v <= std::numeric_limits<i32>::max())
-                    return Value{
-                        std::in_place_type<i32>,
-                        (i32)v
-                };
-            }
+            if (j.is_boolean())
+                return JSONType::Boolean;
 
-            // Too large for 32-bit integers: fall back to float.
-            return Value{
-                std::in_place_type<f32>,
-                (f32)j.get<double>()
-            };
+            return JSONType::Other;
         }
 
-        if (j.is_number_float())
-            return Value{
-                std::in_place_type<f32>,
-                (f32)j.get<double>()
+
+        template <class T>
+        struct IsVector : std::false_type {};
+
+        template <class T, class Allocator>
+        struct IsVector<std::vector<T, Allocator>> : std::true_type {
+            using value_type = T;
         };
 
-        if (j.is_string())
-            return Value{
-                std::in_place_type<str>,
-                j.get<str>()
-        };
 
-        return std::unexpected(
-            KeyValuesParseError::UnsupportedType
-        );
+        template <class T>
+        constexpr bool IsSupportedScalar =
+            std::same_as<T, str> ||
+            std::same_as<T, u32> ||
+            std::same_as<T, f32> ||
+            std::same_as<T, bool>;
+
+
+        // Attempts one specific scalar conversion.
+        template <class T>
+        std::expected<T, KeyValuesParseError>
+            KeyValue_fromJSON_scalar(const json& j) {
+
+            if constexpr (std::same_as<T, str>) {
+                if (!j.is_string())
+                    return std::unexpected(KeyValuesParseError::UnsupportedType);
+
+                return j.get<str>();
+            }
+
+            else if constexpr (std::same_as<T, u32>) {
+                if (!j.is_number_integer())
+                    return std::unexpected(KeyValuesParseError::UnsupportedType);
+
+                if (j.is_number_unsigned()) {
+                    const auto value = j.get<std::uint64_t>();
+
+                    if (value > std::numeric_limits<u32>::max())
+                        return std::unexpected(KeyValuesParseError::UnsupportedType);
+
+                    return static_cast<u32>(value);
+                }
+
+                const auto value = j.get<std::int64_t>();
+
+                if (value < 0 ||
+                    value > std::numeric_limits<u32>::max()) {
+                    return std::unexpected(KeyValuesParseError::UnsupportedType);
+                }
+
+                return static_cast<u32>(value);
+            }
+
+            else if constexpr (std::same_as<T, f32>) {
+                if (!j.is_number())
+                    return std::unexpected(KeyValuesParseError::UnsupportedType);
+
+                const double value = j.get<double>();
+
+                if (!std::isfinite(value) ||
+                    value > std::numeric_limits<f32>::max() ||
+                    value < -std::numeric_limits<f32>::max()) {
+                    return std::unexpected(KeyValuesParseError::UnsupportedType);
+                }
+
+                return static_cast<f32>(value);
+            }
+
+            else if constexpr (std::same_as<T, bool>) {
+                if (!j.is_boolean())
+                    return std::unexpected(KeyValuesParseError::UnsupportedType);
+
+                return j.get<bool>();
+            }
+
+            else {
+                return std::unexpected(KeyValuesParseError::UnsupportedType);
+            }
+        }
+
+
+        // Attempts one specific vector conversion.
+        template <class T>
+        std::expected<T, KeyValuesParseError>
+            KeyValue_fromJSON_vector(const json& j) {
+
+            using Element_t = typename IsVector<T>::value_type;
+
+            if (!j.is_array() || j.empty())
+                return std::unexpected(KeyValuesParseError::UnsupportedType);
+
+            T result;
+            result.reserve(j.size());
+
+            const JSONType expectedType = GetJSONType(j.front());
+
+            for (const auto& element : j) {
+
+                // All elements must have the same JSON category.
+                if (GetJSONType(element) != expectedType)
+                    return std::unexpected(KeyValuesParseError::MixedArrayTypes);
+
+                auto value = KeyValue_fromJSON_scalar<Element_t>(element);
+
+                if (!value)
+                    return std::unexpected(value.error());
+
+                result.emplace_back(std::move(*value));
+            }
+
+            return result;
+        }
+
+    } // anonymous namespace
+
+
+    // ------------------------------------------------------------
+    // Concrete conversion
+    // ------------------------------------------------------------
+
+    template <class T>
+    std::expected<T, KeyValuesParseError>
+        KeyValue_fromJSON_as(const json& j) {
+
+        if constexpr (IsVector<T>::value) {
+            return KeyValue_fromJSON_vector<T>(j);
+        }
+        else if constexpr (IsSupportedScalar<T>) {
+            return KeyValue_fromJSON_scalar<T>(j);
+        }
+        else {
+            return std::unexpected(KeyValuesParseError::UnsupportedType);
+        }
     }
 
 
-    // Array of scalars -> std::vector<T>.
-    // Fails on mixed bool/string/number arrays or unsupported elements.
-    std::expected<Value, KeyValuesParseError>
-        KeyValueArray_fromJSON(const json& arr) {
-        bool allBool = true;
-        bool allStr = true;
-        bool allNum = true;
+    // ------------------------------------------------------------
+    // Variant conversion
+    // ------------------------------------------------------------
 
-        bool allInt = true;
-        bool allFitI32 = true;
-        bool allFitU32 = true;
+    namespace {
 
-        for (const auto& e : arr) {
-            allBool &= e.is_boolean();
-            allStr &= e.is_string();
-            allNum &= e.is_number();
+        template <size_t Index = 0>
+        std::expected<KeyValue, KeyValuesParseError>
+            KeyValue_fromJSON_try(const json& j) {
 
-            if (!e.is_number())
-                continue;
+            if constexpr (Index < std::variant_size_v<KeyValueVariant_t>) {
 
-            if (!e.is_number_integer()) {
-                allInt = false;
-                allFitI32 = false;
-                allFitU32 = false;
-                continue;
-            }
+                using Alternative_t =
+                    std::variant_alternative_t<Index, KeyValueVariant_t>;
 
-            if (e.is_number_unsigned()) {
-                const auto v = e.get<uint64_t>();
+                auto result = KeyValue_fromJSON_as<Alternative_t>(j);
 
-                allFitI32 &= v <=
-                    (uint64_t)std::numeric_limits<i32>::max();
-
-                allFitU32 &= v <=
-                    (uint64_t)std::numeric_limits<u32>::max();
-            }
-            else {
-                const auto v = e.get<int64_t>();
-
-                allFitI32 &=
-                    v >= std::numeric_limits<i32>::min() &&
-                    v <= std::numeric_limits<i32>::max();
-
-                allFitU32 &=
-                    v >= 0 &&
-                    v <= (int64_t)std::numeric_limits<u32>::max();
-            }
-        }
-
-        // Type is unknowable; default to float.
-        if (arr.empty())
-            return Value{
-                std::in_place_type<std::vector<f32>>
-        };
-
-        if (allBool) {
-            std::vector<bool> v;
-            v.reserve(arr.size());
-
-            for (const auto& e : arr)
-                v.push_back(e.get<bool>());
-
-            return Value{
-                std::in_place_type<std::vector<bool>>,
-                std::move(v)
-            };
-        }
-
-        if (allStr) {
-            std::vector<str> v;
-            v.reserve(arr.size());
-
-            for (const auto& e : arr)
-                v.push_back(e.get<str>());
-
-            return Value{
-                std::in_place_type<std::vector<str>>,
-                std::move(v)
-            };
-        }
-
-        if (allNum) {
-            if (allInt && allFitI32) {
-                std::vector<i32> v;
-                v.reserve(arr.size());
-
-                for (const auto& e : arr) {
-                    if (e.is_number_unsigned())
-                        v.push_back((i32)e.get<uint64_t>());
-                    else
-                        v.push_back((i32)e.get<int64_t>());
+                if (result) {
+                    return KeyValue{
+                        std::in_place_type<Alternative_t>,
+                        std::move(*result)
+                    };
                 }
 
-                return Value{
-                    std::in_place_type<std::vector<i32>>,
-                    std::move(v)
-                };
-            }
-
-            if (allInt && allFitU32) {
-                std::vector<u32> v;
-                v.reserve(arr.size());
-
-                for (const auto& e : arr) {
-                    if (e.is_number_unsigned())
-                        v.push_back((u32)e.get<uint64_t>());
-                    else
-                        v.push_back((u32)e.get<int64_t>());
-                }
-
-                return Value{
-                    std::in_place_type<std::vector<u32>>,
-                    std::move(v)
-                };
-            }
-
-            std::vector<f32> v;
-            v.reserve(arr.size());
-
-            for (const auto& e : arr)
-                v.push_back((f32)e.get<double>());
-
-            return Value{
-                std::in_place_type<std::vector<f32>>,
-                std::move(v)
-            };
-        }
-
-        return std::unexpected(
-            KeyValuesParseError::MixedArrayTypes
-        );
-    }
-
-
-    std::expected<void, KeyValuesParseError>
-        KeyValues_fromJSON(
-            const json& j,
-            const str& key,
-            KeyValues& out,
-            char delimiter
-        ) {
-        if (j.is_object()) {
-            for (auto it = j.begin(); it != j.end(); ++it) {
-                const str childKey =
-                    key.empty()
-                    ? it.key()
-                    : key + delimiter + it.key();
-
-                auto result = KeyValues_fromJSON(
-                    it.value(),
-                    childKey,
-                    out,
-                    delimiter
-                );
-
-                if (!result)
+                // A mixed array is a more specific error than an
+                // unsupported conversion.
+                if (result.error() == KeyValuesParseError::MixedArrayTypes)
                     return std::unexpected(result.error());
-            }
 
-            return {};
+                return KeyValue_fromJSON_try<Index + 1>(j);
+            }
+            else {
+                return std::unexpected(KeyValuesParseError::UnsupportedType);
+            }
         }
 
-        if (j.is_array()) {
-            const bool structured = std::any_of(
-                j.begin(),
-                j.end(),
-                [](const json& e) {
-                return e.is_object() || e.is_array();
-            }
-            );
+    } // anonymous namespace
 
-            if (structured) {
-                // Arrays containing objects/arrays:
-                // key.0, key.1, ...
 
-                size_t i = 0;
-
-                for (const auto& e : j) {
-                    const str childKey =
-                        key + delimiter + std::to_string(i++);
-
-                    auto result = KeyValues_fromJSON(
-                        e,
-                        childKey,
-                        out,
-                        delimiter
-                    );
-
-                    if (!result)
-                        return std::unexpected(result.error());
-                }
-
-                return {};
-            }
-
-            auto result = KeyValueArray_fromJSON(j);
-
-            if (!result)
-                return std::unexpected(result.error());
-
-            out[key] = std::move(*result);
-
-            return {};
-        }
-
-        // Null is intentionally ignored.
-        if (j.is_null())
-            return {};
-
-        auto result = KeyValueScalar_fromJSON(j);
-
-        if (!result)
-            return std::unexpected(result.error());
-
-        out[key] = std::move(*result);
-
-        return {};
+    std::expected<KeyValue, KeyValuesParseError>
+        KeyValue_fromJSON(const json& j) {
+        return KeyValue_fromJSON_try(j);
     }
 
 }

@@ -202,10 +202,7 @@ namespace qk::gfx {
 		MeshInstance instance,
 		Args&&... args
 	) {
-		static_assert(all_of_Ts_v<
-			type_list<std::decay_t<Args>...>,
-			type_list<SupportedTs...>
-		>, "Instance contains an unsupported type");
+		//static_assert(all_of_Ts_v<type_list<std::decay_t<Args>...>,type_list<SupportedTs...>>, "Instance contains an unsupported type");
 
 		// make sure this mesh is finalized
 		QK_ASSERT(m_MeshDefinitions.all_of<CMeshFinalizedTag>(instance.mesh_ID), "Mesh definition was not finalized");

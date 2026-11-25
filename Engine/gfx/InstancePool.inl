@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstring>
 #include <vector>
 
 namespace qk::gfx {
@@ -23,11 +24,11 @@ namespace qk::gfx {
 
 	// ---- private helpers --------------------------------------------------
 
-	// Appends to the partition's logical state and records where the handle lives.
+	// Appends to the partition and records where the handle lives.
 	template <class instance_t>
 	void InstancePool<instance_t>::attach(u16 partition_index, u32 handle_sparse, const instance_t& payload) {
 		auto& partition = m_Partitions.at(partition_index);
-		const u32 local = partition.queue_insert(payload);
+		const u32 local = partition.push(payload);
 
 		auto& reverse = m_ReverseHandleLookup[partition_index];
 		if (local >= reverse.size())
@@ -39,7 +40,7 @@ namespace qk::gfx {
 		m_Locations[handle_sparse] = { local, partition_index };
 	}
 
-	// Swap-pops `local` out of the partition's logical state and queues the physical swap.
+	// Swap-pops `local` out of the partition.
 	// Does not touch the departing handle's Location; callers either kill the handle
 	// or immediately overwrite it via attach().
 	template <class instance_t>
@@ -57,11 +58,10 @@ namespace qk::gfx {
 
 			m_Locations[moved_handle_sparse].local_sparse = local;
 			reverse[local] = moved_handle_sparse;
-
-			partition.queue_swap(local, back);
 		}
 
-		partition.pop_back();
+		partition.swap_remove(local);
+		reverse.pop_back();   // keeps the reverse table parallel to the partition
 	}
 
 	// ---- public API -------------------------------------------------------
@@ -100,7 +100,7 @@ namespace qk::gfx {
 
 		QK_ASSERT(handle.sparse < m_Locations.size(), "handle.sparse was out of bounds");
 		const Location loc = m_Locations[handle.sparse];
-		m_Partitions.at(loc.partition).queue_set(value, loc.local_sparse);
+		m_Partitions.at(loc.partition).set(loc.local_sparse, value);
 	}
 
 	template <class instance_t>
@@ -117,7 +117,7 @@ namespace qk::gfx {
 
 		// Same partition: just a write.
 		if (loc.partition == new_partition) {
-			m_Partitions.at(new_partition).queue_set(initial_value, loc.local_sparse);
+			m_Partitions.at(new_partition).set(loc.local_sparse, initial_value);
 			return;
 		}
 
@@ -139,65 +139,60 @@ namespace qk::gfx {
 
 	template <class instance_t>
 	void InstancePool<instance_t>::flush() {
-		size_t old_capacity = 0;
-		size_t new_capacity = 0;
+		if (m_Partitions.empty())
+			return;
+
+		size_t total_capacity = 0;
+		bool relayout = false;
+		bool any_dirty = false;
 
 		for (const auto& partition : m_Partitions) {
-			old_capacity += partition.capacity();
-			new_capacity += partition.new_capacity();
+			total_capacity += partition.new_capacity();
+			relayout |= (partition.new_capacity() != partition.capacity());
+			any_dirty |= partition.dirty();
 		}
 
-		if (old_capacity != new_capacity) {
-			// Snapshot the old contents into a temporary buffer.
-			rhi::HVertexBuffer old_storage = nullptr;
-			if (old_capacity != 0) {
-				old_storage = rhi::VertexBuffer_ctor(rhi::StaticDraw);
-				rhi::VertexBuffer_alloc(old_storage, old_capacity * sizeof(instance_t));
-				rhi::VertexBuffer_cpy(m_Storage, 0, old_storage, 0, old_capacity * sizeof(instance_t));
-			}
+		// A capacity change moves every later partition, so reallocate the buffer
+		// and re-upload everything from the CPU copies. No GPU-side snapshot needed.
+		// (m_Storage keeps the same handle but gets new, uninitialized backing memory.)
+		if (relayout) {
+			rhi::VertexBuffer_alloc(m_Storage, total_capacity * sizeof(instance_t));
 
-			// m_Storage keeps the same handle but gets new backing memory.
-			rhi::VertexBuffer_alloc(m_Storage, new_capacity * sizeof(instance_t));
+			for (auto& partition : m_Partitions)
+				partition.mark_all_dirty();
 
-			// Restore each partition into its new physical location.
-			// Do all device-side copies BEFORE mapping the buffer.
-			size_t old_offset = 0;
-			size_t new_offset = 0;
+			any_dirty = true;
+		}
 
-			for (const auto& partition : m_Partitions) {
-				const size_t old_cap = partition.capacity();
-				const size_t new_cap = partition.new_capacity();
+		// Upload only the dirty span of each partition, through a single write-only mapping.
+		// Nothing here reads from the mapped memory.
+		if (any_dirty) {
+			instance_t* pStorage = static_cast<instance_t*>(
+				rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE));
+			QK_ASSERT(pStorage, "failed to map the instance buffer");
 
-				if (old_cap != 0) {
-					rhi::VertexBuffer_cpy(
-						old_storage,
-						old_offset * sizeof(instance_t),
-						m_Storage,
-						new_offset * sizeof(instance_t),
-						old_cap * sizeof(instance_t)
-					);
+			size_t offset = 0;
+			for (auto& partition : m_Partitions) {
+				const u32 lo = partition.dirty_min();
+				// swap_remove can leave dirty_max past the end; clamp it.
+				const u32 hi = std::min(partition.dirty_max(), partition.new_size());
+
+				if (lo < hi) {
+					std::memcpy(
+						pStorage + offset + lo,
+						partition.data() + lo,
+						(hi - lo) * sizeof(instance_t));
 				}
 
-				old_offset += old_cap;
-				new_offset += new_cap;
+				offset += partition.new_capacity();
 			}
 
-			if (old_storage) {
-				rhi::Resource_cast(old_storage)->flag_for_deletion();
-				rhi::VertexBuffer_free(old_storage);
-			}
+			rhi::VertexBuffer_close(m_Storage);
 		}
 
-		// Apply the queued ops through a single mapping.
-		instance_t* pStorage = static_cast<instance_t*>(rhi::VertexBuffer_open(m_Storage, rhi::EBufferAccessFlags::WRITE));
-
-		size_t offset = 0;
-		for (auto& partition : m_Partitions) {
-			partition.flush(pStorage + offset);
-			offset += partition.new_capacity();
-		}
-
-		rhi::VertexBuffer_close(m_Storage);
+		// Always commit: popping the back element changes the size without dirtying anything.
+		for (auto& partition : m_Partitions)
+			partition.commit();
 	}
 
 }
